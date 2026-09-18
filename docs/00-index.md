@@ -2,6 +2,8 @@
 
 Moderní webová náhrada desktopové aplikace **Časomíra** (prozavody.cz, MS Access) pro měření časů sportovních závodů. Tento adresář obsahuje kompletní analýzu, architekturu a návrh nové aplikace.
 
+> **Pracovní název produktu: Depo.** `time-sys` zůstává interním názvem repozitáře/kódu, "Depo" je zamýšlená značka směrem k uživatelům (viz zdůvodnění a alternativy v konverzaci k tomuto dokumentačnímu balíku). Přejmenování napříč mockupy a dokumenty proběhne až po potvrzení vizuální identity.
+
 ## Obsah dokumentace
 
 | # | Dokument | Obsah |
