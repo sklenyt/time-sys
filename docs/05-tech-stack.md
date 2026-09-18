@@ -31,6 +31,16 @@ Klíčový požadavek z analýzy je **odstranění platformní závislosti na Wi
 - IndexedDB dává lokální "databázi v prohlížeči" srovnatelnou kapacitou jako souborová databáze Accessu, ale bez nutnosti instalace enginu.
 - Žádný app store schvalovací proces ani nutnost dvou codebase (iOS/Android) jako u nativní varianty (F28 v [02-requirements.md](02-requirements.md) je vědomě "Won't have" pro MVP).
 
+### 5.2.1 iPad/iOS — specifika, se kterými je nutné počítat
+
+Explicitní požadavek F25 (telefon i tablet, jmenovitě iPad) naráží na známá omezení PWA na iOS/iPadOS, která je třeba řešit vědomě, ne je zjistit až v produkci:
+
+- **Žádný automatický instalační banner** jako na Androidu — uživatel musí ručně přes Safari "Sdílet → Přidat na plochu". Design musí obsahovat vlastní onboarding krok, který ho tímhle provede (viz Design prompt v konverzaci — vyžaduje dedikovanou obrazovku/nápovědu).
+- **Push notifikace fungují až od iOS 16.4+** (2023) v nainstalované PWA — pro F32 (SMS/e-mail při doběhu) proto řešit primárně přes SMS/e-mail, ne přes web push, aby fungovalo napříč všemi zařízeními bez ohledu na verzi iOS.
+- **IndexedDB na iOS může být agresivněji uklizeno systémem** při nedostatku místa, pokud appka není "nainstalovaná" (přidaná na plochu) — o důvod víc tlačit uživatele k instalaci, ne k používání jen v záložce Safari, pro kritický offline provoz (N01, N03).
+- **Rozdílné bezpečné zóny (safe area)** u iPadů s zaoblenými rohy/Face ID výřezem — layout (zejména numpad na obrazovce Měření, §7.3) musí respektovat `env(safe-area-inset-*)` v CSS.
+- Testovat je nutné na reálném Safari na iPadu, ne jen v Chrome DevTools emulaci — Safari má historicky odlišné chování u service workerů a IndexedDB kvót.
+
 ## 5.3 Proč vlastní event-log sync, a ne hotová CRDT knihovna
 
 Zvažovány byly Automerge a Yjs (obě řeší bezkonfliktní offline-first sync obecně). Doména časomíry má ale specifickou vlastnost zjištěnou v [11-legacy-schema-reference.md §11.2](11-legacy-schema-reference.md) (reálná data): **cca 70 % záznamů jsou čisté nové vstupy (`originál`), zbytek jsou opravy s jasně definovanou sémantikou** (přepis nuly, přepis čísla) — ne obecné konkurenční úpravy libovolných polí. Vlastní řešení nad jednoduchým append-only event logem (viz [04-data-model.md §4.2](04-data-model.md#42-klíčové-designové-rozhodnutí-zaznam_udalosti-jako-append-only-event-log)):

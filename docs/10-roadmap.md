@@ -18,6 +18,7 @@ Cíl: nahradit **nejkritičtější denní use case** — samotné měření na 
 - Modul správy trasy (F01, F02) — [07-ui-mockups.md §7.2](07-ui-mockups.md)
 - Startovní listina — ruční zápis + CSV import (F03, F04) — [§7.8](07-ui-mockups.md)
 - **Modul měření** — číslo + Enter, zachování systémového času (F06, F07) — [§7.3](07-ui-mockups.md), jádro dle [04-data-model.md §4.2](04-data-model.md)
+- **Responzivní layout pro telefon/tablet/desktop od prvního řádku kódu** (F25, N08) — ne dodatečná úprava; klíčové obrazovky (Měření, Startovní listina, Kdo běží) se navrhují rovnou pro dotyk na iPadu/telefonu, viz [05-tech-stack.md §5.2.1](05-tech-stack.md)
 - Oprava záznamu se zachováním času (F08)
 - Základní auditní log (F09)
 - Nouzový kontakt a zdravotní poznámka u přihlášky (F31) — nízká náročnost, reálný bezpečnostní přínos, doporučeno zařadit hned do MVP (viz [12-rfid-a-doporuceni.md §12.6](12-rfid-a-doporuceni.md))
@@ -31,7 +32,7 @@ Cíl: nahradit **nejkritičtější denní use case** — samotné měření na 
 
 Cíl: dosáhnout parity s dnešní terénní spolehlivostí a přidat síťovou spolupráci.
 
-- PWA shell, Service Worker, instalovatelnost (N01, N05)
+- PWA shell, Service Worker, instalovatelnost — včetně iOS/iPadOS specifik (vlastní "Přidat na plochu" onboarding, safe-area layout) (N01, N05, F25)
 - IndexedDB lokální úložiště a plně offline provoz modulu měření
 - Synchronizace více zařízení/stanovišť (F15, F17) — event-log sync dle [03-architecture.md §3.5](03-architecture.md)
 - Detekce a řešení kolizí (`NEEDS_REVIEW`) v UI (§7.1, §7.6)

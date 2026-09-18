@@ -23,6 +23,7 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | F13 | Export výsledků do XLSX a PDF | UC15 |
 | F14 | Funkčnost **plně offline** na místě startu/cíle bez připojení k internetu | — |
 | F15 | Synchronizace dat mezi zařízeními na stanovištích a s centrální DB, jakmile je spojení dostupné | UC8 |
+| F25 | **Plně responzivní UI optimalizované pro telefon i tablet (včetně iPadu)**, ne jen desktop — časoměřič, obsluha na stanovišti i organizátor u registračního stolu běžně používají tablet nebo telefon, ne notebook. Netýká se jen "menšího okna", ale odlišného rozložení a velikosti dotykových prvků na klíčových obrazovkách (Měření, Startovní listina, Kdo běží) | — |
 | F34 | **Automatický export výsledků jako statická HTML stránka a její nahrání na FTP/SFTP server organizátora** — přímá náhrada legacy funkce `tblZavod.ftpserver`/`ftpcesta`/`htmlsoubor` (viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)); umožňuje publikovat výsledky na vlastní doméně klubu/organizátora nezávisle na tom, zda time-sys hostuje živou stránku (F16) | UC16 |
 | F35 | Konfigurovatelný spouštěč exportu — buď v pravidelném intervalu (v minutách, jako legacy `autoexportmin`), nebo okamžitě po každém novém doběhu | UC16 |
 
@@ -46,7 +47,6 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | F22 | Podpora RFID čipů — čtečky/decodéry na startu, cíli i kontrolních stanovištích jako plnohodnotná alternativa k ručnímu zápisu čísla, viz [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md) |
 | F23 | Vlastní online registrační formulář napojený přímo do systému |
 | F24 | Multi-tenant provoz pro více organizátorů současně |
-| F25 | Mobilní PWA optimalizovaná pro tablet/telefon na stanovišti |
 | F26 | Pokročilé reporty a statistiky (historie výkonů, rekordy tratě) |
 | F29 | Párování RFID čipu se startovním číslem při výdeji startovních čísel (registrace/expo) | 
 | F30 | Evidence stavu čipu — vydán / vrácen / ztracen / záložní — s vazbou na vratnou zálohu | 
@@ -77,7 +77,7 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | N05 | Přenositelnost | Provoz z libovolného moderního prohlížeče na Windows/macOS/Linux/Android/iOS bez instalace desktop softwaru |
 | N06 | Bezpečnost | HTTPS/TLS všude, hesla/haše, RBAC, izolace dat mezi organizátory (multi-tenant) |
 | N07 | Auditovatelnost | Každá změna dat dohledatelná (kdo, kdy, co), log exportovatelný |
-| N08 | Použitelnost | Obrazovka zápisu ovladatelná jen numerickou klávesnicí/numpadem, čitelná i za slunečního svitu na tabletu |
+| N08 | Použitelnost | Obrazovka zápisu ovladatelná jen numerickou klávesnicí/numpadem, čitelná i za slunečního svitu na tabletu. **Responzivní layout pro min. 3 třídy zařízení: telefon (~390 px), tablet na výšku i na šířku (iPad ~768–1180 px), desktop** — dotykové cíle min. 44×44 px dle iOS/Android doporučení, ne jen zmenšená desktopová verze |
 | N09 | Škálovatelnost | Podpora závodů v řádu tisíců závodníků a desítek souběžných diváckých přístupů na live výsledky |
 | N10 | Nízké provozní náklady | Provoz odpovídající rozpočtu komunitních/spolkových akcí (řádově stovky Kč/měsíc nebo méně) |
 | N11 | Zálohování | Automatické průběžné zálohování dat do cloudu při dostupném připojení |
