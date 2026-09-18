@@ -23,6 +23,8 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | F13 | Export výsledků do XLSX a PDF | UC15 |
 | F14 | Funkčnost **plně offline** na místě startu/cíle bez připojení k internetu | — |
 | F15 | Synchronizace dat mezi zařízeními na stanovištích a s centrální DB, jakmile je spojení dostupné | UC8 |
+| F34 | **Automatický export výsledků jako statická HTML stránka a její nahrání na FTP/SFTP server organizátora** — přímá náhrada legacy funkce `tblZavod.ftpserver`/`ftpcesta`/`htmlsoubor` (viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)); umožňuje publikovat výsledky na vlastní doméně klubu/organizátora nezávisle na tom, zda time-sys hostuje živou stránku (F16) | UC16 |
+| F35 | Konfigurovatelný spouštěč exportu — buď v pravidelném intervalu (v minutách, jako legacy `autoexportmin`), nebo okamžitě po každém novém doběhu | UC16 |
 
 ### Should have (rychle po MVP)
 
@@ -34,6 +36,8 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | F19 | Individuální uživatelské účty místo sdíleného hesla |
 | F20 | Vyhledávání v startovní listině podle jména/klubu při zápisu na místě |
 | F21 | Import klubové databáze pro rychlejší zápis |
+| F36 | Vlastní HTML šablona/hlavička pro export (branding, styl klubového webu) — obdoba legacy `tblConfig.htmlhlavicka` |
+| F37 | Podpora více souběžných publikačních cílů (např. 2 různé FTP servery zároveň) — obdoba legacy `ftpserver`/`ftpserver2` |
 
 ### Could have (rozšíření)
 
@@ -49,6 +53,8 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | F31 | Nouzové/zdravotní údaje závodníka (kontakt na blízkou osobu, alergie) viditelné organizátorovi při incidentu na trati |
 | F32 | Automatická e-mail/SMS notifikace blízké osobě při doběhu závodníka do cíle |
 | F33 | Detekce podezřele rychlého/pomalého mezičasu (možné zkrácení trati nebo nouzová situace) |
+| F38 | Vložitelný widget živých výsledků (iframe/JS snippet) pro vlastní web organizátora — alternativa k FTP exportu bez nutnosti řešit přihlašovací údaje |
+| F39 | "NearMe" upozornění divákovi, že sledovaný závodník se blíží k jeho poloze (odlehčená alternativa plného GPS trackingu) |
 
 ### Won't have (v první verzi vědomě vynecháno)
 

@@ -78,7 +78,7 @@ Stará Časomíra tohle vůbec neřešila, a je to jedna z mála věcí, kde jde
 ## 12.11 K čemu bych byl naopak opatrný
 
 - **Platby za startovné v jádru systému** (F27, vědomě Won't have) — bych ponechal mimo scope i dlouhodobě. Platební brány přinášejí regulatorní zátěž (PCI DSS) a existují specializované registrační platformy, se kterými dává větší smysl integrovat se (import/export), než je nahrazovat.
-- **GPS živé sledování polohy závodníků** — lákavá funkce, ale výrazně vyšší náročnost (nutnost mobilní aplikace u každého závodníka, spotřeba baterie, pokrytí signálem v terénu) a mimo profil "malý komunitní závod", pro který je celý systém navržený. Dávalo by smysl jen pokud by se projekt cíleně posunul směrem k větším/prestižnějším závodům.
+- **Plné GPS živé sledování polohy závodníků s mapou trati** — lákavá funkce, ale výrazně vyšší náročnost (nutnost mobilní aplikace u každého závodníka, spotřeba baterie, pokrytí signálem v terénu) a mimo profil "malý komunitní závod", pro který je celý systém navržený. Dávalo by smysl jen pokud by se projekt cíleně posunul směrem k větším/prestižnějším závodům. *(Odlehčená varianta — "NearMe" upozornění bez plné mapy — je po srovnání s konkurencí přehodnocena jako rozumné Could have, viz [13-konkurencni-analyza.md §13.5](13-konkurencni-analyza.md).)*
 
 ## 12.12 Doporučené pořadí, kam ideje zařadit
 

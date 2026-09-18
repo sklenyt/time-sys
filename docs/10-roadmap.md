@@ -22,6 +22,7 @@ Cíl: nahradit **nejkritičtější denní use case** — samotné měření na 
 - Základní auditní log (F09)
 - Nouzový kontakt a zdravotní poznámka u přihlášky (F31) — nízká náročnost, reálný bezpečnostní přínos, doporučeno zařadit hned do MVP (viz [12-rfid-a-doporuceni.md §12.6](12-rfid-a-doporuceni.md))
 - Výpočet výsledků a export XLSX (F12, F13)
+- **Automatický export výsledků na FTP/SFTP jako statická HTML stránka** (F34, F35) — přímá funkční parita se starou Časomírou potvrzená reálnou konfigurací v [11-legacy-schema-reference.md](11-legacy-schema-reference.md); patří do MVP, ne do pozdější fáze, protože organizátor tuto funkci aktivně používal a bez ní systém nenahradí současný provoz — [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37), mockup [§7.10](07-ui-mockups.md)
 - Backend API pro jedno zařízení/jednu trať bez multi-device synchronizace (zjednodušená verze `/sync/events` — jen lokální perzistence, cloud sync odložen na Fázi 2)
 
 **Akceptační kritérium fáze:** organizátor dokáže odměřit celý menší závod (1 trať, 1 zařízení) v novém systému a získat stejné výsledky jako by dala stará Časomíra, ověřeno na reálných datech z [11-legacy-schema-reference.md](11-legacy-schema-reference.md).
@@ -41,6 +42,8 @@ Cíl: dosáhnout parity s dnešní terénní spolehlivostí a přidat síťovou 
 ## Fáze 3 — Živé výsledky, role a bezpečnost (odhad 3–5 týdnů)
 
 - Realtime publikace výsledků (WebSocket/SSE), veřejná mobilní stránka (F16) — [§7.5](07-ui-mockups.md)
+- Podpora více souběžných publikačních cílů a vlastní HTML šablony (F36, F37) — rozšíření základního FTP exportu z Fáze 1
+- Vložitelný embed widget živých výsledků (F38) — inspirace ChronoTrack Live, viz [13-konkurencni-analyza.md §13.6](13-konkurencni-analyza.md)
 - RBAC, individuální účty, pozvánky (F18, F19) — [08-security.md](08-security.md)
 - Auditní log v UI s filtrováním (§7.6)
 - HTTPS/TLS, šifrování citlivých polí, GDPR retenční politika
@@ -54,6 +57,7 @@ Cíl: dosáhnout parity s dnešní terénní spolehlivostí a přidat síťovou 
 - Multi-tenant provoz pro více organizátorů (F24) — Row-Level Security dle [04-data-model.md §4.6](04-data-model.md)
 - Pokročilé reporty, historie výkonů, rekordy tratě (F26)
 - SMS/e-mail notifikace při doběhu (F32), QR kód na startovním čísle, detekce podezřelých mezičasů (F33) — viz [12-rfid-a-doporuceni.md §12.12](12-rfid-a-doporuceni.md) pro doporučené pořadí zařazení
+- "NearMe" odlehčené GPS upozornění divákům (F39) — viz [13-konkurencni-analyza.md §13.5](13-konkurencni-analyza.md)
 - Zvážení CRDT knihovny pro obecnější konflikty, pokud vlastní event-log sync narazí na limity (viz [05-tech-stack.md §5.3](05-tech-stack.md))
 
 ## 10.5 Doporučený bezprostřední další krok

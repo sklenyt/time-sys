@@ -62,12 +62,18 @@ Rychlé zadání na místě (F03) přes formulář nad tabulkou — bez nutnosti
 
 Nová obrazovka pro budoucí RFID modul (F22, F29, F30 — viz **[12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)** pro detailní návrh). Levý panel simuluje čtečku — po přiložení/naskenování čipu systém ukáže spárovaný záznam (číslo, závodník, trasa, případná vratná záloha) k potvrzení, což odpovídá stejnému principu jako u ručního zápisu: žádná data se neuloží "tiše", uživatel vždy vidí a potvrzuje, co se právě přiřazuje. Pravá tabulka eviduje stavy čipů (`přiřazen`/`záložní`/`ztracen`/`vrácen`) podle životního cyklu popsaného v [04-data-model.md §4.9](04-data-model.md#49-rfid-čip--životní-cyklus), včetně exportu nevrácených čipů/záloh po závodě.
 
-## 7.10 Zdrojové soubory
+## 7.10 Publikace výsledků (FTP/SFTP export)
+
+![Publikace výsledků](images/mockup-10-publikace-vysledku.png)
+
+Přímá náhrada legacy FTP exportu (F34–F37, viz [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md) pro RFID a [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37) pro tuto funkci). Klíčový rozdíl oproti staré Časomíře: **viditelný stav posledního exportu** (zelený štítek "poslední export OK", historie exportů s chybami a retry) — stará aplikace FTP upload prováděla tiše bez zpětné vazby v UI, takže selhání (např. vypršelé heslo hostingu) organizátor zjistil až při kontrole vlastního webu. Mapování tratí na výstupní soubory (`kratka.html`, `stredni.html`...) odpovídá 1:1 poli `tblZavod.htmlsoubor` ze skutečných dat analyzovaného závodu.
+
+## 7.11 Zdrojové soubory
 
 | Soubor | Popis |
 |---|---|
 | [`design/mockups/shared.css`](../design/mockups/shared.css) | Sdílený design systém (barvy, typografie, komponenty) |
 | [`design/mockups/_icons.html`](../design/mockups/_icons.html) | Sada inline SVG ikon (sprite) |
-| [`design/mockups/01-dashboard.html`](../design/mockups/01-dashboard.html) … `09-parovani-cipu.html` | Zdrojový HTML kód jednotlivých obrazovek |
+| [`design/mockups/01-dashboard.html`](../design/mockups/01-dashboard.html) … `10-publikace-vysledku.html` | Zdrojový HTML kód jednotlivých obrazovek |
 
 Mockupy slouží jako vizuální podklad pro diskuzi s uživatelem/organizátorem, ne jako finální UI specifikace — barvy, layout a konkrétní texty se očekávaně upřesní ve Fázi 1 (viz [10-roadmap.md](10-roadmap.md)).

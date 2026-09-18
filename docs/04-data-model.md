@@ -22,6 +22,7 @@ erDiagram
     UZIVATEL ||--o{ AUDIT_LOG : provedl
     UDALOST ||--o{ UZIVATEL_ROLE : opravnuje
     UZIVATEL ||--o{ UZIVATEL_ROLE : ma
+    UDALOST ||--o{ PUBLIKACNI_CIL : exportuje_na
 
     ORGANIZACE {
         uuid id
@@ -44,6 +45,7 @@ erDiagram
         int pocet_kol
         enum typ_startu
         bool dokoncena
+        string export_soubor_nazev
     }
     KATEGORIE {
         uuid id
@@ -133,6 +135,21 @@ erDiagram
         jsonb nova_hodnota
         timestamptz cas
     }
+    PUBLIKACNI_CIL {
+        uuid id
+        uuid udalost_id
+        enum protokol
+        string server
+        int port
+        string cesta
+        string uzivatel
+        string heslo_sifrovane
+        int interval_minut
+        bool export_po_kazdem_zaznamu
+        text html_sablona
+        timestamptz posledni_export_at
+        enum posledni_export_stav
+    }
 ```
 
 ## 4.2 Klíčové designové rozhodnutí: `zaznam_udalosti` jako append-only event log
@@ -211,3 +228,16 @@ Entita `cip` je rozšířená oproti staré `tblCipy` (`id, startovnicislo, cip`
 | `vydano_at` / `vraceno_at` | Časové razítko výdeje a vrácení — podklad pro vyúčtování nevrácených záloh po závodě |
 
 Podrobný návrh workflow párování, hardwarové varianty a doporučený "local capture agent" pro napojení RFID decodérů viz **[12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)**.
+
+## 4.10 Publikační cíl — export výsledků na FTP/SFTP (F34–F37)
+
+`publikacni_cil` je přímá náhrada polí `ftpserver`/`ftpserver2`, `ftpcesta`, `ftpuzivatel`, `ftpheslo` a `tblConfig.autoexport`/`autoexportmin` ze staré Časomíry (viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)) — reálná data z inspekce dodaného souboru potvrdila, že tuto funkci organizátor skutečně aktivně používal (nakonfigurovaný FTP server a cesta pro všechny čtyři tratě jedné akce).
+
+- Váže se na `udalost`, ne na `trasa` — v legacy datech měly všechny tratě jedné akce společný FTP server, jen jiný výstupní soubor (`tblZavod.htmlsoubor`: `kratka.html`, `stredni.html`, `dlouha.html`...). To odpovídá novému `trasa.export_soubor_nazev`.
+- `protokol` podporuje `FTP` (kvůli kompatibilitě s běžným českým webhostingem, který SFTP často nenabízí), `FTPS` i `SFTP` — na rozdíl od staré aplikace, kde bylo k dispozici jen prosté FTP.
+- `heslo_sifrovane` — narozdíl od staré `tblZavod.ftpheslo`/`tblConfig.smtpheslo`, které byly v databázi uložené **v čistém textu** (potvrzeno inspekcí reálného souboru), se v novém systému šifrují (viz [08-security.md §8.4](08-security.md)).
+- `interval_minut` + `export_po_kazdem_zaznamu` pokrývají oba legacy scénáře najednou: pravidelný interval (`autoexportmin`) i okamžitý export po každém zápisu (komentář u `tblConfig.autoexport`: "Exportovat automaticky po načtení čipu?").
+- `html_sablona` odpovídá `tblConfig.htmlhlavicka` — volitelná vlastní HTML hlavička/styl, aby exportovaná stránka ladila s existujícím webem klubu.
+- `posledni_export_at`/`posledni_export_stav` (`OK`/`CHYBA`) — legacy aplikace neměla žádnou viditelnou zpětnou vazbu, jestli poslední FTP upload skutečně proběhl; nový systém to zobrazuje přímo v UI (viz mockup [07-ui-mockups.md §7.10](07-ui-mockups.md)), aby si organizátor nemusel ověřovat úspěch exportu ručně na webu.
+
+Renderování statické HTML stránky se počítá stejně jako `vysledky_view` (§4.5) — jde jen o jiný výstupní formát téhož odvozeného stavu, ne o samostatně udržovaná data. Podrobný návrh exportního mechanismu (plánovač, fronta, opakování při chybě) viz [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37).

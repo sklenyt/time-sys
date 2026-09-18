@@ -79,6 +79,41 @@ REST pro CRUD operace a synchronizaci, WebSocket pro realtime promítnutí změn
 | `/routes/{id}/results/export.xlsx` | GET | Export XLSX (F13) |
 | `/routes/{id}/results/export.pdf` | GET | Export PDF (F13) |
 | `/routes/{id}/results/live` | GET (veřejné, bez auth) | Veřejná živá stránka výsledků (F16), cachovaná/edge |
+| `/events/{id}/publish-targets` | GET, POST | Seznam / vytvoření publikačního cíle (FTP/FTPS/SFTP) — F34, F37 |
+| `/publish-targets/{id}` | GET, PATCH, DELETE | Detail / úprava (server, cesta, přihlašovací údaje, interval, šablona) / smazání cíle |
+| `/publish-targets/{id}/test` | POST | Otestuje připojení a přihlášení bez provedení skutečného exportu — okamžitá zpětná vazba při konfiguraci (chybělo ve staré Časomíře) |
+| `/publish-targets/{id}/export-now` | POST | Vynutí okamžitý export a upload mimo nastavený interval |
+
+### Příklad — vytvoření publikačního cíle (`POST /events/{id}/publish-targets`)
+
+```json
+// request
+{
+  "protokol": "SFTP",
+  "server": "ftp.example-hosting.cz",
+  "port": 22,
+  "cesta": "/www/vysledky/",
+  "uzivatel": "klub1234",
+  "heslo": "•••••••••",            // uloženo šifrovaně, nikdy nevrací v odpovědi
+  "interval_minut": 5,
+  "export_po_kazdem_zaznamu": true,
+  "html_sablona": null              // volitelné, jinak výchozí šablona time-sys
+}
+
+// response 201
+{
+  "id": "d4e1...",
+  "protokol": "SFTP",
+  "server": "ftp.example-hosting.cz",
+  "cesta": "/www/vysledky/",
+  "interval_minut": 5,
+  "export_po_kazdem_zaznamu": true,
+  "posledni_export_at": null,
+  "posledni_export_stav": null
+}
+```
+
+Pole `trasa.export_soubor_nazev` (viz [04-data-model.md §4.10](04-data-model.md#410-publikační-cíl--export-výsledků-na-ftpsftp-f34f37)) určuje výstupní název souboru pro každou trať na tomto cíli (např. `kratka.html`, `stredni.html`) — nastavuje se v modulu Nastavení trasy, ne při vytváření samotného publikačního cíle.
 
 ## 6.6 Audit
 

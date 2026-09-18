@@ -183,3 +183,30 @@ flowchart LR
 - Volá lokální endpoint PWA klienta (`http://localhost:<port>`) — záznam tak vstupuje do **stejného append-only event logu a stejné synchronizační pipeline** (§3.5) jako manuální zápis. Časoměřič nemusí nic přepínat, RFID a ruční zápis jsou jen dva rovnocenné vstupy do jednoho systému, a při výpadku RFID čtečky lze bez přerušení pokračovat ručně na stejné obrazovce.
 - Agent je záměrně **hloupý a bezstavový** — neprovádí žádnou byznys logiku (kategorizace, výpočet pořadí), pouze převádí surová čtení na standardní event. Veškerá logika zůstává v PWA/backendu, agent lze tak snadno nahradit i pro jiný typ hardwaru (čtečka čárových kódů, jiný výrobce RFID) beze změny zbytku systému.
 - Toto je vědomě odložená položka (Fáze 4, viz [10-roadmap.md](10-roadmap.md)) — pro MVP a i pro Fázi 2/3 postačuje ruční zápis; investice do konkrétního HW/protokolu dává smysl až po ověření základního systému v ostrém provozu. Podrobnosti hardwarových variant a provozní workflow párování čipů viz **[12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)**.
+
+## 3.10 Export a publikace výsledků na FTP/SFTP (F34–F37)
+
+Na rozdíl od RFID (§3.9), toto **není** odložená položka — jde o přímou funkční paritu se starou Časomírou, kterou organizátor aktivně používal (potvrzeno reálnou FTP konfigurací v [11-legacy-schema-reference.md](11-legacy-schema-reference.md)), takže patří do MVP (F34, F35 jsou Must have v [02-requirements.md](02-requirements.md)).
+
+```mermaid
+flowchart LR
+    Trigger["Spouštěč:<br/>interval (N min) NEBO<br/>nový zaznam_udalosti"]
+    Worker["Export worker<br/>(backend job)"]
+    View[("vysledky_view")]
+    Render["Renderer<br/>HTML šablona + data"]
+    Queue["Fronta s retry<br/>(exponenciální backoff)"]
+    FTP["FTP / FTPS / SFTP<br/>server organizátora"]
+
+    Trigger --> Worker
+    Worker --> View
+    View --> Render
+    Render --> Queue
+    Queue -->|"úspěch"| FTP
+    Queue -.->|"chyba → nový pokus"| Queue
+```
+
+- **Spouštěč** je konfigurovatelný na úrovni `publikacni_cil` (§4.10 v [04-data-model.md](04-data-model.md)): buď pevný interval v minutách (odpovídá legacy `autoexportmin`), nebo okamžitě po každém přijatém `zaznam_udalosti` typu `DOJEZD`/`OPRAVA` na dané události — u malého závodu (řádově desítky zápisů, viz objemy v [11-legacy-schema-reference.md §11.3](11-legacy-schema-reference.md)) je "export po každém zápisu" klidně reálná výchozí volba bez rizika přetížení.
+- **Export worker** je samostatný proces/queue job v backendu (ne request-response cesta) — selhání FTP uploadu (výpadek hostingu, špatné heslo) nesmí nijak zpomalit ani ohrozit zápis měření, který zůstává nezávislý (stejný princip oddělení jako u realtime vrstvy, §3.6).
+- **Fronta s retry** — na rozdíl od staré Časomíry, kde selhání FTP uploadu bylo tiché (žádná chybová hláška v UI, organizátor musel sám zkontrolovat výsledky na webu), nový systém neúspěšný pokus zopakuje (exponenciální backoff, např. 3 pokusy) a viditelně to promítne do `publikacni_cil.posledni_export_stav` v UI.
+- **Renderer** generuje statickou HTML stránku ze stejného odvozeného stavu jako živá stránka výsledků (§3.6, `vysledky_view`) — jde o dva **výstupní formáty téhož zdroje pravdy**, ne dvě samostatně udržovaná data, takže nemůže dojít k rozjetí hodnot mezi "živou" a "FTP" verzí výsledků.
+- Tento kanál je záměrně nezávislý na tom, jestli organizátor používá i vestavěnou živou stránku time-sys (F16) — řeší jiný problém: **publikaci na vlastní doméně/webu klubu**, kterou si organizátor typicky udržuje roky napříč ročníky závodu a nechce ji opouštět jen kvůli výměně časomíry.
