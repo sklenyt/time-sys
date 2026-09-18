@@ -13,6 +13,7 @@ Stará Časomíra měla `tblCipy` jako prosté párování `startovnicislo ↔ c
 | **Pasivní UHF čip na botě/hrudi + anténa/mat v cíli** | Anténa napájí čip na dálku (řádově metry), čte bez nutnosti manuálního přiložení — standard velkých závodů (MyLaps, ChampionChip) | Závody s velkým počtem závodníků v cíli najednou, kde ruční zápis nestíhá |
 | **Pasivní NFC/RFID čip s ručním přiložením ke čtečce** | Levnější čtečky, závodník/obsluha čip fyzicky přiloží | Menší závody, kontrolní stanoviště na trati s nižší frekvencí průchodů |
 | **QR kód na startovním čísle + mobil/tablet jako scanner** | Žádný specializovaný HW, jen kamera tabletu | Nejlevnější varianta, nižší propustnost (nutné zamíření kamery), vhodné jako "chudá verze RFID" pro malé kluby — viz §12.6 |
+| **AI rozpoznávání čísla z fotografie** (F40) | Časoměřič fotí procházející závodníky běžným telefonem, cloudová AI služba rozpozná číslo z fotky (přesnost cca 90–98 % podle kvality snímku) a vygeneruje záznam automaticky — bez jakéhokoli specializovaného hardwaru | Zajímavá alternativa k RFID i k ručnímu zápisu zejména tam, kde je hodně závodníků v cíli najednou a obsluha nestíhá; navíc vzniká fotka pro závodníka jako bonus. Objeveno u RunSignup Mobile Timing V5, viz [13-konkurencni-analyza.md §13.4](13-konkurencni-analyza.md) |
 
 Doporučení pro time-sys: **nezavazovat se v datovém modelu ani API k jedné konkrétní technologii** — `kod_cipu` je obecný string (funguje pro UHF EPC kód, NFC UID i obsah QR kódu stejně), a [Local Capture Agent](03-architecture.md#39-local-capture-agent--napojení-rfid-decodérů-f22-n12) je navržený jako vyměnitelný adaptér přesně proto, aby volba konkrétního výrobce HW nezamrzla v jádru aplikace.
 
@@ -62,7 +63,7 @@ Stará Časomíra tohle vůbec neřešila, a je to jedna z mála věcí, kde jde
 ## 12.8 Integrita výsledků
 
 - Detekce podezřele **rychlého** mezičasu (možné zkrácení trati / chyba záznamu) jako doplněk k F33 — statistický odhad na základě rozptylu časů ostatních závodníků ve stejné kategorii/vlně, ne pevný práh.
-- Volitelný **fotofiniš/log fotografií z cíle** vázaný časovým razítkem na `zaznam_udalosti` — u sporných doběhů (kdo byl první) dnes stará Časomíra nenabízí nic, jednoduchá kamera s časovým razítkem by spor vyřešila bez diskuze.
+- Volitelný **fotofiniš/krátký video záznam z cíle** (F41) vázaný časovým razítkem na `zaznam_udalosti` — u sporných doběhů (kdo byl první) dnes stará Časomíra nenabízí nic, jednoduchý záznam s časovým razítkem by spor vyřešil bez diskuze. Inspirace: Copérnico nabízí video replay pro každého závodníka, viz [13-konkurencni-analyza.md §13.3](13-konkurencni-analyza.md).
 
 ## 12.9 Provozní vylepšení pro organizátora
 
@@ -78,7 +79,7 @@ Stará Časomíra tohle vůbec neřešila, a je to jedna z mála věcí, kde jde
 ## 12.11 K čemu bych byl naopak opatrný
 
 - **Platby za startovné v jádru systému** (F27, vědomě Won't have) — bych ponechal mimo scope i dlouhodobě. Platební brány přinášejí regulatorní zátěž (PCI DSS) a existují specializované registrační platformy, se kterými dává větší smysl integrovat se (import/export), než je nahrazovat.
-- **Plné GPS živé sledování polohy závodníků s mapou trati** — lákavá funkce, ale výrazně vyšší náročnost (nutnost mobilní aplikace u každého závodníka, spotřeba baterie, pokrytí signálem v terénu) a mimo profil "malý komunitní závod", pro který je celý systém navržený. Dávalo by smysl jen pokud by se projekt cíleně posunul směrem k větším/prestižnějším závodům. *(Odlehčená varianta — "NearMe" upozornění bez plné mapy — je po srovnání s konkurencí přehodnocena jako rozumné Could have, viz [13-konkurencni-analyza.md §13.5](13-konkurencni-analyza.md).)*
+- **Plné GPS živé sledování polohy závodníků s mapou trati** — lákavá funkce, ale výrazně vyšší náročnost (nutnost mobilní aplikace u každého závodníka, spotřeba baterie, pokrytí signálem v terénu) a mimo profil "malý komunitní závod", pro který je celý systém navržený. Dávalo by smysl jen pokud by se projekt cíleně posunul směrem k větším/prestižnějším závodům. *(Odlehčená varianta — "NearMe" upozornění bez plné mapy — je po srovnání s konkurencí přehodnocena jako rozumné Could have, viz [13-konkurencni-analyza.md §13.6](13-konkurencni-analyza.md).)*
 
 ## 12.12 Doporučené pořadí, kam ideje zařadit
 
@@ -89,5 +90,8 @@ Stará Časomíra tohle vůbec neřešila, a je to jedna z mála věcí, kde jde
 | SMS/e-mail při doběhu (F32) | Fáze 3 | Váže se na realtime vrstvu, která vzniká v Fázi 3 |
 | QR kód → osobní výsledky | Fáze 3 | Levné rozšíření živé stránky výsledků |
 | Detekce podezřelých časů (F33) | Fáze 3–4 | Chce už reálná provozní data k odladění prahů |
+| Fotofiniš/video záznam (F41) | Fáze 3–4 | Nízká náročnost (jen ukládání odkazu na soubor k eventu), rychlá přidaná hodnota při sporech |
+| Kioskový režim live stránky (F42) | Fáze 3 | Levné rozšíření existující veřejné stránky výsledků |
 | RFID čipy (F22, F29, F30) | Fáze 4 | Vysoká náročnost na HW integraci, dává smysl až po ověření základu |
+| AI rozpoznávání čísel z fotek (F40) | Fáze 4 | Zvážit paralelně s RFID jako levnější alternativa — vyžaduje ověření přesnosti v reálném terénu (světlo, bláto na čísle u MTB) |
 | Dashboard/statistiky, historie závodníka (F26) | Fáze 4 | "Nice to have" bez vlivu na core provoz závodu |

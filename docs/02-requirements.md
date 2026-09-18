@@ -55,6 +55,9 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | F33 | Detekce podezřele rychlého/pomalého mezičasu (možné zkrácení trati nebo nouzová situace) |
 | F38 | Vložitelný widget živých výsledků (iframe/JS snippet) pro vlastní web organizátora — alternativa k FTP exportu bez nutnosti řešit přihlašovací údaje |
 | F39 | "NearMe" upozornění divákovi, že sledovaný závodník se blíží k jeho poloze (odlehčená alternativa plného GPS trackingu) |
+| F40 | Rozpoznání startovního čísla z fotografie pomocí AI (foto z mobilu/tabletu → automatický záznam + fotka pro závodníka) jako alternativa k RFID bez hardwarové investice, viz [13-konkurencni-analyza.md §13.4](13-konkurencni-analyza.md) |
+| F41 | Krátký video záznam u cíle vázaný na konkrétní `zaznam_udalosti`, pro řešení sporných doběhů |
+| F42 | "Kioskový" režim veřejné live stránky — zjednodušené zobrazení optimalizované pro promítání na velké obrazovce v cíli (bez interakce) |
 
 ### Won't have (v první verzi vědomě vynecháno)
 

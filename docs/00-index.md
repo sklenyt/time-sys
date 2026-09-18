@@ -18,7 +18,7 @@ Moderní webová náhrada desktopové aplikace **Časomíra** (prozavody.cz, MS 
 | 10 | [10-roadmap.md](10-roadmap.md) | Fázovaná MVP roadmapa |
 | 11 | [11-legacy-schema-reference.md](11-legacy-schema-reference.md) | Referenční přehled **reálného** schématu vytěženého z dodaného `.accde` souboru |
 | 12 | [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md) | Detailní návrh RFID čipů (hardware, párování, edge cases) + obecná doporučení pro další rozvoj |
-| 13 | [13-konkurencni-analyza.md](13-konkurencni-analyza.md) | Srovnání s podobnými systémy (MYLAPS, RACE RESULT, PikaTimer, RaceJoy a další) — co mají navíc a co z toho zvážit |
+| 13 | [13-konkurencni-analyza.md](13-konkurencni-analyza.md) | Celkový přehled trhu — profily 13 podobných systémů (MYLAPS, RACE RESULT, ChronoTrack, SportIdent/Copérnico, RunSignup, PikaTimer, fsTimer, OpenRaceTiming, Webscorer, RaceJoy, české nástroje a služby) a co z nich zvážit |
 
 ## Shrnutí v jedné větě
 
