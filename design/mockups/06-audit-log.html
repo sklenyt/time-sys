@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>time-sys — Audit log</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .diff{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px}
+  .diff .old{color:var(--red-600);text-decoration:line-through;background:var(--red-100);padding:2px 6px;border-radius:5px}
+  .diff .new{color:var(--green-600);background:var(--green-100);padding:2px 6px;border-radius:5px;font-weight:700}
+  .diff .arrow{color:var(--slate-400)}
+  .filters{display:flex;gap:10px;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div id="icon-sprite-slot"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="mark">tS</div><div><div class="name">time-sys</div><div class="sub">Břežanský kostitřas 2026</div></div></div>
+    <div class="nav-group">
+      <div class="nav-item"><svg class="ic"><use href="#ic-grid"/></svg>Přehled</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-flag"/></svg>Události a tratě</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-list"/></svg>Startovní listina</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-timer"/></svg>Měření</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-run"/></svg>Kdo běží / DNF</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-trophy"/></svg>Výsledky</div>
+      <div class="nav-item active"><svg class="ic"><use href="#ic-audit"/></svg>Audit log</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Správa</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-users"/></svg>Uživatelé a role</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-settings"/></svg>Nastavení</div>
+    </div>
+    <div class="foot"><div class="avatar">TS</div><div><div class="who">Tomáš Sklenář</div><div class="role">Organizátor</div></div></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div><h1>Audit log</h1><div class="crumbs">Všechny opravy a změny záznamů — dohledatelné kdo/kdy/co</div></div>
+      <div class="topbar-actions"><button class="btn btn-ghost">Export CSV</button></div>
+    </div>
+
+    <div class="content">
+      <div class="filters">
+        <input class="input" style="width:220px" placeholder="Hledat startovní číslo, jméno…">
+        <select class="input"><option>Všechny trasy</option></select>
+        <select class="input"><option>Všechny typy oprav</option></select>
+        <select class="input"><option>Všechna zařízení</option></select>
+      </div>
+
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th>Čas</th><th>Trasa</th><th>Typ opravy</th><th>Změna</th><th>Zařízení</th><th>Uživatel</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">13:52:41</td><td>Krátká 20 km</td><td><span class="badge badge-amber">přepis nuly na číslo</span></td><td class="diff"><span class="old">0</span><span class="arrow">→</span><span class="new">118</span></td><td>Cíl-2</td><td>J. Sklenářová</td></tr>
+            <tr><td class="mono">13:41:05</td><td>Dlouhá 58 km</td><td><span class="badge badge-red">kolize stanovišť</span></td><td class="diff"><span class="old">#118 · Cíl</span><span class="arrow">vs</span><span class="new">#118 · Vrchol</span></td><td>Vrchol</td><td>—</td></tr>
+            <tr><td class="mono">13:14:03</td><td>Krátká 20 km</td><td><span class="badge badge-blue">přepsané číslo</span></td><td class="diff"><span class="old">225</span><span class="arrow">→</span><span class="new">252</span></td><td>Cíl-1</td><td>T. Sklenář</td></tr>
+            <tr><td class="mono">13:13:26</td><td>Krátká 20 km</td><td><span class="badge badge-amber">přepis nuly na číslo</span></td><td class="diff"><span class="old">0</span><span class="arrow">→</span><span class="new">22</span></td><td>Cíl-1</td><td>T. Sklenář</td></tr>
+            <tr><td class="mono">13:09:25</td><td>Krátká 20 km</td><td><span class="badge badge-slate">originál</span></td><td class="diff"><span class="new">233</span></td><td>Cíl-1</td><td>T. Sklenář</td></tr>
+            <tr><td class="mono">11:30:00</td><td>Dlouhá 58 km</td><td><span class="badge badge-green">start</span></td><td class="diff">Vlna „dlouhá" odstartována</td><td>Cíl</td><td>T. Sklenář</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

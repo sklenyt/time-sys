@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>time-sys — Nastavení trasy</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .section-title{font-size:13px;font-weight:700;margin:0 0 4px;color:var(--navy-900)}
+  .section-sub{font-size:12px;color:var(--slate-500);margin:0 0 14px}
+  .cat-row{display:grid;grid-template-columns:90px 1fr 70px 90px 90px 32px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--slate-100)}
+  .cat-row.head{color:var(--slate-500);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--slate-200)}
+  .cat-row .input{padding:6px 9px;font-size:12.5px}
+  .chipx{width:24px;height:24px;border-radius:6px;background:var(--slate-100);display:flex;align-items:center;justify-content:center;color:var(--slate-500);cursor:pointer}
+  .two-col{display:grid;grid-template-columns:1fr 380px;gap:20px}
+  .helper-card{background:var(--navy-950);color:var(--slate-200);border-radius:var(--radius-lg);padding:18px 20px}
+  .helper-card h4{margin:0 0 8px;font-size:13px;color:#fff}
+  .helper-card p{margin:0 0 10px;font-size:12px;line-height:1.6;color:var(--slate-400)}
+  .helper-card .tag{display:inline-block;background:rgba(255,255,255,.08);color:var(--slate-200);font-size:11px;padding:3px 9px;border-radius:999px;margin:0 6px 6px 0}
+</style>
+</head>
+<body>
+<div id="icon-sprite-slot"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="mark">tS</div><div><div class="name">time-sys</div><div class="sub">Břežanský kostitřas 2026</div></div></div>
+    <div class="nav-group">
+      <div class="nav-item"><svg class="ic"><use href="#ic-grid"/></svg>Přehled</div>
+      <div class="nav-item active"><svg class="ic"><use href="#ic-flag"/></svg>Události a tratě</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-list"/></svg>Startovní listina</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-timer"/></svg>Měření</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-run"/></svg>Kdo běží / DNF</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-trophy"/></svg>Výsledky</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-audit"/></svg>Audit log</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Správa</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-users"/></svg>Uživatelé a role</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-settings"/></svg>Nastavení</div>
+    </div>
+    <div class="foot"><div class="avatar">TS</div><div><div class="who">Tomáš Sklenář</div><div class="role">Organizátor</div></div></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div><h1>Nastavení trasy</h1><div class="crumbs">Události a tratě / Krátká 20 km</div></div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost">Zrušit</button>
+        <button class="btn btn-primary"><svg class="ic" style="width:15px;height:15px"><use href="#ic-check"/></svg>Uložit trasu</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-head"><h3>Základní údaje</h3></div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="field"><label>Název trasy</label><input class="input" value="Krátká 20 km"></div>
+                <div class="field"><label>Délka (km)</label><input class="input" value="20"></div>
+                <div class="field"><label>Počet kol</label><input class="input" value="1"></div>
+                <div class="field"><label>Preferovaný start</label><select class="input"><option>Krátká — 12:00</option></select></div>
+              </div>
+
+              <div class="field" style="margin-top:18px">
+                <label>Typ startu</label>
+                <div class="pill-select">
+                  <div class="pill selected">Hromadný</div>
+                  <div class="pill">Vlnový</div>
+                  <div class="pill">Intervalový</div>
+                </div>
+                <div class="hint">Hromadný start — všichni závodníci vyrážejí ve stejný okamžik; čas startu se uloží automaticky stiskem tlačítka „Start" v modulu Měření.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:18px">
+            <div class="card-head">
+              <h3>Věkové kategorie</h3>
+              <button class="btn btn-sm btn-ghost"><svg class="ic" style="width:13px;height:13px"><use href="#ic-plus"/></svg>Přidat kategorii</button>
+            </div>
+            <div class="card-body">
+              <div class="cat-row head"><div>Kód</div><div>Název</div><div>Pohl.</div><div>Ročník od</div><div>Ročník do</div><div></div></div>
+              <div class="cat-row"><input class="input" value="MAk"><input class="input" value='Muži "A"'><select class="input"><option>M</option></select><input class="input" value="1987"><input class="input" value="1996"><div class="chipx">✕</div></div>
+              <div class="cat-row"><input class="input" value="MBk"><input class="input" value='Muži "B"'><select class="input"><option>M</option></select><input class="input" value="1977"><input class="input" value="1986"><div class="chipx">✕</div></div>
+              <div class="cat-row"><input class="input" value="ZAk"><input class="input" value='Ženy "A"'><select class="input"><option>Z</option></select><input class="input" value="1987"><input class="input" value="1996"><div class="chipx">✕</div></div>
+              <div class="cat-row"><input class="input" value="JMkA"><input class="input" value="Junior muži (mladší)"><select class="input"><option>M</option></select><input class="input" value="2013"><input class="input" value="2016"><div class="chipx">✕</div></div>
+              <div class="hint" style="margin-top:10px">Kategorie se přiřazuje automaticky podle ročníku narození a pohlaví při zápisu závodníka — lze ručně přeřadit v modulu Startovní listina.</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="helper-card">
+            <h4>Zachováno ze staré Časomíry</h4>
+            <p>Formulář odpovídá logice ověřené na reálném závodě (Břežanský kostitřas) — kategorie je vázaná na konkrétní trasu, protože se běží samostatně.</p>
+            <span class="tag">číslo + Enter</span><span class="tag">auto kategorizace</span><span class="tag">offline start</span>
+          </div>
+
+          <div class="card" style="margin-top:18px">
+            <div class="card-head"><h3>Startovní vlny</h3></div>
+            <div class="card-body">
+              <div class="event-row" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--slate-100)">
+                <div><div style="font-weight:700;font-size:13px">Krátká</div><div style="font-size:11.5px;color:var(--slate-500)">Hromadný start</div></div>
+                <div class="mono" style="font-weight:700">12:00:00</div>
+              </div>
+              <button class="btn btn-sm btn-ghost" style="margin-top:12px;width:100%;justify-content:center"><svg class="ic" style="width:13px;height:13px"><use href="#ic-plus"/></svg>Přidat vlnu / interval</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

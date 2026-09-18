@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>time-sys — Startovní listina</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .filters{display:flex;gap:10px;margin-bottom:16px;align-items:center}
+  .search-wrap{position:relative;flex:1;max-width:320px}
+  .search-wrap .ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--slate-400)}
+  .search-wrap input{padding-left:32px;width:100%}
+  .quick-add{display:flex;gap:10px;align-items:flex-end;background:var(--slate-50);border:1px dashed var(--slate-300);border-radius:12px;padding:14px;margin-bottom:16px}
+  .quick-add .field{flex:1}
+</style>
+</head>
+<body>
+<div id="icon-sprite-slot"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="mark">tS</div><div><div class="name">time-sys</div><div class="sub">Břežanský kostitřas 2026</div></div></div>
+    <div class="nav-group">
+      <div class="nav-item"><svg class="ic"><use href="#ic-grid"/></svg>Přehled</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-flag"/></svg>Události a tratě</div>
+      <div class="nav-item active"><svg class="ic"><use href="#ic-list"/></svg>Startovní listina</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-timer"/></svg>Měření</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-run"/></svg>Kdo běží / DNF</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-trophy"/></svg>Výsledky</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-audit"/></svg>Audit log</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Správa</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-users"/></svg>Uživatelé a role</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-settings"/></svg>Nastavení</div>
+    </div>
+    <div class="foot"><div class="avatar">TS</div><div><div class="who">Tomáš Sklenář</div><div class="role">Organizátor</div></div></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div><h1>Startovní listina</h1><div class="crumbs">Krátká 20 km · 95 přihlášeno</div></div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost"><svg class="ic" style="width:15px;height:15px"><use href="#ic-upload"/></svg>Import CSV/XLSX</button>
+        <button class="btn btn-accent"><svg class="ic" style="width:15px;height:15px"><use href="#ic-plus"/></svg>Zapsat na místě</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="quick-add">
+        <div class="field"><label>Startovní číslo</label><input class="input" placeholder="např. 314"></div>
+        <div class="field"><label>Příjmení</label><input class="input" placeholder="Příjmení"></div>
+        <div class="field"><label>Jméno</label><input class="input" placeholder="Jméno"></div>
+        <div class="field"><label>Ročník</label><input class="input" placeholder="1994"></div>
+        <div class="field" style="flex:1.4"><label>Klub</label><input class="input" placeholder="Volitelné"></div>
+        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn btn-primary">Přidat</button></div>
+      </div>
+      <div class="hint" style="font-size:11.5px;color:var(--slate-500);margin:-8px 0 16px">Kategorie se doplní automaticky podle ročníku a pohlaví po uložení — lze ručně opravit v tabulce.</div>
+
+      <div class="filters">
+        <div class="search-wrap"><svg class="ic"><use href="#ic-search"/></svg><input class="input" placeholder="Hledat jméno nebo klub…"></div>
+        <select class="input"><option>Všechny kategorie</option></select>
+        <select class="input"><option>Všechny stavy</option></select>
+      </div>
+
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th>Č.</th><th>Příjmení a jméno</th><th>Ročník</th><th>Klub</th><th>Kategorie</th><th>Start</th><th>Stav</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="mono">002</td><td>Jál Michal</td><td>1985</td><td>SK Vltava</td><td><span class="badge badge-blue">MAk</span></td><td class="mono">12:00</td><td><span class="badge badge-green">přihlášen</span></td><td><svg class="ic" style="color:var(--slate-400);width:16px;height:16px"><use href="#ic-edit"/></svg></td></tr>
+            <tr><td class="mono">003</td><td>Bezouška Tomáš</td><td>1991</td><td>—</td><td><span class="badge badge-blue">MAk</span></td><td class="mono">12:00</td><td><span class="badge badge-red">DNF</span></td><td><svg class="ic" style="color:var(--slate-400);width:16px;height:16px"><use href="#ic-edit"/></svg></td></tr>
+            <tr><td class="mono">017</td><td>Novák Petr</td><td>1988</td><td>TJ Sokol Břežany</td><td><span class="badge badge-blue">MAk</span></td><td class="mono">12:00</td><td><span class="badge badge-green">přihlášen</span></td><td><svg class="ic" style="color:var(--slate-400);width:16px;height:16px"><use href="#ic-edit"/></svg></td></tr>
+            <tr><td class="mono">209</td><td>Štiller Miloš</td><td>1979</td><td>—</td><td><span class="badge badge-blue">MBk</span></td><td class="mono">12:00</td><td><span class="badge badge-green">přihlášen</span></td><td><svg class="ic" style="color:var(--slate-400);width:16px;height:16px"><use href="#ic-edit"/></svg></td></tr>
+            <tr><td class="mono">220</td><td>Vosyková Dominika</td><td>1993</td><td>AK Kolín</td><td><span class="badge badge-blue">ZAk</span></td><td class="mono">12:00</td><td><span class="badge badge-green">přihlášen</span></td><td><svg class="ic" style="color:var(--slate-400);width:16px;height:16px"><use href="#ic-edit"/></svg></td></tr>
+            <tr><td class="mono">223</td><td>Berbrová Alena</td><td>1968</td><td>—</td><td><span class="badge badge-blue">ZBk</span></td><td class="mono">12:00</td><td><span class="badge badge-green">přihlášen</span></td><td><svg class="ic" style="color:var(--slate-400);width:16px;height:16px"><use href="#ic-edit"/></svg></td></tr>
+            <tr><td class="mono">233</td><td>Sklenář Filip</td><td>1990</td><td>—</td><td><span class="badge badge-blue">MAk</span></td><td class="mono">12:00</td><td><span class="badge badge-green">přihlášen</span></td><td><svg class="ic" style="color:var(--slate-400);width:16px;height:16px"><use href="#ic-edit"/></svg></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

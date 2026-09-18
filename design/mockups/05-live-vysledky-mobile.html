@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>time-sys — Živé výsledky</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{background:var(--slate-50)}
+  .phone{max-width:430px;margin:0 auto}
+  .pub-header{
+    background:linear-gradient(160deg,var(--navy-950),var(--navy-800));
+    color:#fff;padding:22px 20px 46px;position:relative;
+  }
+  .pub-header .evt{font-size:11.5px;font-weight:700;color:var(--orange-500);text-transform:uppercase;letter-spacing:.06em}
+  .pub-header h1{font-size:20px;margin:6px 0 2px;font-weight:800}
+  .pub-header .sub{font-size:12px;color:var(--slate-400)}
+  .live-chip{position:absolute;top:22px;right:20px;display:flex;align-items:center;gap:6px;background:rgba(34,197,94,.15);color:#4ade80;font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px}
+  .live-chip .dot{width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.25)}
+
+  .route-tabs{display:flex;gap:8px;margin:-30px 16px 14px;position:relative;z-index:2}
+  .route-tab{flex:1;background:#fff;border-radius:12px;padding:10px 6px;text-align:center;box-shadow:var(--shadow-md);font-size:11.5px;font-weight:700;color:var(--slate-500);border:1.5px solid transparent}
+  .route-tab.active{border-color:var(--orange-500);color:var(--orange-600)}
+
+  .cat-select{margin:0 16px 12px;display:flex;gap:8px;overflow:hidden}
+  .cat-chip{padding:7px 13px;border-radius:999px;background:#fff;border:1px solid var(--slate-200);font-size:12px;font-weight:600;color:var(--slate-500);white-space:nowrap}
+  .cat-chip.active{background:var(--navy-900);color:#fff;border-color:var(--navy-900)}
+
+  .board{margin:0 16px 16px;background:#fff;border-radius:16px;box-shadow:var(--shadow-sm);border:1px solid var(--slate-200);overflow:hidden}
+  .board-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--slate-100)}
+  .board-row:last-child{border-bottom:none}
+  .rank{width:26px;font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--slate-400);font-size:14px}
+  .rank.top1{color:#eab308}
+  .rank.top2{color:#94a3b8}
+  .rank.top3{color:#c2703d}
+  .board-row .who{font-size:13px;font-weight:700}
+  .board-row .meta{font-size:11px;color:var(--slate-500)}
+  .board-row .time{margin-left:auto;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;text-align:right}
+  .board-row .gap{font-size:10.5px;color:var(--slate-400)}
+  .updated{text-align:center;font-size:11px;color:var(--slate-400);padding:6px 0 26px}
+</style>
+</head>
+<body>
+<div id="icon-sprite-slot"></div>
+<div class="phone">
+  <div class="pub-header">
+    <span class="live-chip"><span class="dot"></span>ŽIVĚ</span>
+    <div class="evt">Břežanský kostitřas 2026</div>
+    <h1>Výsledky</h1>
+    <div class="sub">Aktualizováno automaticky · bez nutnosti obnovit stránku</div>
+  </div>
+
+  <div class="route-tabs">
+    <div class="route-tab">Krátká 20k</div>
+    <div class="route-tab active">Střední 35k</div>
+    <div class="route-tab">Dlouhá 58k</div>
+  </div>
+
+  <div class="cat-select">
+    <div class="cat-chip active">Celkově</div>
+    <div class="cat-chip">Muži „A"</div>
+    <div class="cat-chip">Ženy „A"</div>
+    <div class="cat-chip">Muži „B"</div>
+  </div>
+
+  <div class="board">
+    <div class="board-row"><div class="rank top1">1</div><div><div class="who">Kovář Jakub</div><div class="meta">#014 · Muži „A"</div></div><div class="time">2:14:02<div class="gap">—</div></div></div>
+    <div class="board-row"><div class="rank top2">2</div><div><div class="who">Procházka David</div><div class="meta">#118 · Muži „A"</div></div><div class="time">2:15:47<div class="gap">+1:45</div></div></div>
+    <div class="board-row"><div class="rank top3">3</div><div><div class="who">Malý Jiří</div><div class="meta">#104 · Muži „B"</div></div><div class="time">2:17:11<div class="gap">+3:09</div></div></div>
+    <div class="board-row"><div class="rank">4</div><div><div class="who">Veselá Kateřina</div><div class="meta">#131 · Ženy „A"</div></div><div class="time">2:19:35<div class="gap">+5:33</div></div></div>
+    <div class="board-row"><div class="rank">5</div><div><div class="who">Horák Tomáš</div><div class="meta">#142 · Muži „C"</div></div><div class="time">2:21:02<div class="gap">+7:00</div></div></div>
+    <div class="board-row"><div class="rank">6</div><div><div class="who">Nováková Jana</div><div class="meta">#088 · Ženy „B"</div></div><div class="time">2:23:47<div class="gap">+9:45</div></div></div>
+  </div>
+
+  <div class="updated">Poslední záznam přijat před 8 s</div>
+</div>
+</body>
+</html>

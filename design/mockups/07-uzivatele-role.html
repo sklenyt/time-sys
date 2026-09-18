@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>time-sys — Uživatelé a role</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .role-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:700}
+  .role-admin{background:var(--navy-900);color:#fff}
+  .role-org{background:var(--orange-100);color:var(--orange-600)}
+  .role-cas{background:var(--blue-100);color:var(--blue-600)}
+  .role-stan{background:var(--amber-100);color:var(--amber-600)}
+  .u-row{display:flex;align-items:center;gap:12px;padding:13px 4px;border-bottom:1px solid var(--slate-100)}
+  .u-row:last-child{border-bottom:none}
+  .u-row .who{font-size:13px;font-weight:700}
+  .u-row .mail{font-size:11.5px;color:var(--slate-500)}
+</style>
+</head>
+<body>
+<div id="icon-sprite-slot"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="mark">tS</div><div><div class="name">time-sys</div><div class="sub">Břežanský kostitřas 2026</div></div></div>
+    <div class="nav-group">
+      <div class="nav-item"><svg class="ic"><use href="#ic-grid"/></svg>Přehled</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-flag"/></svg>Události a tratě</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-list"/></svg>Startovní listina</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-timer"/></svg>Měření</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-run"/></svg>Kdo běží / DNF</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-trophy"/></svg>Výsledky</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-audit"/></svg>Audit log</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Správa</div>
+      <div class="nav-item active"><svg class="ic"><use href="#ic-users"/></svg>Uživatelé a role</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-settings"/></svg>Nastavení</div>
+    </div>
+    <div class="foot"><div class="avatar">TS</div><div><div class="who">Tomáš Sklenář</div><div class="role">Organizátor</div></div></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div><h1>Uživatelé a role</h1><div class="crumbs">Kdo má přístup k této akci a co smí dělat</div></div>
+      <div class="topbar-actions"><button class="btn btn-accent"><svg class="ic" style="width:15px;height:15px"><use href="#ic-mail"/></svg>Pozvat spolupracovníka</button></div>
+    </div>
+
+    <div class="content">
+      <div class="card">
+        <div class="card-head"><h3>Členové týmu (5)</h3></div>
+        <div class="card-body" style="padding-top:6px">
+          <div class="u-row"><div class="avatar" style="background:var(--navy-700)">TS</div><div style="flex:1"><div class="who">Tomáš Sklenář</div><div class="mail">tsklenar@outlook.com</div></div><span class="role-pill role-admin"><svg class="ic" style="width:12px;height:12px"><use href="#ic-shield"/></svg>Admin</span></div>
+          <div class="u-row"><div class="avatar" style="background:var(--navy-700)">JS</div><div style="flex:1"><div class="who">Jana Sklenářová</div><div class="mail">jana.s@example.cz</div></div><span class="role-pill role-org">Organizátor</span></div>
+          <div class="u-row"><div class="avatar" style="background:var(--navy-700)">PN</div><div style="flex:1"><div class="who">Petr Novotný</div><div class="mail">petr.n@example.cz</div></div><span class="role-pill role-cas">Časoměřič · Cíl</span></div>
+          <div class="u-row"><div class="avatar" style="background:var(--navy-700)">MK</div><div style="flex:1"><div class="who">Marek Kučera</div><div class="mail">marek.k@example.cz</div></div><span class="role-pill role-stan">Stanoviště · Vrchol</span></div>
+          <div class="u-row"><div class="avatar" style="background:var(--navy-700)">LH</div><div style="flex:1"><div class="who">Lucie Horáková <span class="badge badge-slate" style="margin-left:6px">pozvánka odeslána</span></div><div class="mail">lucie.h@example.cz</div></div><span class="role-pill role-cas">Časoměřič · Cíl</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <div class="card-head"><h3>Veřejný odkaz na živé výsledky</h3></div>
+        <div class="card-body" style="display:flex;align-items:center;gap:12px">
+          <input class="input" style="flex:1" value="https://vysledky.time-sys.app/brezansky-kostitras-2026" readonly>
+          <button class="btn btn-ghost btn-sm">Kopírovat</button>
+          <button class="btn btn-ghost btn-sm">QR kód</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
