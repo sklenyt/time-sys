@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>time-sys — Párování čipů</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .two-col{display:grid;grid-template-columns:420px 1fr;gap:20px}
+  .scan-card{background:var(--navy-950);border-radius:var(--radius-lg);padding:26px;color:#fff;text-align:center}
+  .scan-ring{
+    width:120px;height:120px;border-radius:50%;margin:6px auto 18px;
+    background:rgba(34,197,94,.12);border:2px solid var(--green-500);
+    display:flex;align-items:center;justify-content:center;color:var(--green-500);
+  }
+  .scan-ring svg{width:52px;height:52px}
+  .scan-card h3{margin:0 0 4px;font-size:15px}
+  .scan-card .sub{font-size:12px;color:var(--slate-400);margin-bottom:20px}
+  .scan-result{background:var(--navy-900);border-radius:12px;padding:14px 16px;text-align:left;margin-bottom:16px}
+  .scan-result .row{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+  .scan-result .row:last-child{border-bottom:none}
+  .scan-result .row .k{color:var(--slate-400)}
+  .scan-result .row .v{font-family:'JetBrains Mono',monospace;font-weight:700}
+  .stat-mini{display:flex;gap:10px;margin-top:18px}
+  .stat-mini div{flex:1;background:var(--navy-900);border-radius:10px;padding:10px;text-align:center}
+  .stat-mini .n{font-size:20px;font-weight:800}
+  .stat-mini .l{font-size:10px;color:var(--slate-400);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+</style>
+</head>
+<body>
+<div id="icon-sprite-slot"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="mark">tS</div><div><div class="name">time-sys</div><div class="sub">Břežanský kostitřas 2026</div></div></div>
+    <div class="nav-group">
+      <div class="nav-item"><svg class="ic"><use href="#ic-grid"/></svg>Přehled</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-flag"/></svg>Události a tratě</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-list"/></svg>Startovní listina</div>
+      <div class="nav-item active"><svg class="ic"><use href="#ic-chip"/></svg>Čipy</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-timer"/></svg>Měření</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-run"/></svg>Kdo běží / DNF</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-trophy"/></svg>Výsledky</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-audit"/></svg>Audit log</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Správa</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-users"/></svg>Uživatelé a role</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-settings"/></svg>Nastavení</div>
+    </div>
+    <div class="foot"><div class="avatar">TS</div><div><div class="who">Tomáš Sklenář</div><div class="role">Organizátor</div></div></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div><h1>Párování RFID čipů</h1><div class="crumbs">Výdej startovních čísel · všechny tratě</div></div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost"><svg class="ic" style="width:15px;height:15px"><use href="#ic-upload"/></svg>Export nevrácených</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="two-col">
+        <div>
+          <div class="scan-card">
+            <div class="scan-ring"><svg class="ic"><use href="#ic-chip"/></svg></div>
+            <h3>Přiložte čip ke čtečce</h3>
+            <div class="sub">nebo zadejte kód čipu ručně</div>
+            <div class="field" style="margin-bottom:16px">
+              <input class="input" style="background:var(--navy-900);border-color:var(--navy-700);color:#fff;text-align:center;font-family:'JetBrains Mono',monospace" placeholder="E28011… / naskenovat">
+            </div>
+            <div class="scan-result">
+              <div class="row"><span class="k">Čip</span><span class="v">E280 6F80 1042</span></div>
+              <div class="row"><span class="k">Startovní číslo</span><span class="v">314</span></div>
+              <div class="row"><span class="k">Závodník</span><span class="v mono" style="font-weight:600">Procházka David</span></div>
+              <div class="row"><span class="k">Trasa</span><span class="v" style="font-family:inherit">Dlouhá 58 km</span></div>
+              <div class="row"><span class="k">Vratná záloha</span><span class="v">200 Kč</span></div>
+            </div>
+            <button class="btn btn-accent" style="width:100%;justify-content:center">Potvrdit spárování</button>
+            <div class="stat-mini">
+              <div><div class="n">287</div><div class="l">spárováno</div></div>
+              <div><div class="n" style="color:var(--amber-500)">25</div><div class="l">čeká na výdej</div></div>
+              <div><div class="n" style="color:var(--red-500)">3</div><div class="l">ztraceno</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h3>Naposledy spárováno</h3>
+            <div class="search-wrap" style="position:relative;max-width:240px"><svg class="ic" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--slate-400)"><use href="#ic-search"/></svg><input class="input" style="padding-left:32px" placeholder="Hledat číslo, jméno, kód čipu…"></div>
+          </div>
+          <table class="tbl">
+            <thead><tr><th>Č.</th><th>Závodník</th><th>Trasa</th><th>Kód čipu</th><th>Stav</th><th>Záloha</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="mono">314</td><td>Procházka David</td><td>Dlouhá 58 km</td><td class="mono">E280 6F80 1042</td><td><span class="badge badge-green">přiřazen</span></td><td class="mono">200 Kč</td><td><button class="btn btn-sm btn-ghost">Detail</button></td></tr>
+              <tr><td class="mono">118</td><td>Malý Jiří</td><td>Dlouhá 58 km</td><td class="mono">E280 6F80 0F31</td><td><span class="badge badge-green">přiřazen</span></td><td class="mono">200 Kč</td><td><button class="btn btn-sm btn-ghost">Detail</button></td></tr>
+              <tr><td class="mono">104</td><td>Veselá Kateřina</td><td>Střední 35 km</td><td class="mono">E280 6F80 0C9A</td><td><span class="badge badge-amber">záložní</span></td><td class="mono">—</td><td><button class="btn btn-sm btn-ghost">Detail</button></td></tr>
+              <tr><td class="mono">096</td><td>Beneš Ondřej</td><td>Střední 35 km</td><td class="mono">E280 6F80 0A17</td><td><span class="badge badge-red">ztracen</span></td><td class="mono">nevráceno</td><td><button class="btn btn-sm btn-ghost">Detail</button></td></tr>
+              <tr><td class="mono">223</td><td>Berbrová Alena</td><td>Krátká 20 km</td><td class="mono">E280 6F80 0731</td><td><span class="badge badge-blue">vrácen</span></td><td class="mono">vráceno</td><td><button class="btn btn-sm btn-ghost">Detail</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

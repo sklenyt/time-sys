@@ -54,14 +54,20 @@ Nahrazuje "jedno sdílené heslo na tabulku" novým RBAC modelem (F18, F19, [08-
 
 ![Startovní listina](images/mockup-08-startovni-listina.png)
 
-Rychlé zadání na místě (F03) přes formulář nad tabulkou — bez nutnosti otevírat samostatný dialog, optimalizované pro registrační stůl pod tlakem před startem. Vyhledávání a filtrování (F20), tlačítko importu (F04). Automatická kategorizace je komunikována přímo v UI jako vysvětlivka pod formulářem, ne skrytá logika.
+Rychlé zadání na místě (F03) přes formulář nad tabulkou — bez nutnosti otevírat samostatný dialog, optimalizované pro registrační stůl pod tlakem před startem. Vyhledávání a filtrování (F20), tlačítko importu (F04). Automatická kategorizace je komunikována přímo v UI jako vysvětlivka pod formulářem, ne skrytá logika. Pole **Trasa** a **Kategorie** jsou v souladu s aktualizovaným F03 ([02-requirements.md](02-requirements.md)) zvýrazněná jako povinná (oranžový rámeček, hvězdička) — kategorie se sice předvyplní automaticky, ale musí být viditelně potvrzena, nikdy uložena prázdná. Doplněno i nepovinné pole **Nouzový kontakt** (F31).
 
-## 7.9 Zdrojové soubory
+## 7.9 Párování RFID čipů
+
+![Párování čipů](images/mockup-09-parovani-cipu.png)
+
+Nová obrazovka pro budoucí RFID modul (F22, F29, F30 — viz **[12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)** pro detailní návrh). Levý panel simuluje čtečku — po přiložení/naskenování čipu systém ukáže spárovaný záznam (číslo, závodník, trasa, případná vratná záloha) k potvrzení, což odpovídá stejnému principu jako u ručního zápisu: žádná data se neuloží "tiše", uživatel vždy vidí a potvrzuje, co se právě přiřazuje. Pravá tabulka eviduje stavy čipů (`přiřazen`/`záložní`/`ztracen`/`vrácen`) podle životního cyklu popsaného v [04-data-model.md §4.9](04-data-model.md#49-rfid-čip--životní-cyklus), včetně exportu nevrácených čipů/záloh po závodě.
+
+## 7.10 Zdrojové soubory
 
 | Soubor | Popis |
 |---|---|
 | [`design/mockups/shared.css`](../design/mockups/shared.css) | Sdílený design systém (barvy, typografie, komponenty) |
 | [`design/mockups/_icons.html`](../design/mockups/_icons.html) | Sada inline SVG ikon (sprite) |
-| [`design/mockups/01-dashboard.html`](../design/mockups/01-dashboard.html) … `08-startovni-listina.html` | Zdrojový HTML kód jednotlivých obrazovek |
+| [`design/mockups/01-dashboard.html`](../design/mockups/01-dashboard.html) … `09-parovani-cipu.html` | Zdrojový HTML kód jednotlivých obrazovek |
 
 Mockupy slouží jako vizuální podklad pro diskuzi s uživatelem/organizátorem, ne jako finální UI specifikace — barvy, layout a konkrétní texty se očekávaně upřesní ve Fázi 1 (viz [10-roadmap.md](10-roadmap.md)).

@@ -17,6 +17,7 @@ Moderní webová náhrada desktopové aplikace **Časomíra** (prozavody.cz, MS 
 | 9 | [09-migration.md](09-migration.md) | Plán migrace dat ze stávajícího Accessu |
 | 10 | [10-roadmap.md](10-roadmap.md) | Fázovaná MVP roadmapa |
 | 11 | [11-legacy-schema-reference.md](11-legacy-schema-reference.md) | Referenční přehled **reálného** schématu vytěženého z dodaného `.accde` souboru |
+| 12 | [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md) | Detailní návrh RFID čipů (hardware, párování, edge cases) + obecná doporučení pro další rozvoj |
 
 ## Shrnutí v jedné větě
 

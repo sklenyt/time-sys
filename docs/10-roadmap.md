@@ -20,6 +20,7 @@ Cíl: nahradit **nejkritičtější denní use case** — samotné měření na 
 - **Modul měření** — číslo + Enter, zachování systémového času (F06, F07) — [§7.3](07-ui-mockups.md), jádro dle [04-data-model.md §4.2](04-data-model.md)
 - Oprava záznamu se zachováním času (F08)
 - Základní auditní log (F09)
+- Nouzový kontakt a zdravotní poznámka u přihlášky (F31) — nízká náročnost, reálný bezpečnostní přínos, doporučeno zařadit hned do MVP (viz [12-rfid-a-doporuceni.md §12.6](12-rfid-a-doporuceni.md))
 - Výpočet výsledků a export XLSX (F12, F13)
 - Backend API pro jedno zařízení/jednu trať bez multi-device synchronizace (zjednodušená verze `/sync/events` — jen lokální perzistence, cloud sync odložen na Fázi 2)
 
@@ -48,10 +49,11 @@ Cíl: dosáhnout parity s dnešní terénní spolehlivostí a přidat síťovou 
 
 ## Fáze 4 — RFID/čtečky a rozšíření (odhad průběžně, dle poptávky)
 
-- Podpora RFID čipů / čárových kódů přes Web Serial/Bluetooth API (F22)
+- Podpora RFID čipů přes Local Capture Agent (F22, F29, F30) — hardwarové varianty, párování, evidence záloh, viz **[12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)** a [03-architecture.md §3.9](03-architecture.md#39-local-capture-agent--napojení-rfid-decodérů-f22-n12)
 - Vlastní online registrační formulář (F23)
 - Multi-tenant provoz pro více organizátorů (F24) — Row-Level Security dle [04-data-model.md §4.6](04-data-model.md)
 - Pokročilé reporty, historie výkonů, rekordy tratě (F26)
+- SMS/e-mail notifikace při doběhu (F32), QR kód na startovním čísle, detekce podezřelých mezičasů (F33) — viz [12-rfid-a-doporuceni.md §12.12](12-rfid-a-doporuceni.md) pro doporučené pořadí zařazení
 - Zvážení CRDT knihovny pro obecnější konflikty, pokud vlastní event-log sync narazí na limity (viz [05-tech-stack.md §5.3](05-tech-stack.md))
 
 ## 10.5 Doporučený bezprostřední další krok

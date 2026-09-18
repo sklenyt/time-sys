@@ -22,6 +22,7 @@
       <div class="nav-item"><svg class="ic"><use href="#ic-grid"/></svg>Přehled</div>
       <div class="nav-item"><svg class="ic"><use href="#ic-flag"/></svg>Události a tratě</div>
       <div class="nav-item active"><svg class="ic"><use href="#ic-list"/></svg>Startovní listina</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-chip"/></svg>Čipy</div>
       <div class="nav-item"><svg class="ic"><use href="#ic-timer"/></svg>Měření</div>
       <div class="nav-item"><svg class="ic"><use href="#ic-run"/></svg>Kdo běží / DNF</div>
       <div class="nav-item"><svg class="ic"><use href="#ic-trophy"/></svg>Výsledky</div>
@@ -45,15 +46,28 @@
     </div>
 
     <div class="content">
-      <div class="quick-add">
-        <div class="field"><label>Startovní číslo</label><input class="input" placeholder="např. 314"></div>
-        <div class="field"><label>Příjmení</label><input class="input" placeholder="Příjmení"></div>
-        <div class="field"><label>Jméno</label><input class="input" placeholder="Jméno"></div>
-        <div class="field"><label>Ročník</label><input class="input" placeholder="1994"></div>
-        <div class="field" style="flex:1.4"><label>Klub</label><input class="input" placeholder="Volitelné"></div>
-        <div class="field" style="flex:0"><label>&nbsp;</label><button class="btn btn-primary">Přidat</button></div>
+      <div class="quick-add" style="flex-direction:column;gap:12px;align-items:stretch">
+        <div style="display:flex;gap:10px">
+          <div class="field"><label>Startovní číslo <span style="color:var(--red-600)">*</span></label><input class="input" placeholder="např. 314"></div>
+          <div class="field"><label>Příjmení <span style="color:var(--red-600)">*</span></label><input class="input" placeholder="Příjmení"></div>
+          <div class="field"><label>Jméno <span style="color:var(--red-600)">*</span></label><input class="input" placeholder="Jméno"></div>
+          <div class="field"><label>Ročník <span style="color:var(--red-600)">*</span></label><input class="input" placeholder="1994"></div>
+          <div class="field" style="flex:1.4"><label>Klub</label><input class="input" placeholder="Volitelné"></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-end">
+          <div class="field" style="flex:1.2">
+            <label>Trasa <span style="color:var(--red-600)">*</span></label>
+            <select class="input" style="border-color:var(--orange-500)"><option>Krátká 20 km</option><option>Střední 35 km</option><option>Dlouhá 58 km</option></select>
+          </div>
+          <div class="field" style="flex:1.2">
+            <label>Kategorie <span style="color:var(--red-600)">*</span></label>
+            <select class="input" style="border-color:var(--orange-500)"><option>MAk — Muži „A" (auto: ročník 1994) ✓</option><option>MBk — Muži „B"</option><option>ZAk — Ženy „A"</option></select>
+          </div>
+          <div class="field" style="flex:1.4"><label>Nouzový kontakt</label><input class="input" placeholder="Jméno a telefon (volitelné)"></div>
+          <div class="field" style="flex:0"><button class="btn btn-primary">Přidat</button></div>
+        </div>
       </div>
-      <div class="hint" style="font-size:11.5px;color:var(--slate-500);margin:-8px 0 16px">Kategorie se doplní automaticky podle ročníku a pohlaví po uložení — lze ručně opravit v tabulce.</div>
+      <div class="hint" style="font-size:11.5px;color:var(--slate-500);margin:-8px 0 16px">Kategorie se předvyplní automaticky podle ročníku a pohlaví — pole <strong>Trasa</strong> a <strong>Kategorie</strong> jsou povinná a musí být před uložením potvrzena (lze ručně přeřadit).</div>
 
       <div class="filters">
         <div class="search-wrap"><svg class="ic"><use href="#ic-search"/></svg><input class="input" placeholder="Hledat jméno nebo klub…"></div>

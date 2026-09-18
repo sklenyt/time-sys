@@ -161,3 +161,25 @@ Doporučeno nasazení na **managed platformu** (Render/Railway/Fly.io) nebo mal�
 ## 3.8 Multi-tenancy
 
 Pokud má systém sloužit více organizátorům/klubům současně (F24), zavádí se `organizace` jako top-level entita, ke které se váže vše ostatní (závody, uživatelé, role). Izolace na úrovni řádků (row-level security v PostgreSQL) zajišťuje, že organizátor A nikdy neuvidí data organizátora B. V MVP lze začít v single-tenant režimu a rozšířit později bez zásadní změny datového modelu (viz [04-data-model.md](04-data-model.md)).
+
+## 3.9 Local Capture Agent — napojení RFID decodérů (F22, N12)
+
+Prohlížečové API (Web Serial, Web Bluetooth) jsou nedostatečná jako jediná cesta pro připojení profesionálních RFID decodérů: fungují jen v Chromiu, vyžadují explicitní gesto uživatele při každém párování, a řada decodérů (UHF čtečky na startu/cíli) komunikuje po **síti (TCP/UDP)**, ne přes USB/serial — to prohlížeč z bezpečnostních důvodů vůbec neumožní. Řešení, konzistentní s offline-first architekturou (§3.2–3.5):
+
+```mermaid
+flowchart LR
+    Reader["RFID decodér / anténa<br/>(sériový port nebo TCP/UDP)"]
+    Agent["Local Capture Agent<br/>malá lokální služba (Node.js)<br/>běží na časoměřičském zařízení"]
+    PWA["PWA klient<br/>(stejné zařízení, localhost)"]
+    Local["IndexedDB<br/>(stejný event log jako ruční zápis)"]
+
+    Reader -->|"surová čtení čipů"| Agent
+    Agent -->|"překlad na stejný formát<br/>jako POST /routes/id/records"| PWA
+    PWA --> Local
+```
+
+- **Local Capture Agent** je malá doplňková služba (Node.js proces, distribuovaná jako jednoduchý instalovatelný balíček nebo součást PWA přes budoucí desktop wrapper), která běží přímo na časoměřičském notebooku/mini-PC vedle RFID decodéru.
+- Naslouchá nativnímu protokolu decodéru (sériová linka, nebo lokální TCP/UDP socket — podle konkrétního výrobce čtečky) a **překládá každé přečtení čipu na stejnou strukturu záznamu**, jakou generuje ruční zápis "číslo + Enter" (viz `POST /routes/{id}/records` v [06-api-design.md](06-api-design.md)).
+- Volá lokální endpoint PWA klienta (`http://localhost:<port>`) — záznam tak vstupuje do **stejného append-only event logu a stejné synchronizační pipeline** (§3.5) jako manuální zápis. Časoměřič nemusí nic přepínat, RFID a ruční zápis jsou jen dva rovnocenné vstupy do jednoho systému, a při výpadku RFID čtečky lze bez přerušení pokračovat ručně na stejné obrazovce.
+- Agent je záměrně **hloupý a bezstavový** — neprovádí žádnou byznys logiku (kategorizace, výpočet pořadí), pouze převádí surová čtení na standardní event. Veškerá logika zůstává v PWA/backendu, agent lze tak snadno nahradit i pro jiný typ hardwaru (čtečka čárových kódů, jiný výrobce RFID) beze změny zbytku systému.
+- Toto je vědomě odložená položka (Fáze 4, viz [10-roadmap.md](10-roadmap.md)) — pro MVP a i pro Fázi 2/3 postačuje ruční zápis; investice do konkrétního HW/protokolu dává smysl až po ověření základního systému v ostrém provozu. Podrobnosti hardwarových variant a provozní workflow párování čipů viz **[12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)**.

@@ -63,7 +63,7 @@ erDiagram
     }
     PRIHLASKA {
         uuid id
-        uuid trasa_id
+        uuid trasa_id "NOT NULL"
         int startovni_cislo
         string prijmeni
         string jmeno
@@ -72,9 +72,11 @@ erDiagram
         string klub
         string email
         string telefon
-        uuid kategorie_id
+        uuid kategorie_id "NOT NULL"
         uuid start_vlna_id
         bool registrovan
+        string nouzovy_kontakt
+        string zdravotni_poznamka
         enum stav_ukonceni
         interval casova_penalizace
         jsonb clenove_druzstva
@@ -83,6 +85,11 @@ erDiagram
         uuid id
         uuid prihlaska_id
         string kod_cipu
+        enum stav
+        bool zalozni
+        numeric vratna_zaloha
+        timestamptz vydano_at
+        timestamptz vraceno_at
     }
     ZARIZENI {
         uuid id
@@ -182,3 +189,25 @@ Viz [11-legacy-schema-reference.md §11.4](11-legacy-schema-reference.md#114-map
 - Textový, volně formátovaný log → strukturovaná `zaznam_udalosti` + `audit_log`.
 - Chybějící entita nad tratěmi → nová `udalost`.
 - Technické Access-specifické tabulky (`tblSloupce`, `tblLokalizace`, `tblImport*`) → standardní webové ekvivalenty (konfigurace UI v kódu frontendu, i18n framework, generický CSV/XLSX import modul, viz [05-tech-stack.md](05-tech-stack.md)).
+
+## 4.8 Povinná pole při registraci: trasa a kategorie
+
+`prihlaska.trasa_id` a `prihlaska.kategorie_id` jsou **`NOT NULL`** — na rozdíl od staré `tblStartovniListina`, kde `idvekovakategorie` byl nepovinný sloupec a v reálných datech se skutečně vyskytovaly řádky bez přiřazené kategorie (viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)). Důvod zpřísnění (požadavek F03 v [02-requirements.md](02-requirements.md)):
+
+- Bez `trasa_id` nelze závodníka jednoznačně zařadit do `zaznam_udalosti` ani do výpočtu výsledků — u vícetraťové akce (viz [01-analysis.md §1.10](01-analysis.md), zjištění o "závodu" jako trati, ne akci) je volba tratě první a nezbytná otázka při registraci.
+- Bez `kategorie_id` nelze dopočítat pořadí v kategorii ani TOP3 (F12) — chybějící kategorie byla v praxi zdroj ručních oprav po závodě.
+
+Aplikační vrstva (ne jen databáze) kategorii **automaticky předvyplní** podle ročníku narození a pohlaví (stejná logika jako `vekod`/`vekdo` ve staré `tblVekovaKategorie`), ale UI vždy vyžaduje viditelné potvrzení hodnoty před uložením (viz mockup [07-ui-mockups.md §7.8](07-ui-mockups.md)) — uživatel nikdy neuloží přihlášku s prázdnou kategorií "omylem", ale zároveň může kategorii vědomě přepsat (např. závodník startující v jiné než "své" kategorii).
+
+## 4.9 RFID čip — životní cyklus
+
+Entita `cip` je rozšířená oproti staré `tblCipy` (`id, startovnicislo, cip` — jen prosté párování) o pole potřebná pro reálný provoz s fyzickými čipy jako spotřebním/vratným materiálem:
+
+| Pole | Účel |
+|---|---|
+| `stav` | `PRIREZEN` / `VRACEN` / `ZTRACEN` / `ZALOZNI` — životní cyklus čipu v rámci jedné akce |
+| `zalozni` | Příznak, že jde o náhradní čip vydaný za ztracený/nefunkční originál (bez ztráty historie měření na starém čipu) |
+| `vratna_zaloha` | Částka vybrané vratné zálohy (běžná praxe u vícepoužitelných UHF čipů) |
+| `vydano_at` / `vraceno_at` | Časové razítko výdeje a vrácení — podklad pro vyúčtování nevrácených záloh po závodě |
+
+Podrobný návrh workflow párování, hardwarové varianty a doporučený "local capture agent" pro napojení RFID decodérů viz **[12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)**.

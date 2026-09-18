@@ -10,7 +10,7 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 |---|---|---|
 | F01 | Založení závodu (název, datum, počet kol, typ startu: hromadný/vlnový/intervalový) | UC1 |
 | F02 | Definice kategorií (ročník od–do, pohlaví, název) | UC1 |
-| F03 | Startovní listina — ruční zápis závodníka s automatickým přiřazením kategorie | UC3, UC4 |
+| F03 | Startovní listina — ruční zápis závodníka; **trasa a kategorie jsou povinná pole zápisu** (kategorie se předvyplní automaticky podle ročníku/pohlaví, ale musí být explicitně potvrzena nebo ručně přepsána, nikdy uložena bez hodnoty) | UC3, UC4 |
 | F04 | Import startovní listiny z CSV/XLSX | UC2 |
 | F05 | Zaznamenání startu (start = aktuální systémový čas serveru/klienta) | UC5 |
 | F06 | Zápis doběhu: zadání startovního čísla + Enter → čas = okamžik potvrzení, ne ruční vstup | UC6 |
@@ -39,11 +39,16 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 
 | ID | Požadavek |
 |---|---|
-| F22 | Podpora RFID čipů / čteček čárových kódů (Web Serial/Bluetooth API) |
+| F22 | Podpora RFID čipů — čtečky/decodéry na startu, cíli i kontrolních stanovištích jako plnohodnotná alternativa k ručnímu zápisu čísla, viz [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md) |
 | F23 | Vlastní online registrační formulář napojený přímo do systému |
 | F24 | Multi-tenant provoz pro více organizátorů současně |
 | F25 | Mobilní PWA optimalizovaná pro tablet/telefon na stanovišti |
 | F26 | Pokročilé reporty a statistiky (historie výkonů, rekordy tratě) |
+| F29 | Párování RFID čipu se startovním číslem při výdeji startovních čísel (registrace/expo) | 
+| F30 | Evidence stavu čipu — vydán / vrácen / ztracen / záložní — s vazbou na vratnou zálohu | 
+| F31 | Nouzové/zdravotní údaje závodníka (kontakt na blízkou osobu, alergie) viditelné organizátorovi při incidentu na trati |
+| F32 | Automatická e-mail/SMS notifikace blízké osobě při doběhu závodníka do cíle |
+| F33 | Detekce podezřele rychlého/pomalého mezičasu (možné zkrácení trati nebo nouzová situace) |
 
 ### Won't have (v první verzi vědomě vynecháno)
 
@@ -67,10 +72,11 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | N09 | Škálovatelnost | Podpora závodů v řádu tisíců závodníků a desítek souběžných diváckých přístupů na live výsledky |
 | N10 | Nízké provozní náklady | Provoz odpovídající rozpočtu komunitních/spolkových akcí (řádově stovky Kč/měsíc nebo méně) |
 | N11 | Zálohování | Automatické průběžné zálohování dat do cloudu při dostupném připojení |
+| N12 | Rozšiřitelnost o hardware | Architektura musí umožnit napojení RFID decodérů/čteček bez závislosti na tom, zda je podporuje přímo prohlížeč (viz [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)) |
 
 ## 2.3 Neměnné principy (nesmí se ztratit při modernizaci)
 
-Viz [01-analysis.md §1.10](01-analysis.md#110-důsledky-pro-návrh-nové-aplikace):
+Viz [01-analysis.md §1.11](01-analysis.md#111-důsledky-pro-návrh-nové-aplikace):
 
 1. Workflow "číslo + Enter" — nejkritičtější a nejrychlejší cesta v systému.
 2. Odolnost vůči výpadku internetu na místě — tvrdý požadavek (N01).
