@@ -2,11 +2,16 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import type { Kategorie, Prihlaska, StartVlna, ZaznamUdalosti } from "@prisma/client";
 import ExcelJS from "exceljs";
 import PDFDocument from "pdfkit";
+import QRCode from "qrcode";
 import { join } from "path";
 import {
+  AnomaliePolozka,
+  AnomaliesResponseDto,
   BezicPolozka,
+  PersonalResultDto,
   RunningResponseDto,
   StavUkonceni,
+  TypAnomalie,
   TypUdalosti,
   VysledekPolozka,
   VysledkyResponseDto,
@@ -268,6 +273,171 @@ export class ResultsService {
     return { trasaId, bezi, celkemPrihlasenych: prihlasky.length, dokonceniPocet, neukonceniPocet };
   }
 
+  /**
+   * F33 — podezřele rychlý/pomalý čas oproti ostatním ve stejné kategorii.
+   * Práh je statistický (medián + robustní odchylka přes MAD), ne pevné
+   * číslo v minutách, viz docs/12-rfid-a-doporuceni.md §12.6/§12.8 — málo
+   * porovnatelných běžců (< 3 v kategorii) se nevyhodnocuje, přílišný šum.
+   */
+  async getAnomalies(trasaId: string): Promise<AnomaliesResponseDto> {
+    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId } });
+    if (!trasa) {
+      throw new NotFoundException("Trasa nenalezena");
+    }
+
+    const polozky: AnomaliePolozka[] = [];
+
+    const vysledky = await this.getResults(trasaId);
+    polozky.push(
+      ...this.detekovatOdlehleHodnoty(
+        vysledky.klasifikovani.map((p) => ({
+          prihlaskaId: p.prihlaskaId,
+          startovniCislo: p.startovniCislo,
+          prijmeni: p.prijmeni,
+          jmeno: p.jmeno,
+          kategorieKod: p.kategorieKod,
+          casMs: p.casCelkemMs!,
+        })),
+        TypUdalosti.DOJEZD
+      )
+    );
+
+    const prihlasky = await this.prisma.prihlaska.findMany({
+      where: { trasaId },
+      include: { kategorie: true, startVlna: true },
+    });
+    const prihlaskaById = new Map(prihlasky.map((p) => [p.id, p]));
+
+    const mezicasy = await this.prisma.zaznamUdalosti.findMany({
+      where: { trasaId, typUdalosti: TypUdalosti.MEZICAS },
+    });
+    const posledniMezicasPodlePrihlasce = new Map<string, ZaznamUdalosti>();
+    for (const z of mezicasy) {
+      if (!z.prihlaskaId) continue;
+      const stavajici = posledniMezicasPodlePrihlasce.get(z.prihlaskaId);
+      if (!stavajici || z.cas > stavajici.cas) {
+        posledniMezicasPodlePrihlasce.set(z.prihlaskaId, z);
+      }
+    }
+
+    const mezicasoveHodnoty = Array.from(posledniMezicasPodlePrihlasce.entries())
+      .map(([prihlaskaId, zaznam]) => {
+        const prihlaska = prihlaskaById.get(prihlaskaId);
+        if (!prihlaska?.startVlna?.casStartu) return null;
+        return {
+          prihlaskaId,
+          startovniCislo: prihlaska.startovniCislo,
+          prijmeni: prihlaska.prijmeni,
+          jmeno: prihlaska.jmeno,
+          kategorieKod: prihlaska.kategorie.kod,
+          casMs: zaznam.cas.getTime() - prihlaska.startVlna.casStartu.getTime(),
+        };
+      })
+      .filter((v): v is NonNullable<typeof v> => v !== null);
+
+    polozky.push(...this.detekovatOdlehleHodnoty(mezicasoveHodnoty, TypUdalosti.MEZICAS));
+
+    return { trasaId, polozky };
+  }
+
+  private detekovatOdlehleHodnoty(
+    hodnoty: { prihlaskaId: string; startovniCislo: number; prijmeni: string; jmeno: string; kategorieKod: string; casMs: number }[],
+    typUdalosti: TypUdalosti.DOJEZD | TypUdalosti.MEZICAS
+  ): AnomaliePolozka[] {
+    const podleKategorie = new Map<string, typeof hodnoty>();
+    for (const h of hodnoty) {
+      const skupina = podleKategorie.get(h.kategorieKod) ?? [];
+      skupina.push(h);
+      podleKategorie.set(h.kategorieKod, skupina);
+    }
+
+    const vysledek: AnomaliePolozka[] = [];
+    for (const skupina of podleKategorie.values()) {
+      if (skupina.length < 3) continue;
+
+      const casy = skupina.map((h) => h.casMs).sort((a, b) => a - b);
+      const medianMs = median(casy);
+      const odchylky = casy.map((c) => Math.abs(c - medianMs)).sort((a, b) => a - b);
+      const mad = median(odchylky);
+      const robustniSigma = mad > 0 ? mad * 1.4826 : medianMs * 0.1;
+      if (robustniSigma === 0) continue;
+
+      for (const h of skupina) {
+        const z = (h.casMs - medianMs) / robustniSigma;
+        if (Math.abs(z) <= 2.5) continue;
+        vysledek.push({
+          prihlaskaId: h.prihlaskaId,
+          startovniCislo: h.startovniCislo,
+          prijmeni: h.prijmeni,
+          jmeno: h.jmeno,
+          kategorieKod: h.kategorieKod,
+          typUdalosti,
+          cas: formatDuration(h.casMs),
+          casMs: h.casMs,
+          medianKategorieMs: medianMs,
+          typAnomalie: z < 0 ? TypAnomalie.PRILIS_RYCHLY : TypAnomalie.PRILIS_POMALY,
+        });
+      }
+    }
+    return vysledek;
+  }
+
+  /**
+   * Osobní výsledek jednoho závodníka — cíl skenování QR kódu ze
+   * startovního čísla (viz docs/12-rfid-a-doporuceni.md §12.6), aby divák
+   * nemusel hledat jméno v celé (často dlouhé) tabulce výsledků.
+   */
+  async getPersonalResult(trasaId: string, prihlaskaId: string): Promise<PersonalResultDto> {
+    const prihlaska = await this.prisma.prihlaska.findFirst({
+      where: { id: prihlaskaId, trasaId },
+      include: { kategorie: true, startVlna: true },
+    });
+    if (!prihlaska) {
+      throw new NotFoundException("Přihláška nenalezena na této trati");
+    }
+
+    const vysledky = await this.getResults(trasaId);
+    const polozka =
+      vysledky.klasifikovani.find((p) => p.prihlaskaId === prihlaskaId) ??
+      vysledky.neklasifikovani.find((p) => p.prihlaskaId === prihlaskaId)!;
+
+    let mezicas: string | null = null;
+    if (prihlaska.startVlna?.casStartu) {
+      const posledniMezicas = await this.prisma.zaznamUdalosti.findFirst({
+        where: { trasaId, prihlaskaId, typUdalosti: TypUdalosti.MEZICAS },
+        orderBy: { cas: "desc" },
+      });
+      if (posledniMezicas) {
+        mezicas = formatDuration(posledniMezicas.cas.getTime() - prihlaska.startVlna.casStartu.getTime());
+      }
+    }
+
+    return {
+      prihlaskaId: prihlaska.id,
+      startovniCislo: prihlaska.startovniCislo,
+      prijmeni: prihlaska.prijmeni,
+      jmeno: prihlaska.jmeno,
+      kategorieKod: prihlaska.kategorie.kod,
+      kategorieNazev: prihlaska.kategorie.nazev,
+      casCelkem: polozka.casCelkem,
+      poradiCelkove: polozka.poradiCelkove,
+      poradiKategorie: polozka.poradiKategorie,
+      mezicas,
+      stavUkonceni: polozka.stavUkonceni,
+    };
+  }
+
+  /** QR kód (PNG) kódující odkaz na osobní výsledkovou stránku (viz getPersonalResult). */
+  async buildPersonalResultQrCode(trasaId: string, prihlaskaId: string): Promise<Buffer> {
+    const prihlaska = await this.prisma.prihlaska.findFirst({ where: { id: prihlaskaId, trasaId } });
+    if (!prihlaska) {
+      throw new NotFoundException("Přihláška nenalezena na této trati");
+    }
+    const webUrl = process.env.WEB_APP_URL ?? "http://localhost:5173";
+    const url = `${webUrl}/vysledky/${trasaId}/bezec/${prihlaskaId}`;
+    return QRCode.toBuffer(url, { type: "png", margin: 1, width: 240 });
+  }
+
   private async nacistAktualniZaznamyPodlePrihlasce(trasaId: string): Promise<Map<string, ZaznamUdalosti>> {
     const zaznamy = await this.prisma.zaznamUdalosti.findMany({
       where: { trasaId, typUdalosti: { in: [TypUdalosti.DOJEZD, TypUdalosti.OPRAVA] } },
@@ -324,4 +494,12 @@ export class ResultsService {
       poradiKategorie: null,
     };
   }
+}
+
+/** Medián seřazeného pole — robustnější než průměr proti odlehlým hodnotám (F33). */
+function median(serazeneHodnoty: number[]): number {
+  const mid = Math.floor(serazeneHodnoty.length / 2);
+  return serazeneHodnoty.length % 2 !== 0
+    ? serazeneHodnoty[mid]
+    : (serazeneHodnoty[mid - 1] + serazeneHodnoty[mid]) / 2;
 }

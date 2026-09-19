@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import type { VysledkyResponseDto } from "@depo/shared";
 import { api, API_BASE } from "../lib/api";
 
@@ -102,7 +102,9 @@ export function Results() {
                 <td>{p.poradiKategorie}</td>
                 <td>{p.startovniCislo}</td>
                 <td style={{ fontFamily: "var(--font-ui)" }}>
-                  {p.prijmeni} {p.jmeno}
+                  <Link to={`/vysledky/${routeId}/bezec/${p.prihlaskaId}`}>
+                    {p.prijmeni} {p.jmeno}
+                  </Link>
                 </td>
                 <td style={{ fontFamily: "var(--font-ui)" }}>{p.kategorieKod}</td>
                 <td style={{ fontWeight: 700 }}>{p.casCelkem}</td>

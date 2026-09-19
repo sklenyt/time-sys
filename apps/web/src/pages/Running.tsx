@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { RunningResponseDto } from "@depo/shared";
+import type { AnomaliesResponseDto, RunningResponseDto } from "@depo/shared";
+import { TypAnomalie } from "@depo/shared";
 import { api } from "../lib/api";
 
 export function Running() {
   const { routeId } = useParams<{ routeId: string }>();
   const [data, setData] = useState<RunningResponseDto | null>(null);
+  const [anomalie, setAnomalie] = useState<AnomaliesResponseDto | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -15,6 +17,12 @@ export function Running() {
         .get<RunningResponseDto>(`/routes/${routeId}/running`)
         .then(setData)
         .catch((e) => setError(e instanceof Error ? e.message : "Chyba načítání"));
+      api
+        .get<AnomaliesResponseDto>(`/routes/${routeId}/anomalies`)
+        .then(setAnomalie)
+        .catch(() => {
+          // Anomálie jsou jen doplňkové upozornění — chyba nesmí shodit hlavní přehled "Kdo běží".
+        });
     }
     load();
     const interval = setInterval(load, 5000);
@@ -60,6 +68,35 @@ export function Running() {
         </table>
       </div>
       {data.bezi.length === 0 && <p style={{ color: "var(--text-secondary)" }}>Nikdo aktuálně neběží.</p>}
+
+      {anomalie && anomalie.polozky.length > 0 && (
+        <section style={{ marginTop: 32 }}>
+          <h2 style={{ color: "var(--color-danger)" }}>Podezřelé časy (F33)</h2>
+          <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+            Výrazná odchylka od mediánu ostatních běžců ve stejné kategorii — možná chyba záznamu, zkrácení trati
+            nebo nouzová situace na trati.
+          </p>
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {anomalie.polozky.map((a, i) => (
+              <li
+                key={i}
+                style={{
+                  padding: "8px 12px",
+                  marginBottom: 8,
+                  borderRadius: 8,
+                  border: "1px solid var(--color-danger)",
+                  fontFamily: "var(--font-mono, monospace)",
+                }}
+              >
+                #{a.startovniCislo} {a.prijmeni} {a.jmeno} ({a.kategorieKod}) —{" "}
+                {a.typAnomalie === TypAnomalie.PRILIS_RYCHLY ? "podezřele rychlý" : "podezřele pomalý"}{" "}
+                {a.typUdalosti === "MEZICAS" ? "mezičas" : "cílový čas"}: {a.cas} (medián kategorie:{" "}
+                {Math.round(a.medianKategorieMs / 1000 / 60)} min)
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

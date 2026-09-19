@@ -36,6 +36,7 @@ export interface Trasa {
   typStartu: TypStartu;
   dokoncena: boolean;
   exportSouborNazev?: string | null;
+  registraceUzavrena: boolean;
 }
 
 export interface Kategorie {
@@ -72,6 +73,7 @@ export interface Prihlaska {
   registrovan: boolean;
   nouzovyKontakt?: string | null;
   zdravotniPoznamka?: string | null;
+  oznamovaciEmail?: string | null;
   stavUkonceni?: StavUkonceni | null;
 }
 
@@ -256,6 +258,8 @@ export interface RecordResponseDto {
   stav: StavZaznamu;
   casKola?: string | null;
   casCelkem?: string | null;
+  /** F41 — má tento záznam přiložený fotodůkaz z cíle (viz docs/12-rfid-a-doporuceni.md §12.8). */
+  maFotodukaz?: boolean;
 }
 
 export interface CorrectRecordDto {
@@ -312,4 +316,105 @@ export interface AuditLogPolozka {
   entitaId: string;
   puvodniHodnota: Record<string, unknown> | null;
   novaHodnota: Record<string, unknown> | null;
+}
+
+/** GET /routes/:id/register (veřejné) — vlastní registrační formulář (F23, Fáze 4). */
+export interface RegistrationInfoDto {
+  trasaNazev: string;
+  udalostNazev: string;
+  otevrena: boolean;
+  kategorie: Kategorie[];
+}
+
+export interface RegistrationResponseDto {
+  startovniCislo: number;
+  prijmeni: string;
+  jmeno: string;
+}
+
+/** GET /reports/course-records — rekord tratě napříč ročníky stejného názvu (F26, Fáze 4). */
+export interface CourseRecordPolozka {
+  udalostId: string;
+  udalostNazev: string;
+  udalostDatum: string;
+  trasaId: string;
+  prihlaskaId: string;
+  prijmeni: string;
+  jmeno: string;
+  kategorieKod: string;
+  casCelkem: string;
+  casCelkemMs: number;
+}
+
+export interface CourseRecordsResponseDto {
+  nazev: string;
+  pocetRocniku: number;
+  celkovyRekord: CourseRecordPolozka | null;
+  rekordyPodleKategorie: CourseRecordPolozka[];
+}
+
+/** GET /reports/runner-history — historie výkonů běžce napříč ročníky (F26, Fáze 4). */
+export interface RunnerHistoryPolozka {
+  udalostNazev: string;
+  udalostDatum: string;
+  trasaNazev: string;
+  kategorieKod: string;
+  casCelkem: string | null;
+  poradiCelkove: number | null;
+  poradiKategorie: number | null;
+  stavUkonceni?: StavUkonceni | null;
+}
+
+export interface RunnerHistoryResponseDto {
+  prijmeni: string;
+  jmeno: string;
+  zavody: RunnerHistoryPolozka[];
+}
+
+/**
+ * GET /routes/:id/anomalies — F33 (Fáze 4): podezřele rychlý/pomalý čas
+ * oproti mediánu ostatních v téže kategorii (možné zkrácení trati nebo
+ * naopak nouzová situace na trati), viz docs/12-rfid-a-doporuceni.md §12.6/§12.8.
+ */
+export enum TypAnomalie {
+  PRILIS_RYCHLY = "PRILIS_RYCHLY",
+  PRILIS_POMALY = "PRILIS_POMALY",
+}
+
+export interface AnomaliePolozka {
+  prihlaskaId: string;
+  startovniCislo: number;
+  prijmeni: string;
+  jmeno: string;
+  kategorieKod: string;
+  typUdalosti: TypUdalosti.DOJEZD | TypUdalosti.MEZICAS;
+  cas: string;
+  casMs: number;
+  medianKategorieMs: number;
+  typAnomalie: TypAnomalie;
+}
+
+export interface AnomaliesResponseDto {
+  trasaId: string;
+  polozky: AnomaliePolozka[];
+}
+
+/**
+ * GET /routes/:id/results/bezec/:prihlaskaId — osobní výsledková stránka
+ * pro QR kód na startovním čísle (viz docs/12-rfid-a-doporuceni.md §12.6/§12.9)
+ * — naskenování odkáže přímo na výsledek konkrétního závodníka, ne na celou
+ * (často dlouhou) tabulku.
+ */
+export interface PersonalResultDto {
+  prihlaskaId: string;
+  startovniCislo: number;
+  prijmeni: string;
+  jmeno: string;
+  kategorieKod: string;
+  kategorieNazev: string;
+  casCelkem: string | null;
+  poradiCelkove: number | null;
+  poradiKategorie: number | null;
+  mezicas: string | null;
+  stavUkonceni?: StavUkonceni | null;
 }

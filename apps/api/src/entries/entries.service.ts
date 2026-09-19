@@ -1,11 +1,14 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma, type Prihlaska } from "@prisma/client";
 import { parse } from "csv-parse/sync";
-import { ImportEntriesResponseDto, Pohlavi, TypStartu } from "@depo/shared";
+import { ImportEntriesResponseDto, Pohlavi, RegistrationInfoDto, RegistrationResponseDto, TypStartu } from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateEntryDto } from "./dto/create-entry.dto";
+import { PublicRegisterDto } from "./dto/public-register.dto";
 import { StartVlnyService } from "../start-vlny/start-vlny.service";
 import { decryptSecret, encryptSecret } from "../common/secret-crypto";
+
+const MAX_POKUSU_O_CISLO = 5;
 
 @Injectable()
 export class EntriesService {
@@ -29,6 +32,9 @@ export class EntriesService {
           klub: dto.klub,
           kategorieId: dto.kategorieId,
           startVlnaId,
+          email: dto.email,
+          telefon: dto.telefon,
+          oznamovaciEmail: dto.oznamovaciEmail,
           // Citlivé osobní údaje (F31) — nikdy plain-text ve sloupci (§8.4).
           nouzovyKontakt: dto.nouzovyKontakt ? encryptSecret(dto.nouzovyKontakt) : undefined,
           zdravotniPoznamka: dto.zdravotniPoznamka ? encryptSecret(dto.zdravotniPoznamka) : undefined,
@@ -129,6 +135,92 @@ export class EntriesService {
       orderBy: { startovniCislo: "asc" },
     });
     return prihlasky.map(odsifrovatPrihlasku);
+  }
+
+  /** Info pro veřejný registrační formulář (F23) — název, stav otevřenosti, dostupné kategorie. */
+  async getRegistrationInfo(trasaId: string): Promise<RegistrationInfoDto> {
+    const trasa = await this.prisma.trasa.findUnique({
+      where: { id: trasaId },
+      include: { kategorie: true, udalost: true },
+    });
+    if (!trasa) {
+      throw new NotFoundException("Trasa nenalezena");
+    }
+    return {
+      trasaNazev: trasa.nazev,
+      udalostNazev: trasa.udalost.nazev,
+      otevrena: !trasa.dokoncena && !trasa.registraceUzavrena,
+      kategorie: trasa.kategorie as RegistrationInfoDto["kategorie"],
+    };
+  }
+
+  /**
+   * Veřejná sebe-registrace (F23, Fáze 4) — na rozdíl od organizátorského
+   * `create()` si závodník nevolí startovní číslo, přiřadí se automaticky
+   * (nejnižší volné), aby nešlo obsadit/zablokovat cizí číslo. Při souběhu
+   * dvou registrací ve stejnou chvíli se pokus o kolidující číslo tiše
+   * zopakuje s dalším volným.
+   */
+  async registerPublic(trasaId: string, dto: PublicRegisterDto): Promise<RegistrationResponseDto> {
+    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId } });
+    if (!trasa) {
+      throw new NotFoundException("Trasa nenalezena");
+    }
+    if (trasa.dokoncena || trasa.registraceUzavrena) {
+      throw new BadRequestException("Registrace na tuto trasu už je uzavřená");
+    }
+
+    for (let pokus = 0; pokus < MAX_POKUSU_O_CISLO; pokus += 1) {
+      const posledni = await this.prisma.prihlaska.aggregate({
+        where: { trasaId },
+        _max: { startovniCislo: true },
+      });
+      const dalsiCislo = (posledni._max.startovniCislo ?? 0) + 1 + pokus;
+
+      try {
+        const prihlaska = await this.create(trasaId, { ...dto, startovniCislo: dalsiCislo });
+        return { startovniCislo: prihlaska.startovniCislo, prijmeni: prihlaska.prijmeni, jmeno: prihlaska.jmeno };
+      } catch (err) {
+        if (err instanceof ConflictException && pokus < MAX_POKUSU_O_CISLO - 1) {
+          continue; // souběh dvou registrací — zkusí další volné číslo
+        }
+        throw err;
+      }
+    }
+    throw new ConflictException("Registraci se nepodařilo dokončit, zkuste to prosím znovu");
+  }
+
+  /**
+   * F29 — spárování RFID čipu s přihláškou, nutná příprava pro F22 ingest
+   * endpoint (`POST /routes/:id/records/rfid`), který podle kódu čipu
+   * dohledá startovní číslo. `@@unique([kodCipu, stav])` v schema.prisma
+   * zabraňuje dvěma zároveň aktivně přiřazeným čipům se stejným kódem.
+   */
+  async pairChip(trasaId: string, prihlaskaId: string, kodCipu: string) {
+    const prihlaska = await this.prisma.prihlaska.findFirst({ where: { id: prihlaskaId, trasaId } });
+    if (!prihlaska) {
+      throw new NotFoundException("Přihláška nenalezena na této trati");
+    }
+    try {
+      return await this.prisma.cip.upsert({
+        where: { prihlaskaId },
+        create: { prihlaskaId, kodCipu, stav: "PRIREZEN" },
+        update: { kodCipu, stav: "PRIREZEN" },
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        throw new ConflictException(`Čip ${kodCipu} je už přiřazený jiné aktivní přihlášce`);
+      }
+      throw err;
+    }
+  }
+
+  async unpairChip(trasaId: string, prihlaskaId: string): Promise<void> {
+    const prihlaska = await this.prisma.prihlaska.findFirst({ where: { id: prihlaskaId, trasaId } });
+    if (!prihlaska) {
+      throw new NotFoundException("Přihláška nenalezena na této trati");
+    }
+    await this.prisma.cip.deleteMany({ where: { prihlaskaId } });
   }
 
   /**

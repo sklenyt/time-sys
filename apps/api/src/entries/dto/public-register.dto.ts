@@ -2,14 +2,12 @@ import { IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID } from
 import { Pohlavi } from "@depo/shared";
 
 /**
- * Trasa je dána cestou (POST /routes/:routeId/entries), kategorie je zde
- * povinná (F03) — auto-návrh z /categories/navrh se v UI musí explicitně
- * potvrdit, endpoint nikdy neuloží přihlášku bez kategorie.
+ * Vlastní veřejný registrační formulář (F23, Fáze 4) — na rozdíl od
+ * CreateEntryDto (organizátorský zápis) si veřejnost NEVOLÍ startovní
+ * číslo (přiřadí se automaticky) ani vlnu, aby nešlo zablokovat cizí
+ * číslo nebo obejít pořadí přihlášek.
  */
-export class CreateEntryDto {
-  @IsInt()
-  startovniCislo!: number;
-
+export class PublicRegisterDto {
   @IsString()
   @IsNotEmpty()
   prijmeni!: string;
@@ -32,10 +30,6 @@ export class CreateEntryDto {
 
   @IsUUID()
   kategorieId!: string;
-
-  @IsOptional()
-  @IsUUID()
-  startVlnaId?: string;
 
   @IsOptional()
   @IsString()

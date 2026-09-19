@@ -12,6 +12,10 @@ async function bootstrap() {
       // Vlastní veřejná stránka výsledků (Vite SPA) je samostatná aplikace
       // na jiném originu — API vrací jen JSON/SSE, ne HTML k omezování CSP.
       contentSecurityPolicy: false,
+      // Bez CORP výjimky by prohlížeč blokoval načtení QR PNG (F33/QR) i
+      // embed/kiosk stránek přes <img>/<iframe> z jiného originu — API
+      // nepoužívá cookies (jen Bearer token), takže tu není co chránit.
+      crossOriginResourcePolicy: { policy: "cross-origin" },
     })
   );
   app.setGlobalPrefix("api/v1");

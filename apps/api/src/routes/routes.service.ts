@@ -46,6 +46,7 @@ export class RoutesService {
         typStartu: dto.typStartu,
         dokoncena: dto.dokoncena,
         exportSouborNazev: dto.exportSouborNazev,
+        registraceUzavrena: dto.registraceUzavrena,
       },
     });
   }

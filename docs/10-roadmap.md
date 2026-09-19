@@ -59,16 +59,19 @@ Cíl: plná terénní spolehlivost a síťová spolupráce mezi stanovišti.
 
 **Akceptační kritérium fáze splněno:** organizátor pozve spolupracovníky s odlišnými rolemi bez sdílení hesla (RBAC hotové od Fáze 1); diváci sledují výsledky na mobilu bez manuálního uploadu (živé SSE, embed, kiosek).
 
-## Fáze 4 — RFID/čtečky a rozšíření (odhad průběžně, dle poptávky)
+## Fáze 4 — RFID/čtečky a rozšíření (✅ hotovo, F39/F40 vyjmuto)
 
-- Podpora RFID čipů přes Local Capture Agent (F22, F29, F30) — hardwarové varianty, párování, evidence záloh, viz **[12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)** a [03-architecture.md §3.9](03-architecture.md#39-local-capture-agent--napojení-rfid-decodérů-f22-n12)
-- AI rozpoznávání startovních čísel z fotografií jako levnější alternativa k RFID (F40) — viz [13-konkurencni-analyza.md §13.4](13-konkurencni-analyza.md)
-- Vlastní online registrační formulář (F23)
-- Multi-tenant provoz pro více organizátorů (F24) — Row-Level Security dle [04-data-model.md §4.6](04-data-model.md)
-- Pokročilé reporty, historie výkonů, rekordy tratě (F26)
-- SMS/e-mail notifikace při doběhu (F32), QR kód na startovním čísle, detekce podezřelých mezičasů (F33) — viz [12-rfid-a-doporuceni.md §12.12](12-rfid-a-doporuceni.md) pro doporučené pořadí zařazení
-- "NearMe" odlehčené GPS upozornění divákům (F39) — viz [13-konkurencni-analyza.md §13.6](13-konkurencni-analyza.md)
-- Zvážení CRDT knihovny pro obecnější konflikty, pokud vlastní event-log sync narazí na limity (viz [05-tech-stack.md §5.3](05-tech-stack.md))
+- ✅ **Vlastní veřejný registrační formulář** (F23) — `GET/POST /routes/:id/register`, veřejné bez přihlášení, samostatný `PublicRegistrationController`/`PublicRegisterDto` od organizátorského zápisu (žádné startovní číslo/vlna z uživatelského vstupu — přiděluje se automaticky, nejnižší volné, s retry při souběhu dvou registrací). `Trasa.registraceUzavrena` řídí otevření/uzavření, Dashboard nabízí odkaz a přepínač.
+- ✅ **Multi-tenant Row-Level Security** (F24) — PostgreSQL RLS politiky (`FORCE ROW LEVEL SECURITY`) na `organizace/udalost/trasa/kategorie/start_vlna/prihlaska/zaznam_udalosti/publikacni_cil`, prosazené přes `current_setting('app.current_org')`; `TenantContextInterceptor` (AsyncLocalStorage) + Prisma `$use` middleware nastavují kontext z přihlášeného uživatele na každém requestu, obalené transakcí jen když není potřeba (viz `params.runInTransaction` guard kvůli existující `$transaction([...])` v `GdprService`). Nezávisle na aplikační vrstvě dovnitř funguje jako defense-in-depth — při implementaci odhalilo a opravilo skutečnou mezeru (`GET /events/:id`/`GET /routes/:id` neměly žádnou vlastnickou kontrolu na aplikační úrovni).
+- ✅ **Pokročilé reporty — rekordy tratě a historie výkonů** (F26) — `GET /reports/course-records?nazev=` (ročníky stejné trati podle shodného názvu v rámci organizace, celkový rekord i po kategoriích) a `GET /reports/runner-history?prijmeni=&jmeno=` (chronologický přehled výsledků běžce napříč akcemi), oba scoped na vlastní organizaci volajícího jako `/events`.
+- ✅ **Detekce podezřele rychlého/pomalého času** (F33) — `GET /routes/:id/anomalies`, statistický odhad (medián + MAD škálovaný na 1.4826, robustní proti odlehlým hodnotám) v rámci kategorie, ne pevný práh v minutách; vyžaduje aspoň 3 srovnatelné běžce v kategorii. Pokrývá cílový čas i mezičas. Zobrazeno jako varování na `/kdo-bezi/:routeId`.
+- ✅ **QR kód na startovním čísle → osobní výsledky** — `GET /routes/:id/results/bezec/:prihlaskaId` (veřejná osobní stránka s časem/pořadím/mezičasem) + `GET .../qr.png` (QR kód kódující odkaz na ni, balíček `qrcode`). Kliknutí na jméno v tabulce výsledků vede na stejnou stránku.
+- ✅ **E-mailová notifikace při doběhu** (F32) — volitelné pole `oznamovaciEmail` na přihlášce (ruční zápis i veřejná registrace); po zápisu DOJEZD se pošle e-mail (`nodemailer`, SMTP volitelné přes `SMTP_HOST` — bez konfigurace se jen tiše přeskočí, fire-and-forget mimo kritickou cestu zápisu měření). Ověřeno end-to-end proti reálnému lokálnímu SMTP test serveru (`aiosmtpd`).
+- ✅ **Fotodůkaz sporných doběhů** (F41) — `POST/GET /records/:id/foto`, nahrání přímo z fotoaparátu zařízení (`<input type="file" capture="environment">`, žádný speciální hardware) vázané na konkrétní `zaznam_udalosti`, uložení na lokální disk (`apps/api/uploads/zaznamy/`, jen odkaz v DB). UI na `/konflikty/:routeId` u každé kolize.
+- ✅ **RFID ingest endpoint + Local Capture Agent** (F22, F29 párování) — `POST /routes/:id/entries/:entryId/chip` páruje `kod_cipu` s přihláškou, `POST /routes/:id/records/rfid` dohledá aktuálně spárovanou přihlášku podle kódu čipu a vytvoří stejný záznam jako ruční zápis (kolize stanovišť, sync, živé výsledky beze změny). Ověřeno end-to-end mock agentem (skript simulující čtení čipu), který dokazuje pipeline funguje bez reálného RFID hardwaru — viz [03-architecture.md §3.9](03-architecture.md#39-local-capture-agent--napojení-rfid-decodérů-f22-n12). Samotný ovladač konkrétního výrobce decodéru (F30 evidence stavu čipu/záloh, hardwarová integrace) zůstává mimo scope, dokumentováno v [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md).
+- AI rozpoznávání startovních čísel z fotografií jako levnější alternativa k RFID (F40) — vyjmuto z rozsahu, viz [13-konkurencni-analyza.md §13.4](13-konkurencni-analyza.md)
+- "NearMe" odlehčené GPS upozornění divákům (F39) — vyjmuto z rozsahu, viz [13-konkurencni-analyza.md §13.6](13-konkurencni-analyza.md)
+- Zvážení CRDT knihovny pro obecnější konflikty, pokud vlastní event-log sync narazí na limity (viz [05-tech-stack.md §5.3](05-tech-stack.md)) — zatím se nenarazilo, ponecháno jako budoucí úvaha
 
 ## 10.5 Doporučený bezprostřední další krok
 

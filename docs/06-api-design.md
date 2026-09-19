@@ -31,6 +31,8 @@ REST pro CRUD operace a synchronizaci, WebSocket pro realtime promítnutí změn
 | `/entries/{id}` | GET, PATCH | Detail / oprava přihlášky (F04) |
 | `/routes/{id}/entries/import` | POST | Import CSV/XLSX startovní listiny (F04), tělo: soubor + mapování sloupců |
 | `/entries/{id}/status` | PATCH | Nastavení DNS/DNF/DQ (F11) |
+| `/routes/{id}/entries/{entryId}/chip` | POST | Spárování RFID čipu s přihláškou (F29, Fáze 4) — `{ kodCipu }` |
+| `/routes/{id}/entries/{entryId}/chip` | DELETE | Zrušení spárování čipu |
 
 ## 6.4 Měření — jádro systému
 
@@ -39,8 +41,11 @@ REST pro CRUD operace a synchronizaci, WebSocket pro realtime promítnutí změn
 | `/routes/{id}/start` | POST | Zahájení startu vlny — server/klient uloží aktuální čas jako `cas_startu` (UC5) |
 | `/routes/{id}/start` | DELETE | Zrušení startu |
 | `/routes/{id}/records` | POST | **Jádro F06**: `{ startovni_cislo, zarizeni_id, klient_cas }` → server uloží `zaznam_udalosti` s `typ_udalosti=DOJEZD`, čas = okamžik přijetí/potvrzení na klientovi, ne ruční vstup |
+| `/routes/{id}/records/rfid` | POST | RFID ingest z Local Capture Agentu (F22, Fáze 4, [03-architecture.md §3.9](03-architecture.md#39-local-capture-agent--napojení-rfid-decodérů-f22-n12)) — stejné jako výše, ale `{ kod_cipu, ... }` místo `startovni_cislo`; server dohledá aktuálně spárovanou přihlášku |
 | `/records/{id}/correct` | POST | Oprava čísla se zachováním času (F08) — vytvoří nový `zaznam_udalosti` s `nahrazuje_zaznam_id` a `typ_opravy` |
+| `/records/{id}/foto` | POST, GET | Fotodůkaz sporného doběhu (F41, Fáze 4) — nahrání/stažení snímku vázaného na konkrétní `zaznam_udalosti` |
 | `/routes/{id}/running` | GET | "Kdo ještě běží / DNF" — realtime přehled (F10, `kdo_bezi_view`) |
+| `/routes/{id}/anomalies` | GET | Podezřele rychlý/pomalý čas oproti kategorii (F33, Fáze 4) — statistický odhad (medián + MAD), ne pevný práh |
 | `/sync/events` | POST | **Klíčový endpoint offline synchronizace** — klient pošle dávku lokálně vzniklých eventů (viz [03-architecture.md §3.5](03-architecture.md#35-synchronizační-strategie-nejkritičtější-technické-rozhodnutí)) |
 | `/sync/events` | GET | Klient stáhne eventy od `?since=<cursor>`, které ještě lokálně nemá |
 
@@ -79,6 +84,10 @@ REST pro CRUD operace a synchronizaci, WebSocket pro realtime promítnutí změn
 | `/routes/{id}/results/export.xlsx` | GET | Export XLSX (F13) |
 | `/routes/{id}/results/export.pdf` | GET | Export PDF (F13) |
 | `/routes/{id}/results/live` | GET (veřejné, bez auth) | Veřejná živá stránka výsledků (F16), cachovaná/edge |
+| `/routes/{id}/results/bezec/{prihlaskaId}` | GET (veřejné) | Osobní výsledek jednoho závodníka — cíl QR kódu na startovním čísle (Fáze 4, [12-rfid-a-doporuceni.md §12.6](12-rfid-a-doporuceni.md)) |
+| `/routes/{id}/results/bezec/{prihlaskaId}/qr.png` | GET (veřejné) | QR kód (PNG) kódující odkaz na osobní výsledek výše |
+| `/reports/course-records?nazev=` | GET | Rekord tratě napříč ročníky stejného názvu, celkový i po kategoriích (F26, Fáze 4) |
+| `/reports/runner-history?prijmeni=&jmeno=` | GET | Historie výkonů běžce napříč ročníky (F26, Fáze 4) |
 | `/events/{id}/publish-targets` | GET, POST | Seznam / vytvoření publikačního cíle (FTP/FTPS/SFTP) — F34, F37 |
 | `/publish-targets/{id}` | GET, PATCH, DELETE | Detail / úprava (server, cesta, přihlašovací údaje, interval, šablona) / smazání cíle |
 | `/publish-targets/{id}/test` | POST | Otestuje připojení a přihlášení bez provedení skutečného exportu — okamžitá zpětná vazba při konfiguraci |

@@ -53,6 +53,26 @@ export class ResultsController {
     });
     res.send(buffer);
   }
+
+  /** Osobní výsledek — cíl QR kódu na startovním čísle (viz docs/12-rfid-a-doporuceni.md §12.6). */
+  @Get("bezec/:prihlaskaId")
+  getPersonalResult(
+    @Param("routeId", ParseUUIDPipe) routeId: string,
+    @Param("prihlaskaId", ParseUUIDPipe) prihlaskaId: string
+  ) {
+    return this.results.getPersonalResult(routeId, prihlaskaId);
+  }
+
+  @Get("bezec/:prihlaskaId/qr.png")
+  async getPersonalResultQr(
+    @Param("routeId", ParseUUIDPipe) routeId: string,
+    @Param("prihlaskaId", ParseUUIDPipe) prihlaskaId: string,
+    @Res() res: Response
+  ) {
+    const buffer = await this.results.buildPersonalResultQrCode(routeId, prihlaskaId);
+    res.set({ "Content-Type": "image/png" });
+    res.send(buffer);
+  }
 }
 
 /** Provozní přehled pro obsluhu, ne veřejná stránka jako výsledky (F10, UC10) — vyžaduje přihlášení. */
@@ -63,5 +83,16 @@ export class RunningController {
   @Get()
   get(@Param("routeId", ParseUUIDPipe) routeId: string) {
     return this.results.getRunning(routeId);
+  }
+}
+
+/** Podezřele rychlé/pomalé časy oproti kategorii (F33) — provozní upozornění pro obsluhu. */
+@Controller("routes/:routeId/anomalies")
+export class AnomaliesController {
+  constructor(private readonly results: ResultsService) {}
+
+  @Get()
+  get(@Param("routeId", ParseUUIDPipe) routeId: string) {
+    return this.results.getAnomalies(routeId);
   }
 }

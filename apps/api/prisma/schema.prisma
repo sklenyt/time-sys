@@ -130,6 +130,7 @@ model Trasa {
   typStartu          TypStartu @map("typ_startu")
   dokoncena          Boolean   @default(false)
   exportSouborNazev  String?   @map("export_soubor_nazev")
+  registraceUzavrena Boolean   @default(false) @map("registrace_uzavrena")
 
   udalost      Udalost        @relation(fields: [udalostId], references: [id], onDelete: Cascade)
   kategorie    Kategorie[]
@@ -185,6 +186,7 @@ model Prihlaska {
   registrovan        Boolean       @default(true)
   nouzovyKontakt     String?       @map("nouzovy_kontakt")
   zdravotniPoznamka  String?       @map("zdravotni_poznamka")
+  oznamovaciEmail    String?       @map("oznamovaci_email")
   stavUkonceni       StavUkonceni? @map("stav_ukonceni")
   casovaPenalizace   Int?          @map("casova_penalizace_s")
   clenoveDruzstva    Json?         @map("clenove_druzstva")
@@ -241,6 +243,7 @@ model ZaznamUdalosti {
   vytvorenoKlientAt    DateTime     @map("vytvoreno_klient_at")
   prijatoServerAt      DateTime     @default(now()) @map("prijato_server_at")
   klientEventId        String       @unique @map("klient_event_id")
+  fotoSouborNazev      String?      @map("foto_soubor_nazev")
 
   trasa      Trasa      @relation(fields: [trasaId], references: [id], onDelete: Restrict)
   prihlaska  Prihlaska? @relation(fields: [prihlaskaId], references: [id])

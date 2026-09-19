@@ -23,6 +23,12 @@ export class GdprService {
       throw new NotFoundException("Přihláška nenalezena na této trati");
     }
 
+    // Poznámka k F24 (multi-tenant RLS): operace uvnitř $transaction() mají
+    // Prisma příznak runInTransaction=true, takže je PrismaService middleware
+    // nezabalí do vlastní tenant-scoped transakce (vyhnutí se vnořeným
+    // transakcím). Autorizace tu zůstává jen na aplikační vrstvě — findFirst
+    // výše (mimo transakci, tenant-scoped) a RolesGuard na controlleru už
+    // ověřily, že volající smí s touto trasou/přihláškou pracovat.
     await this.prisma.$transaction([
       this.prisma.zaznamUdalosti.updateMany({ where: { prihlaskaId }, data: { prihlaskaId: null } }),
       this.prisma.prihlaska.delete({ where: { id: prihlaskaId } }),

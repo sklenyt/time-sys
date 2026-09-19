@@ -29,4 +29,9 @@ export class UpdateRouteDto {
   @IsString()
   @MinLength(1)
   exportSouborNazev?: string;
+
+  /** Uzavření veřejného registračního formuláře (F23), např. při naplnění kapacity. */
+  @IsOptional()
+  @IsBoolean()
+  registraceUzavrena?: boolean;
 }

@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import type { ZaznamUdalosti } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
-import { ConflictItemDto, RecordResponseDto, StavZaznamu, TypOpravy, TypUdalosti } from "@depo/shared";
+import { promises as fs } from "fs";
+import { join, extname } from "path";
+import { ConflictItemDto, RecordResponseDto, StavCipu, StavZaznamu, TypOpravy, TypUdalosti } from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateRecordDto } from "./dto/create-record.dto";
 import { CorrectRecordDto } from "./dto/correct-record.dto";
+import { RfidRecordDto } from "./dto/rfid-record.dto";
 import { formatDuration } from "../common/format-duration";
 import { PublishTargetsService } from "../publish-targets/publish-targets.service";
 import { ResultsEventsService } from "../results/results-events.service";
+import { EmailService } from "../notifications/email.service";
 
 /**
  * "Ve stejném kole" (03-architecture.md §3.5) — okno, v němž se druhý
@@ -21,7 +25,8 @@ export class RecordsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly publishTargets: PublishTargetsService,
-    private readonly resultsEvents: ResultsEventsService
+    private readonly resultsEvents: ResultsEventsService,
+    private readonly email: EmailService
   ) {}
 
   /**
@@ -112,9 +117,54 @@ export class RecordsService {
       // Mezičas výsledky neovlivňuje, export ani živé přepočítání by tu bylo zbytečné.
       this.publishTargets.exportPoZaznamuProTrasu(trasaId).catch(() => {});
       this.resultsEvents.oznamZmenu(trasaId);
+
+      // F32 — e-mail rodině/blízké osobě při doběhu, taky fire-and-forget.
+      if (prihlaska?.oznamovaciEmail && casCelkem) {
+        this.prisma.trasa
+          .findUnique({ where: { id: trasaId } })
+          .then((trasa) => {
+            if (!trasa) return;
+            return this.email.posliOznameniODobehu({
+              komu: prihlaska.oznamovaciEmail!,
+              prijmeni: prihlaska.prijmeni,
+              jmeno: prihlaska.jmeno,
+              startovniCislo: prihlaska.startovniCislo,
+              trasaNazev: trasa.nazev,
+              casCelkem,
+            });
+          })
+          .catch(() => {});
+      }
     }
 
     return this.toResponse(zaznam, casKola, casCelkem);
+  }
+
+  /**
+   * F22 — ingest z Local Capture Agentu (viz docs/03-architecture.md §3.9).
+   * RFID decodér zná jen kód čipu, ne startovní číslo — dohledá se
+   * aktuálně spárovaná přihláška (F29, `EntriesService.pairChip`) a odtud
+   * dál běží úplně stejná logika jako ruční zápis "číslo + Enter".
+   */
+  async createFromChip(trasaId: string, dto: RfidRecordDto, uzivatelId: string | null = null) {
+    const cip = await this.prisma.cip.findFirst({
+      where: { kodCipu: dto.kodCipu, stav: StavCipu.PRIREZEN, prihlaska: { trasaId } },
+      include: { prihlaska: true },
+    });
+    if (!cip) {
+      throw new NotFoundException(`Čip ${dto.kodCipu} není na této trati přiřazen žádné přihlášce`);
+    }
+    return this.create(
+      trasaId,
+      {
+        startovniCislo: cip.prihlaska.startovniCislo,
+        zarizeniId: dto.zarizeniId,
+        klientCas: dto.klientCas,
+        klientEventId: dto.klientEventId,
+        typUdalosti: dto.typUdalosti,
+      },
+      uzivatelId
+    );
   }
 
   /**
@@ -217,6 +267,39 @@ export class RecordsService {
     return this.toResponse(vyreseny);
   }
 
+  /**
+   * F41 — fotodůkaz sporného doběhu, vázaný na konkrétní záznam
+   * (typicky NEEDS_REVIEW kolize, viz docs/12-rfid-a-doporuceni.md §12.8).
+   * Ukládá se na lokální disk — jen odkaz na soubor u záznamu, žádná
+   * zvláštní infrastruktura navíc.
+   */
+  async uploadPhoto(trasaId: string, zaznamId: string, soubor: Express.Multer.File): Promise<RecordResponseDto> {
+    const zaznam = await this.prisma.zaznamUdalosti.findFirst({ where: { id: zaznamId, trasaId } });
+    if (!zaznam) {
+      throw new NotFoundException("Záznam nenalezen na této trati");
+    }
+
+    const uploadDir = join(process.cwd(), "uploads", "zaznamy");
+    await fs.mkdir(uploadDir, { recursive: true });
+    const pripona = extname(soubor.originalname) || ".jpg";
+    const souborNazev = `${zaznamId}${pripona}`;
+    await fs.writeFile(join(uploadDir, souborNazev), soubor.buffer);
+
+    const aktualizovany = await this.prisma.zaznamUdalosti.update({
+      where: { id: zaznamId },
+      data: { fotoSouborNazev: souborNazev },
+    });
+    return this.toResponse(aktualizovany);
+  }
+
+  async getPhotoPath(trasaId: string, zaznamId: string): Promise<string> {
+    const zaznam = await this.prisma.zaznamUdalosti.findFirst({ where: { id: zaznamId, trasaId } });
+    if (!zaznam?.fotoSouborNazev) {
+      throw new NotFoundException("Fotodůkaz k tomuto záznamu nenalezen");
+    }
+    return join(process.cwd(), "uploads", "zaznamy", zaznam.fotoSouborNazev);
+  }
+
   /** Veřejné i pro SyncService (mapování na stejný tvar při pull delta eventů). */
   toResponse(
     zaznam: ZaznamUdalosti,
@@ -233,6 +316,7 @@ export class RecordsService {
       stav: zaznam.stav as StavZaznamu,
       casKola,
       casCelkem,
+      maFotodukaz: Boolean(zaznam.fotoSouborNazev),
     };
   }
 }

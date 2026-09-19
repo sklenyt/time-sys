@@ -28,3 +28,6 @@ coverage/
 
 # PWA generated
 apps/web/dev-dist/
+
+# Nahrané soubory za běhu (F41 fotodůkazy) — lokální disk, ne repo
+apps/api/uploads/

@@ -104,6 +104,19 @@ export function Dashboard() {
     window.prompt("Zkopírujte kód pro vložení živých výsledků na web (F38):", kod);
   }
 
+  function ukazatRegistracniOdkaz(routeId: string) {
+    window.prompt("Odkaz na veřejný registrační formulář (F23):", `${window.location.origin}/registrace/${routeId}`);
+  }
+
+  async function toggleRegistrace(routeId: string, registraceUzavrena: boolean) {
+    try {
+      await api.patch(`/routes/${routeId}`, { registraceUzavrena });
+      reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Změna se nezdařila");
+    }
+  }
+
   async function deleteEvent(eventId: string, nazev: string) {
     if (!window.confirm(`Opravdu smazat akci "${nazev}"? Tuto akci nelze vrátit zpět.`)) return;
     try {
@@ -127,6 +140,9 @@ export function Dashboard() {
   return (
     <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
       <h1 style={{ fontWeight: 800 }}>Přehled akcí</h1>
+      <p style={{ marginTop: -8, marginBottom: 16 }}>
+        <Link to="/reporty">Reporty — rekordy tratě a historie výkonů</Link>
+      </p>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
       {organizace.length === 0 && (
@@ -219,6 +235,12 @@ export function Dashboard() {
                     {t.dokoncena ? "Otevřít znovu" : "Dokončit"}
                   </button>
                   <Link to={`/startovni-listina/${t.id}`}>Startovní listina</Link>
+                  <button onClick={() => ukazatRegistracniOdkaz(t.id)} style={linkButtonStyle}>
+                    Registrace
+                  </button>
+                  <button onClick={() => toggleRegistrace(t.id, !t.registraceUzavrena)} style={linkButtonStyle}>
+                    {t.registraceUzavrena ? "Otevřít registraci" : "Uzavřít registraci"}
+                  </button>
                   <Link to={`/mereni/${t.id}`}>Měření</Link>
                   <Link to={`/mereni/${t.id}?bod=mezicas`}>Mezičas</Link>
                   <Link to={`/vysledky/${t.id}`}>Výsledky</Link>

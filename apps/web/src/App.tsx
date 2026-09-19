@@ -5,12 +5,15 @@ import { Dashboard } from "./pages/Dashboard";
 import { StartList } from "./pages/StartList";
 import { Measurement } from "./pages/Measurement";
 import { Results } from "./pages/Results";
+import { PersonalResult } from "./pages/PersonalResult";
 import { Running } from "./pages/Running";
 import { PublishTargets } from "./pages/PublishTargets";
 import { Conflicts } from "./pages/Conflicts";
 import { EmbedResults } from "./pages/EmbedResults";
 import { Kiosk } from "./pages/Kiosk";
 import { AuditLog } from "./pages/AuditLog";
+import { Register } from "./pages/Register";
+import { Reports } from "./pages/Reports";
 import { isLoggedIn } from "./lib/api";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -26,7 +29,9 @@ export function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/vysledky/:routeId" element={<Results />} />
+      <Route path="/vysledky/:routeId/bezec/:prihlaskaId" element={<PersonalResult />} />
       <Route path="/embed/vysledky/:routeId" element={<EmbedResults />} />
+      <Route path="/registrace/:routeId" element={<Register />} />
       <Route path="/kiosk/:routeId" element={<Kiosk />} />
       <Route
         path="/audit/:routeId"
@@ -81,6 +86,14 @@ export function App() {
         element={
           <RequireAuth>
             <Conflicts />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/reporty"
+        element={
+          <RequireAuth>
+            <Reports />
           </RequireAuth>
         }
       />
