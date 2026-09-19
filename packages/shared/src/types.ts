@@ -109,6 +109,50 @@ export interface ZaznamUdalosti {
   prijatoServerAt: string;
 }
 
+export interface Uzivatel {
+  id: string;
+  organizaceId?: string | null;
+  email: string;
+  jmeno: string;
+  vytvorenoAt: string;
+}
+
+export interface AuditLog {
+  id: string;
+  uzivatelId?: string | null;
+  entita: string;
+  entitaId: string;
+  puvodniHodnota?: unknown;
+  novaHodnota?: unknown;
+  cas: string;
+}
+
+export interface RegisterDto {
+  email: string;
+  heslo: string;
+  jmeno: string;
+}
+
+export interface LoginDto {
+  email: string;
+  heslo: string;
+}
+
+export interface AuthTokensDto {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface RefreshTokenDto {
+  refreshToken: string;
+}
+
+export interface AuthUserDto {
+  id: string;
+  email: string;
+  jmeno: string;
+}
+
 export interface PublikacniCil {
   id: string;
   udalostId: string;

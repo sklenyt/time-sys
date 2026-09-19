@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from "@nestjs/common";
 import { RoutesService } from "./routes.service";
 import { CreateRouteDto } from "./dto/create-route.dto";
+import { Public } from "../auth/decorators/public.decorator";
 
+/** Zatím veřejné, viz poznámka v OrganizationsController. */
+@Public()
 @Controller()
 export class RoutesController {
   constructor(private readonly routes: RoutesService) {}

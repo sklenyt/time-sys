@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from "@nestjs/common";
 import { CategoriesService } from "./categories.service";
 import { CreateCategoryDto } from "./dto/create-category.dto";
+import { Public } from "../auth/decorators/public.decorator";
 
+/** Zatím veřejné, viz poznámka v OrganizationsController. */
+@Public()
 @Controller("routes/:routeId/categories")
 export class CategoriesController {
   constructor(private readonly categories: CategoriesService) {}

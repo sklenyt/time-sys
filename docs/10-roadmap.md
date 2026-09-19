@@ -15,13 +15,13 @@ Fáze navazují na cíle architektury ([03-architecture.md §3.1](03-architectur
 Cíl: nahradit **nejkritičtější denní use case** — samotné měření na jedné trati na jednom zařízení.
 
 - ✅ Monorepo, sdílené typy (`@depo/shared`), NestJS + Prisma API, Vite + React PWA frontend s Depo identitou — ověřeno end-to-end (organizace → akce → trať → kategorie → přihláška → záznam měření)
+- ✅ **Autentizace a základní RBAC** (F18, F19) — JWT access/refresh, `POST /auth/register|login|refresh`, role vázaná na konkrétní událost (`uzivatel_role`), bootstrap prvního ADMINa události bez nutnosti pozvánky, viz [08-security.md](08-security.md). Zatím vynuceno jen na zápisu/opravě měření (`RecordsController`) — RBAC na správě tratí/startovní listiny je následující krok.
+- ✅ **Oprava záznamu se zachováním času** (F08) — `PATCH /routes/:id/records/:recordId/correct`, nový řádek `typ_udalosti=OPRAVA` odkazující na původní přes `nahrazuje_zaznam_id`, čas se nikdy nemění
+- ✅ **Základní auditní log** (F09) — `audit_log` záznam s `puvodni_hodnota`/`nova_hodnota` při každé opravě; samotný zápis měření je již sebe-auditující přes `zaznam_udalosti.uzivatel_id`/`cas`
 - Modul správy trasy (F01, F02) — [07-ui-mockups.md §7.2](07-ui-mockups.md)
 - Startovní listina — ruční zápis + CSV import (F03, F04) — [§7.8](07-ui-mockups.md)
 - **Modul měření** — číslo + Enter, zachování systémového času (F06, F07) — [§7.3](07-ui-mockups.md), jádro dle [04-data-model.md §4.2](04-data-model.md)
 - **Responzivní layout pro telefon/tablet/desktop od prvního řádku kódu** (F25, N08) — ne dodatečná úprava; klíčové obrazovky (Měření, Startovní listina, Kdo běží) se navrhují rovnou pro dotyk na iPadu/telefonu, viz [05-tech-stack.md §5.2.1](05-tech-stack.md)
-- Autentizace a základní RBAC (F18, F19) — [08-security.md](08-security.md)
-- Oprava záznamu se zachováním času (F08)
-- Základní auditní log (F09)
 - Nouzový kontakt a zdravotní poznámka u přihlášky (F31) — nízká náročnost, reálný bezpečnostní přínos, doporučeno zařadit hned do MVP (viz [12-rfid-a-doporuceni.md §12.6](12-rfid-a-doporuceni.md))
 - Výpočet výsledků a export XLSX (F12, F13)
 - **Automatický export výsledků na FTP/SFTP jako statická HTML stránka** (F34, F35) — [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37), mockup [§7.10](07-ui-mockups.md)

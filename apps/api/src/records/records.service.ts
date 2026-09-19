@@ -1,8 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import type { ZaznamUdalosti } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
 import { TypOpravy, TypUdalosti } from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateRecordDto } from "./dto/create-record.dto";
+import { CorrectRecordDto } from "./dto/correct-record.dto";
 
 function formatDuration(ms: number): string {
   const totalCentis = Math.round(ms / 10);
@@ -25,7 +27,7 @@ export class RecordsService {
    * klientEventId, protože klient může requst při výpadku spojení
    * zopakovat beze změny obsahu (viz 06-api-design.md).
    */
-  async create(trasaId: string, dto: CreateRecordDto) {
+  async create(trasaId: string, dto: CreateRecordDto, uzivatelId: string | null = null) {
     const existing = await this.prisma.zaznamUdalosti.findUnique({
       where: { klientEventId: dto.klientEventId },
     });
@@ -62,6 +64,7 @@ export class RecordsService {
         typUdalosti: TypUdalosti.DOJEZD,
         cas: klientCas,
         zarizeniId: dto.zarizeniId,
+        uzivatelId,
         typOpravy: TypOpravy.ORIGINAL,
         vytvorenoKlientAt: klientCas,
         klientEventId: dto.klientEventId,
@@ -75,6 +78,59 @@ export class RecordsService {
       : null;
 
     return this.toResponse(zaznam, casKola, casCelkem);
+  }
+
+  /**
+   * Oprava startovního čísla se zachováním původního času (F08).
+   * Nikdy UPDATE — nový řádek typ_udalosti=OPRAVA odkazující na
+   * původní přes nahrazuje_zaznam_id, viz 04-data-model.md §4.2.
+   * Zapisuje i do audit_log (F09).
+   */
+  async correct(trasaId: string, zaznamId: string, dto: CorrectRecordDto, uzivatelId: string | null) {
+    const original = await this.prisma.zaznamUdalosti.findFirst({
+      where: { id: zaznamId, trasaId },
+    });
+    if (!original) {
+      throw new NotFoundException("Záznam nenalezen na této trati");
+    }
+
+    const novaPrihlaska = await this.prisma.prihlaska.findFirst({
+      where: { trasaId, startovniCislo: dto.noveStartovniCislo },
+    });
+
+    const opravenyZaznam = await this.prisma.zaznamUdalosti.create({
+      data: {
+        trasaId,
+        prihlaskaId: novaPrihlaska?.id,
+        startovniCisloRaw: dto.noveStartovniCislo,
+        typUdalosti: TypUdalosti.OPRAVA,
+        cas: original.cas,
+        zarizeniId: original.zarizeniId,
+        uzivatelId,
+        typOpravy: dto.typOpravy,
+        nahrazujeZaznamId: original.id,
+        vytvorenoKlientAt: original.vytvorenoKlientAt,
+        klientEventId: uuidv4(),
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        uzivatelId,
+        entita: "zaznam_udalosti",
+        entitaId: opravenyZaznam.id,
+        puvodniHodnota: {
+          startovniCisloRaw: original.startovniCisloRaw,
+          prihlaskaId: original.prihlaskaId,
+        },
+        novaHodnota: {
+          startovniCisloRaw: opravenyZaznam.startovniCisloRaw,
+          prihlaskaId: opravenyZaznam.prihlaskaId,
+        },
+      },
+    });
+
+    return this.toResponse(opravenyZaznam);
   }
 
   private toResponse(

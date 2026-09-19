@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import type { Organizace, Trasa, Udalost } from "@depo/shared";
-import { TypStartu } from "@depo/shared";
+import type { AuthUserDto, Organizace, Trasa, Udalost } from "@depo/shared";
+import { Role, TypStartu } from "@depo/shared";
 import { api } from "../lib/api";
 
 export function Dashboard() {
@@ -43,13 +43,19 @@ export function Dashboard() {
 
   async function createEvent() {
     if (!eventNazev.trim() || !eventDatum || organizace.length === 0) return;
-    await api.post("/events", {
+    const udalost = await api.post<Udalost>("/events", {
       organizaceId: organizace[0].id,
       nazev: eventNazev,
       datum: eventDatum,
     });
     setEventNazev("");
     setEventDatum("");
+    try {
+      const me = await api.get<AuthUserDto>("/auth/me");
+      await api.post(`/events/${udalost.id}/roles`, { uzivatelId: me.id, role: Role.ADMIN });
+    } catch {
+      // Role se přiřadí ručně přes Uživatelé a role, pokud událost už má admina.
+    }
     reload();
   }
 

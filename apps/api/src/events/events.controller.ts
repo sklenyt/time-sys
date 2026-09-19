@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from "@nestjs/common";
 import { EventsService } from "./events.service";
 import { CreateEventDto } from "./dto/create-event.dto";
+import { Public } from "../auth/decorators/public.decorator";
 
+/** Zatím veřejné, viz poznámka v OrganizationsController. */
+@Public()
 @Controller("events")
 export class EventsController {
   constructor(private readonly events: EventsService) {}
