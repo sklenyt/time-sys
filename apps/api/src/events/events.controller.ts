@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
 import { Role } from "@depo/shared";
 import { EventsService } from "./events.service";
 import { CreateEventDto } from "./dto/create-event.dto";
@@ -29,5 +29,12 @@ export class EventsController {
   @Patch(":eventId")
   update(@Param("eventId", ParseUUIDPipe) eventId: string, @Body() dto: UpdateEventDto) {
     return this.events.update(eventId, dto);
+  }
+
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Delete(":eventId")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param("eventId", ParseUUIDPipe) eventId: string) {
+    return this.events.remove(eventId);
   }
 }

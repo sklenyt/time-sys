@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
 import { Role } from "@depo/shared";
 import { RoutesService } from "./routes.service";
 import { CreateRouteDto } from "./dto/create-route.dto";
@@ -29,5 +29,12 @@ export class RoutesController {
   @Patch("routes/:routeId")
   update(@Param("routeId", ParseUUIDPipe) routeId: string, @Body() dto: UpdateRouteDto) {
     return this.routes.update(routeId, dto);
+  }
+
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Delete("routes/:routeId")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param("routeId", ParseUUIDPipe) routeId: string) {
+    return this.routes.remove(routeId);
   }
 }

@@ -99,6 +99,26 @@ export function Dashboard() {
     }
   }
 
+  async function deleteEvent(eventId: string, nazev: string) {
+    if (!window.confirm(`Opravdu smazat akci "${nazev}"? Tuto akci nelze vrátit zpět.`)) return;
+    try {
+      await api.del(`/events/${eventId}`);
+      reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Smazání se nezdařilo");
+    }
+  }
+
+  async function deleteRoute(routeId: string, nazev: string) {
+    if (!window.confirm(`Opravdu smazat trasu "${nazev}"? Tuto akci nelze vrátit zpět.`)) return;
+    try {
+      await api.del(`/routes/${routeId}`);
+      reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Smazání se nezdařilo");
+    }
+  }
+
   return (
     <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
       <h1 style={{ fontWeight: 800 }}>Přehled akcí</h1>
@@ -153,7 +173,7 @@ export function Dashboard() {
             background: "var(--paper)",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "0 0 4px" }}>
             <h3 style={{ margin: 0 }}>{u.nazev}</h3>
             <button onClick={() => renameEvent(u.id, u.nazev)} style={linkButtonStyle}>
               Přejmenovat
@@ -161,6 +181,9 @@ export function Dashboard() {
             <Link to={`/publikace/${u.id}`} style={{ fontSize: 13 }}>
               Publikace (FTP/SFTP)
             </Link>
+            <button onClick={() => deleteEvent(u.id, u.nazev)} style={{ ...linkButtonStyle, color: "var(--color-danger)" }}>
+              Smazat akci
+            </button>
           </div>
           <p className="mono" style={{ color: "var(--text-secondary)", margin: "0 0 12px" }}>
             {u.datum.slice(0, 10)}
@@ -173,6 +196,8 @@ export function Dashboard() {
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: 8,
                   padding: "8px 0",
                   borderTop: "1px solid var(--line)",
                 }}
@@ -181,7 +206,7 @@ export function Dashboard() {
                   {t.nazev}
                   {t.dokoncena && <span className="mono" style={{ color: "var(--color-success, green)", marginLeft: 8, fontSize: 12 }}>dokončeno</span>}
                 </span>
-                <span style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <span style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                   <button onClick={() => startRace(t.id)} style={{ ...buttonStyle, padding: "4px 10px", fontSize: 12 }}>
                     Start
                   </button>
@@ -192,6 +217,9 @@ export function Dashboard() {
                   <Link to={`/mereni/${t.id}`}>Měření</Link>
                   <Link to={`/vysledky/${t.id}`}>Výsledky</Link>
                   <Link to={`/kdo-bezi/${t.id}`}>Kdo běží</Link>
+                  <button onClick={() => deleteRoute(t.id, t.nazev)} style={{ ...linkButtonStyle, color: "var(--color-danger)" }}>
+                    Smazat
+                  </button>
                 </span>
               </li>
             ))}

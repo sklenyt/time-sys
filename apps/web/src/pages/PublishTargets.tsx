@@ -68,6 +68,16 @@ export function PublishTargets() {
     reload();
   }
 
+  async function smazatCil(id: string) {
+    if (!window.confirm("Opravdu smazat tento publikační cíl?")) return;
+    try {
+      await api.del(`/publish-targets/${id}`);
+      reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Smazání se nezdařilo");
+    }
+  }
+
   return (
     <div style={{ padding: 24, maxWidth: 640, margin: "0 auto" }}>
       <h1 style={{ fontWeight: 800 }}>Publikace výsledků (FTP/SFTP)</h1>
@@ -108,6 +118,12 @@ export function PublishTargets() {
             </button>
             <button onClick={() => exportNyni(c.id)} style={{ ...buttonStyle, padding: "4px 10px", fontSize: 12 }}>
               Exportovat teď
+            </button>
+            <button
+              onClick={() => smazatCil(c.id)}
+              style={{ ...buttonStyle, padding: "4px 10px", fontSize: 12, background: "var(--color-danger)" }}
+            >
+              Smazat
             </button>
           </div>
           {zpravy[c.id] && <p className="mono" style={{ fontSize: 12, marginTop: 8 }}>{zpravy[c.id]}</p>}

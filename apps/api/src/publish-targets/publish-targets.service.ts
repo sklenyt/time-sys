@@ -64,6 +64,11 @@ export class PublishTargetsService {
     return this.bezHesla(cil);
   }
 
+  async remove(id: string) {
+    await this.getOrThrow(id);
+    await this.prisma.publikacniCil.delete({ where: { id } });
+  }
+
   /** Otestuje připojení a přihlášení bez provedení skutečného exportu. */
   async testConnection(id: string) {
     const cil = await this.getOrThrow(id);

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
 import { Role } from "@depo/shared";
 import { PublishTargetsService } from "./publish-targets.service";
 import { CreatePublishTargetDto } from "./dto/create-publish-target.dto";
@@ -44,5 +44,12 @@ export class PublishTargetsController {
   @Post("export-now")
   exportNow(@Param("cilId", ParseUUIDPipe) cilId: string) {
     return this.publishTargets.exportNow(cilId);
+  }
+
+  @Roles(...PUBLISH_ROLE)
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param("cilId", ParseUUIDPipe) cilId: string) {
+    return this.publishTargets.remove(cilId);
   }
 }

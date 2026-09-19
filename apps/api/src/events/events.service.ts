@@ -1,4 +1,5 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { UpdateEventDto } from "./dto/update-event.dto";
@@ -49,5 +50,19 @@ export class EventsService {
         logoUrl: dto.logoUrl,
       },
     });
+  }
+
+  async remove(id: string) {
+    await this.findOne(id);
+    try {
+      await this.prisma.udalost.delete({ where: { id } });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
+        throw new ConflictException(
+          "Událost nelze smazat — některá z jejích tras obsahuje startovní listinu nebo záznamy měření. Smažte je nejdřív."
+        );
+      }
+      throw err;
+    }
   }
 }

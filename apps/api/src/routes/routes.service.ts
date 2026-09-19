@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateRouteDto } from "./dto/create-route.dto";
 import { UpdateRouteDto } from "./dto/update-route.dto";
@@ -47,5 +48,19 @@ export class RoutesService {
         exportSouborNazev: dto.exportSouborNazev,
       },
     });
+  }
+
+  async remove(id: string) {
+    await this.findOne(id);
+    try {
+      await this.prisma.trasa.delete({ where: { id } });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
+        throw new ConflictException(
+          "Trasu nelze smazat — obsahuje startovní listinu nebo záznamy měření. Smažte je nejdřív."
+        );
+      }
+      throw err;
+    }
   }
 }
