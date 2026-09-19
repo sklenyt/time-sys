@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>Depo — Kdo běží / DNF</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .filters{display:flex;gap:10px;margin-bottom:16px}
+  .filters .input{width:auto}
+  .tabs{display:flex;gap:4px;background:var(--slate-100);padding:4px;border-radius:11px;width:fit-content;margin-bottom:18px}
+  .tab{padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:700;color:var(--slate-500)}
+  .tab.active{background:#fff;color:var(--navy-900);box-shadow:var(--shadow-sm)}
+  .progress-cell{display:flex;align-items:center;gap:8px}
+  .progress-bar{width:70px;height:6px;background:var(--slate-200);border-radius:99px;overflow:hidden}
+  .progress-bar > span{display:block;height:100%;background:var(--blue-500)}
+</style>
+</head>
+<body>
+<div id="icon-sprite-slot"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="mark"><svg viewBox="0 0 96 96" width="20" height="20" aria-hidden="true"><path fill="#fff" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FF4A17"/></svg></div><div><div class="name">Depo</div><div class="sub">Jarní běh Mělník 2026</div></div></div>
+    <div class="nav-group">
+      <div class="nav-item"><svg class="ic"><use href="#ic-grid"/></svg>Přehled</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-flag"/></svg>Události a tratě</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-list"/></svg>Startovní listina</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-chip"/></svg>Čipy</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-timer"/></svg>Měření</div>
+      <div class="nav-item active"><svg class="ic"><use href="#ic-run"/></svg>Kdo běží / DNF</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-trophy"/></svg>Výsledky</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-audit"/></svg>Audit log</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Správa</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-users"/></svg>Uživatelé a role</div>
+      <div class="nav-item"><svg class="ic"><use href="#ic-settings"/></svg>Nastavení</div>
+    </div>
+    <div class="foot"><div class="avatar">TS</div><div><div class="who">Tomáš Sklenář</div><div class="role">Organizátor</div></div></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div><h1>Kdo ještě běží / DNF</h1><div class="crumbs">Dlouhá 58 km · živě aktualizováno</div></div>
+      <div class="topbar-actions">
+        <span class="sync-badge" style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--green-600);background:var(--green-100);padding:6px 11px;border-radius:999px"><span class="dot"></span>Živě · 6 zařízení</span>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="stat-row" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-tile"><div class="label">Na trati</div><div class="value" style="color:var(--blue-600)">27</div></div>
+        <div class="stat-tile"><div class="label">Překročen limit 1. kola</div><div class="value" style="color:var(--amber-600)">3</div></div>
+        <div class="stat-tile"><div class="label">DNS / DNF / DQ</div><div class="value" style="color:var(--red-600)">4</div></div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active">Na trati (27)</div>
+        <div class="tab">Přesahují limit (3)</div>
+        <div class="tab">DNS / DNF / DQ (4)</div>
+        <div class="tab">Vše</div>
+      </div>
+
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th>Č.</th><th>Jméno</th><th>Kategorie</th><th>Start</th><th>Poslední mezičas</th><th>Postup</th><th>Stav</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="mono">118</td><td>Procházka David</td><td>Muži „A"</td><td class="mono">11:30:00</td><td class="mono">Stanoviště Vrchol · 13:41:05</td><td><div class="progress-cell"><div class="progress-bar"><span style="width:62%"></span></div>62 %</div></td><td><span class="badge badge-amber">ke kontrole</span></td><td><button class="btn btn-sm btn-ghost">Detail</button></td></tr>
+            <tr><td class="mono">104</td><td>Malý Jiří</td><td>Muži „B"</td><td class="mono">11:30:00</td><td class="mono">Stanoviště Vrchol · 13:38:52</td><td><div class="progress-cell"><div class="progress-bar"><span style="width:58%"></span></div>58 %</div></td><td><span class="badge badge-blue">na trati</span></td><td><button class="btn btn-sm btn-ghost">Detail</button></td></tr>
+            <tr><td class="mono">131</td><td>Veselá Kateřina</td><td>Ženy „A"</td><td class="mono">11:30:00</td><td class="mono">Stanoviště Vrchol · 13:37:10</td><td><div class="progress-cell"><div class="progress-bar"><span style="width:55%"></span></div>55 %</div></td><td><span class="badge badge-blue">na trati</span></td><td><button class="btn btn-sm btn-ghost">Detail</button></td></tr>
+            <tr><td class="mono">142</td><td>Horák Tomáš</td><td>Muži „C"</td><td class="mono">11:30:00</td><td class="mono">Start · 11:30:00</td><td><div class="progress-cell"><div class="progress-bar"><span style="width:8%"></span></div>8 %</div></td><td><span class="badge badge-amber">limit 1. kola</span></td><td><button class="btn btn-sm btn-ghost">Detail</button></td></tr>
+            <tr><td class="mono">096</td><td>Beneš Ondřej</td><td>Muži „B"</td><td class="mono">11:30:00</td><td class="mono">—</td><td>—</td><td><span class="badge badge-red">DNF</span></td><td><button class="btn btn-sm btn-ghost">Detail</button></td></tr>
+            <tr><td class="mono">077</td><td>Krejčí Pavel</td><td>Muži „A"</td><td class="mono">—</td><td class="mono">—</td><td>—</td><td><span class="badge badge-slate">DNS</span></td><td><button class="btn btn-sm btn-ghost">Detail</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

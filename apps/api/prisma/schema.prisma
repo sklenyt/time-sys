@@ -1,0 +1,304 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Pohlavi {
+  M
+  Z
+}
+
+enum TypStartu {
+  HROMADNY
+  VLNOVY
+  INTERVALOVY
+}
+
+enum TypUdalosti {
+  START
+  DOJEZD
+  MEZICAS
+  OPRAVA
+  DNS
+  DNF
+  DQ
+}
+
+enum TypOpravy {
+  ORIGINAL
+  PREPIS_POSLEDNIHO_RADKU
+  PREPIS_NULY_NA_CISLO
+  PREPSANE_CISLO
+  ZMENA_V_UPRAVACH
+}
+
+enum StavZaznamu {
+  OK
+  NEEDS_REVIEW
+}
+
+enum StavUkonceni {
+  DNS
+  DNF
+  DQ
+}
+
+enum Role {
+  ADMIN
+  ORGANIZATOR
+  CASOMERIC
+  STANOVISTE
+  VEREJNOST
+}
+
+enum TypZarizeni {
+  CIL
+  STANOVISTE
+}
+
+enum StavCipu {
+  PRIREZEN
+  VRACEN
+  ZTRACEN
+  ZALOZNI
+}
+
+enum ProtokolPublikace {
+  FTP
+  FTPS
+  SFTP
+}
+
+enum StavExportu {
+  OK
+  CHYBA
+}
+
+model Organizace {
+  id          String   @id @default(uuid())
+  nazev       String
+  vytvorenoAt DateTime @default(now()) @map("vytvoreno_at")
+
+  uzivatele  Uzivatel[]
+  udalosti   Udalost[]
+
+  @@map("organizace")
+}
+
+model Uzivatel {
+  id          String   @id @default(uuid())
+  organizaceId String? @map("organizace_id")
+  email       String   @unique
+  jmeno       String
+  hesloHash   String   @map("heslo_hash")
+  vytvorenoAt DateTime @default(now()) @map("vytvoreno_at")
+
+  organizace  Organizace? @relation(fields: [organizaceId], references: [id])
+  role        UzivatelRole[]
+  zaznamy     ZaznamUdalosti[]
+  auditLogy   AuditLog[]
+
+  @@map("uzivatel")
+}
+
+model Udalost {
+  id             String   @id @default(uuid())
+  organizaceId   String   @map("organizace_id")
+  nazev          String
+  datum          DateTime @db.Date
+  htmlHlavicka   String?  @map("html_hlavicka")
+  logoUrl        String?  @map("logo_url")
+
+  organizace       Organizace       @relation(fields: [organizaceId], references: [id], onDelete: Restrict)
+  trasy            Trasa[]
+  uzivatelRole     UzivatelRole[]
+  publikacniCile   PublikacniCil[]
+
+  @@map("udalost")
+}
+
+model Trasa {
+  id                 String    @id @default(uuid())
+  udalostId          String    @map("udalost_id")
+  nazev              String
+  delkaKm            Float?    @map("delka_km")
+  pocetKol           Int       @default(1) @map("pocet_kol")
+  typStartu          TypStartu @map("typ_startu")
+  dokoncena          Boolean   @default(false)
+  exportSouborNazev  String?   @map("export_soubor_nazev")
+  registraceUzavrena Boolean   @default(false) @map("registrace_uzavrena")
+
+  udalost      Udalost        @relation(fields: [udalostId], references: [id], onDelete: Cascade)
+  kategorie    Kategorie[]
+  startVlny    StartVlna[]
+  prihlasky    Prihlaska[]
+  zaznamy      ZaznamUdalosti[]
+
+  @@map("trasa")
+}
+
+model Kategorie {
+  id        String   @id @default(uuid())
+  trasaId   String   @map("trasa_id")
+  kod       String
+  nazev     String
+  pohlavi   Pohlavi
+  rocnikOd  Int?     @map("rocnik_od")
+  rocnikDo  Int?     @map("rocnik_do")
+
+  trasa      Trasa       @relation(fields: [trasaId], references: [id], onDelete: Cascade)
+  prihlasky  Prihlaska[]
+
+  @@unique([trasaId, kod])
+  @@map("kategorie")
+}
+
+model StartVlna {
+  id             String    @id @default(uuid())
+  trasaId        String    @map("trasa_id")
+  nazev          String
+  casStartu      DateTime? @map("cas_startu")
+  odkladSekund   Int?      @map("odklad_sekund")
+
+  trasa      Trasa       @relation(fields: [trasaId], references: [id], onDelete: Cascade)
+  prihlasky  Prihlaska[]
+
+  @@map("start_vlna")
+}
+
+model Prihlaska {
+  id                 String        @id @default(uuid())
+  trasaId            String        @map("trasa_id")
+  startovniCislo     Int           @map("startovni_cislo")
+  prijmeni           String
+  jmeno              String
+  rocnik             Int?
+  pohlavi            Pohlavi?
+  klub               String?
+  email              String?
+  telefon            String?
+  kategorieId        String        @map("kategorie_id")
+  startVlnaId        String?       @map("start_vlna_id")
+  registrovan        Boolean       @default(true)
+  nouzovyKontakt     String?       @map("nouzovy_kontakt")
+  zdravotniPoznamka  String?       @map("zdravotni_poznamka")
+  oznamovaciEmail    String?       @map("oznamovaci_email")
+  stavUkonceni       StavUkonceni? @map("stav_ukonceni")
+  casovaPenalizace   Int?          @map("casova_penalizace_s")
+  clenoveDruzstva    Json?         @map("clenove_druzstva")
+
+  trasa       Trasa            @relation(fields: [trasaId], references: [id], onDelete: Restrict)
+  kategorie   Kategorie        @relation(fields: [kategorieId], references: [id], onDelete: Restrict)
+  startVlna   StartVlna?       @relation(fields: [startVlnaId], references: [id])
+  cip         Cip?
+  zaznamy     ZaznamUdalosti[]
+
+  @@unique([trasaId, startovniCislo])
+  @@map("prihlaska")
+}
+
+model Cip {
+  id             String     @id @default(uuid())
+  prihlaskaId    String     @unique @map("prihlaska_id")
+  kodCipu        String     @map("kod_cipu")
+  stav           StavCipu   @default(PRIREZEN)
+  zalozni        Boolean    @default(false)
+  vratnaZaloha   Decimal?   @map("vratna_zaloha") @db.Decimal(10, 2)
+  vydanoAt       DateTime?  @map("vydano_at")
+  vracenoAt      DateTime?  @map("vraceno_at")
+
+  prihlaska  Prihlaska @relation(fields: [prihlaskaId], references: [id], onDelete: Cascade)
+
+  @@unique([kodCipu, stav])
+  @@map("cip")
+}
+
+model Zarizeni {
+  id                String      @id @default(uuid())
+  nazev             String
+  typ               TypZarizeni
+  posledniSyncAt    DateTime?   @map("posledni_sync_at")
+
+  zaznamy  ZaznamUdalosti[]
+
+  @@map("zarizeni")
+}
+
+model ZaznamUdalosti {
+  id                   String       @id @default(uuid())
+  trasaId              String       @map("trasa_id")
+  prihlaskaId          String?      @map("prihlaska_id")
+  startovniCisloRaw    Int?         @map("startovni_cislo_raw")
+  typUdalosti          TypUdalosti  @map("typ_udalosti")
+  cas                  DateTime
+  zarizeniId           String       @map("zarizeni_id")
+  uzivatelId           String?      @map("uzivatel_id")
+  typOpravy            TypOpravy    @default(ORIGINAL) @map("typ_opravy")
+  nahrazujeZaznamId    String?      @map("nahrazuje_zaznam_id")
+  stav                 StavZaznamu  @default(OK)
+  vytvorenoKlientAt    DateTime     @map("vytvoreno_klient_at")
+  prijatoServerAt      DateTime     @default(now()) @map("prijato_server_at")
+  klientEventId        String       @unique @map("klient_event_id")
+  fotoSouborNazev      String?      @map("foto_soubor_nazev")
+
+  trasa      Trasa      @relation(fields: [trasaId], references: [id], onDelete: Restrict)
+  prihlaska  Prihlaska? @relation(fields: [prihlaskaId], references: [id])
+  zarizeni   Zarizeni   @relation(fields: [zarizeniId], references: [id])
+  uzivatel   Uzivatel?  @relation(fields: [uzivatelId], references: [id])
+
+  @@index([trasaId, cas])
+  @@index([prihlaskaId])
+  @@index([startovniCisloRaw])
+  @@map("zaznam_udalosti")
+}
+
+model UzivatelRole {
+  id          String   @id @default(uuid())
+  uzivatelId  String   @map("uzivatel_id")
+  udalostId   String   @map("udalost_id")
+  role        Role
+
+  uzivatel  Uzivatel @relation(fields: [uzivatelId], references: [id], onDelete: Cascade)
+  udalost   Udalost  @relation(fields: [udalostId], references: [id], onDelete: Cascade)
+
+  @@unique([uzivatelId, udalostId, role])
+  @@map("uzivatel_role")
+}
+
+model AuditLog {
+  id              String   @id @default(uuid())
+  uzivatelId      String?  @map("uzivatel_id")
+  entita          String
+  entitaId        String   @map("entita_id")
+  puvodniHodnota  Json?    @map("puvodni_hodnota")
+  novaHodnota     Json?    @map("nova_hodnota")
+  cas             DateTime @default(now())
+
+  uzivatel  Uzivatel? @relation(fields: [uzivatelId], references: [id])
+
+  @@map("audit_log")
+}
+
+model PublikacniCil {
+  id                       String             @id @default(uuid())
+  udalostId                String             @map("udalost_id")
+  protokol                 ProtokolPublikace
+  server                   String
+  port                     Int
+  cesta                    String
+  uzivatel                 String
+  hesloSifrovane           String             @map("heslo_sifrovane")
+  intervalMinut            Int                @default(5) @map("interval_minut")
+  exportPoKazdemZaznamu    Boolean            @default(false) @map("export_po_kazdem_zaznamu")
+  htmlSablona              String?            @map("html_sablona")
+  posledniExportAt         DateTime?          @map("posledni_export_at")
+  posledniExportStav       StavExportu?       @map("posledni_export_stav")
+
+  udalost  Udalost @relation(fields: [udalostId], references: [id], onDelete: Cascade)
+
+  @@map("publikacni_cil")
+}

@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.next/
+apps/web/dist/
+
+# Env
+.env
+.env.local
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Testing
+coverage/
+
+# PWA generated
+apps/web/dev-dist/
+
+# Nahrané soubory za běhu (F41 fotodůkazy) — lokální disk, ne repo
+apps/api/uploads/

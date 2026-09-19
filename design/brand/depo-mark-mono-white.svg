@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Depo">
+  <title>Depo — značka (jednobarevná bílá, pro tmavé podklady)</title>
+  <path
+    fill="#FFFFFF"
+    fill-rule="evenodd"
+    d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z
+       M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z" />
+  <rect x="22" y="44" width="62" height="8" fill="#FFFFFF" />
+
+</svg>

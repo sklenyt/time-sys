@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>Depo — Měření</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{background:var(--navy-950)}
+  .measure-shell{display:grid;grid-template-columns:1fr 420px;min-height:100vh}
+  .measure-top{
+    grid-column:1/-1;
+    height:60px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 24px;background:var(--navy-900);border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .measure-top .who{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:14px}
+  .measure-top .who .mark{width:28px;height:28px;border-radius:8px;background:var(--navy-950);display:flex;align-items:center;justify-content:center}
+  .offline-pill{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--amber-500);background:rgba(245,158,11,.12);padding:6px 12px;border-radius:999px}
+  .left-pane{padding:28px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .elapsed{color:var(--slate-400);font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+  .elapsed-time{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:700;color:#fff;letter-spacing:-0.01em;margin-bottom:28px}
+  .number-display{
+    width:100%;max-width:420px;
+    background:var(--navy-900);border:2px solid var(--navy-700);
+    border-radius:20px;padding:22px 26px;text-align:center;margin-bottom:22px;
+  }
+  .number-display .lbl{color:var(--slate-400);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .number-display .num{font-family:'JetBrains Mono',monospace;font-size:76px;font-weight:700;color:#fff;line-height:1.1}
+  .numpad{display:grid;grid-template-columns:repeat(3,84px);gap:12px;max-width:420px}
+  .key{
+    width:84px;height:68px;border-radius:14px;background:var(--navy-800);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .key.wide{grid-column:span 2;width:auto}
+  .key.enter{background:var(--green-600);font-size:16px}
+  .key.clear{background:var(--navy-700);color:var(--slate-300);font-size:15px}
+  .right-pane{background:var(--navy-900);border-left:1px solid rgba(255,255,255,.08);padding:22px 22px 22px;display:flex;flex-direction:column}
+  .right-pane h3{color:#fff;font-size:13.5px;margin:0 0 14px;font-weight:700}
+  .rec{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .rec .bib{width:44px;height:44px;border-radius:10px;background:var(--navy-800);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'JetBrains Mono',monospace}
+  .rec.new .bib{background:var(--green-600)}
+  .rec .who{font-size:12.5px;font-weight:600;color:#fff}
+  .rec .meta{font-size:11px;color:var(--slate-400)}
+  .rec .time{margin-left:auto;font-family:'JetBrains Mono',monospace;color:var(--slate-300);font-size:12.5px;font-weight:600}
+  .queue-badge{margin-top:auto;display:flex;align-items:center;gap:8px;color:var(--amber-500);font-size:11.5px;font-weight:700;background:rgba(245,158,11,.1);padding:10px 12px;border-radius:10px}
+</style>
+</head>
+<body>
+<div id="icon-sprite-slot"></div>
+<div class="measure-shell">
+  <div class="measure-top">
+    <div class="who"><div class="mark"><svg viewBox="0 0 96 96" width="20" height="20" aria-hidden="true"><path fill="#fff" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FF4A17"/></svg></div>Měření — Krátká 20 km · Cíl</div>
+    <div class="offline-pill"><svg class="ic" style="width:14px;height:14px"><use href="#ic-wifi-off"/></svg>Offline — 7 záznamů čeká na odeslání</div>
+  </div>
+
+  <div class="left-pane">
+    <div class="elapsed">Čas od startu</div>
+    <div class="elapsed-time">01:47:22.481</div>
+
+    <div class="number-display">
+      <div class="lbl">Startovní číslo</div>
+      <div class="num">42</div>
+    </div>
+
+    <div class="numpad">
+      <div class="key">1</div><div class="key">2</div><div class="key">3</div>
+      <div class="key">4</div><div class="key">5</div><div class="key">6</div>
+      <div class="key">7</div><div class="key">8</div><div class="key">9</div>
+      <div class="key clear">Smazat</div><div class="key">0</div><div class="key enter">ENTER ↵</div>
+    </div>
+  </div>
+
+  <div class="right-pane">
+    <h3>Poslední zápisy</h3>
+    <div class="rec new"><div class="bib">42</div><div><div class="who">Dvořák Jan</div><div class="meta">Muži „A" · právě teď</div></div><div class="time">1:47:22.4</div></div>
+    <div class="rec"><div class="bib">17</div><div><div class="who">Novák Petr</div><div class="meta">Muži „A" · před 8 s</div></div><div class="time">1:47:14.1</div></div>
+    <div class="rec"><div class="bib">223</div><div><div class="who">Berbrová Alena</div><div class="meta">Ženy „B" · před 41 s</div></div><div class="time">1:46:41.9</div></div>
+    <div class="rec"><div class="bib">220</div><div><div class="who">Vosyková Dominika</div><div class="meta">Ženy „A" · před 1 min</div></div><div class="time">1:45:52.7</div></div>
+    <div class="rec"><div class="bib">0</div><div><div class="who" style="color:var(--amber-500)">Nerozpoznáno — k opravě</div><div class="meta">před 2 min</div></div><div class="time">1:45:01.2</div></div>
+    <div class="rec"><div class="bib">209</div><div><div class="who">Štiller Miloš</div><div class="meta">Muži „B" · před 3 min</div></div><div class="time">1:44:03.4</div></div>
+
+    <div class="queue-badge"><svg class="ic" style="width:14px;height:14px"><use href="#ic-wifi-off"/></svg>Žádný zápis se neztratí — vše je uloženo lokálně a odešle se automaticky po obnovení spojení.</div>
+  </div>
+</div>
+</body>
+</html>
