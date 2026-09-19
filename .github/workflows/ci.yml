@@ -21,6 +21,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build --workspace=@depo/shared
+      # Bez vygenerovaného Prisma Clienta (postinstall to nedělá) by @prisma/client
+      # exportoval jen prázdný výchozí stub bez modelových typů — typecheck/build
+      # apps/api by pak selhaly na chybějících typech (Prihlaska, ZaznamUdalosti, …).
+      - run: npx prisma generate --schema=apps/api/prisma/schema.prisma
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build
