@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateEventDto } from "./dto/create-event.dto";
+import { UpdateEventDto } from "./dto/update-event.dto";
 
 @Injectable()
 export class EventsService {
@@ -35,5 +36,18 @@ export class EventsService {
       throw new NotFoundException(`Událost ${id} nenalezena`);
     }
     return udalost;
+  }
+
+  async update(id: string, dto: UpdateEventDto) {
+    await this.findOne(id);
+    return this.prisma.udalost.update({
+      where: { id },
+      data: {
+        nazev: dto.nazev,
+        datum: dto.datum ? new Date(dto.datum) : undefined,
+        htmlHlavicka: dto.htmlHlavicka,
+        logoUrl: dto.logoUrl,
+      },
+    });
   }
 }

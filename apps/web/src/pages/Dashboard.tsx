@@ -79,6 +79,26 @@ export function Dashboard() {
     }
   }
 
+  async function renameEvent(eventId: string, aktualniNazev: string) {
+    const novyNazev = window.prompt("Nový název akce", aktualniNazev);
+    if (!novyNazev || !novyNazev.trim() || novyNazev === aktualniNazev) return;
+    try {
+      await api.patch(`/events/${eventId}`, { nazev: novyNazev.trim() });
+      reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Přejmenování se nezdařilo");
+    }
+  }
+
+  async function toggleDokoncena(routeId: string, dokoncena: boolean) {
+    try {
+      await api.patch(`/routes/${routeId}`, { dokoncena });
+      reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Změna se nezdařila");
+    }
+  }
+
   return (
     <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
       <h1 style={{ fontWeight: 800 }}>Přehled akcí</h1>
@@ -133,7 +153,12 @@ export function Dashboard() {
             background: "var(--paper)",
           }}
         >
-          <h3 style={{ margin: "0 0 4px" }}>{u.nazev}</h3>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
+            <h3 style={{ margin: 0 }}>{u.nazev}</h3>
+            <button onClick={() => renameEvent(u.id, u.nazev)} style={linkButtonStyle}>
+              Přejmenovat
+            </button>
+          </div>
           <p className="mono" style={{ color: "var(--text-secondary)", margin: "0 0 12px" }}>
             {u.datum.slice(0, 10)}
           </p>
@@ -149,10 +174,16 @@ export function Dashboard() {
                   borderTop: "1px solid var(--line)",
                 }}
               >
-                <span>{t.nazev}</span>
+                <span>
+                  {t.nazev}
+                  {t.dokoncena && <span className="mono" style={{ color: "var(--color-success, green)", marginLeft: 8, fontSize: 12 }}>dokončeno</span>}
+                </span>
                 <span style={{ display: "flex", gap: 12, alignItems: "center" }}>
                   <button onClick={() => startRace(t.id)} style={{ ...buttonStyle, padding: "4px 10px", fontSize: 12 }}>
                     Start
+                  </button>
+                  <button onClick={() => toggleDokoncena(t.id, !t.dokoncena)} style={linkButtonStyle}>
+                    {t.dokoncena ? "Otevřít znovu" : "Dokončit"}
                   </button>
                   <Link to={`/startovni-listina/${t.id}`}>Startovní listina</Link>
                   <Link to={`/mereni/${t.id}`}>Měření</Link>
@@ -194,5 +225,15 @@ const buttonStyle: React.CSSProperties = {
   borderRadius: 8,
   padding: "8px 16px",
   fontWeight: 600,
+  cursor: "pointer",
+};
+
+const linkButtonStyle: React.CSSProperties = {
+  background: "none",
+  border: "none",
+  padding: 0,
+  color: "var(--navy-800)",
+  textDecoration: "underline",
+  fontSize: 13,
   cursor: "pointer",
 };

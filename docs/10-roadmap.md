@@ -23,7 +23,7 @@ Cíl: nahradit **nejkritičtější denní use case** — samotné měření na 
 - ✅ **"Kdo ještě běží / DNF"** (F10) — `GET /routes/:id/running`, realtime přehled přihlášených bez DNS/DNF/DQ, kteří ještě nemají doběh, s časem na trati od startu. Vyžaduje přihlášení (provozní přehled pro obsluhu, viz [07-ui-mockups.md §7.4](07-ui-mockups.md)).
 - ✅ **Nouzový kontakt a zdravotní poznámka** (F31) — pole `nouzovyKontakt`/`zdravotniPoznamka` na `POST /routes/:id/entries`.
 - ✅ **Startovní listina — ruční zápis + CSV import** (F03, F04) — [§7.8](07-ui-mockups.md). `POST /routes/:id/entries/import` importuje sloupce `cislo,prijmeni,jmeno,kategorie` (+ volitelné `rocnik,pohlavi,klub`), chybný řádek se přeskočí a vrátí se v `chyby`, zbytek se naimportuje — jeden špatný řádek nezmaří celý soubor.
-- Modul správy trasy (F01, F02) — [07-ui-mockups.md §7.2](07-ui-mockups.md)
+- ✅ **Modul správy trasy** (F01, F02) — [07-ui-mockups.md §7.2](07-ui-mockups.md). `PATCH /events/:id`/`PATCH /routes/:id` upravují název, datum, počet kol, typ startu a příznak `dokoncena`, stejná role jako založení. Mazání zatím nepodporováno.
 - **Modul měření** — číslo + Enter, zachování systémového času (F06, F07) — [§7.3](07-ui-mockups.md), jádro dle [04-data-model.md §4.2](04-data-model.md)
 - **Responzivní layout pro telefon/tablet/desktop od prvního řádku kódu** (F25, N08) — ne dodatečná úprava; klíčové obrazovky (Měření, Startovní listina, Kdo běží) se navrhují rovnou pro dotyk na iPadu/telefonu, viz [05-tech-stack.md §5.2.1](05-tech-stack.md)
 - **Automatický export výsledků na FTP/SFTP jako statická HTML stránka** (F34, F35) — [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37), mockup [§7.10](07-ui-mockups.md)

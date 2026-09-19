@@ -1,7 +1,10 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { Role } from "@depo/shared";
 import { EventsService } from "./events.service";
 import { CreateEventDto } from "./dto/create-event.dto";
+import { UpdateEventDto } from "./dto/update-event.dto";
 import { CurrentUser, AuthenticatedUser } from "../auth/decorators/current-user.decorator";
+import { Roles } from "../auth/decorators/roles.decorator";
 
 @Controller("events")
 export class EventsController {
@@ -20,5 +23,11 @@ export class EventsController {
   @Get(":id")
   findOne(@Param("id", ParseUUIDPipe) id: string) {
     return this.events.findOne(id);
+  }
+
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Patch(":eventId")
+  update(@Param("eventId", ParseUUIDPipe) eventId: string, @Body() dto: UpdateEventDto) {
+    return this.events.update(eventId, dto);
   }
 }

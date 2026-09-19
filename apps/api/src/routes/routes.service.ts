@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateRouteDto } from "./dto/create-route.dto";
+import { UpdateRouteDto } from "./dto/update-route.dto";
 
 @Injectable()
 export class RoutesService {
@@ -31,5 +32,19 @@ export class RoutesService {
       throw new NotFoundException(`Trasa ${id} nenalezena`);
     }
     return trasa;
+  }
+
+  async update(id: string, dto: UpdateRouteDto) {
+    await this.findOne(id);
+    return this.prisma.trasa.update({
+      where: { id },
+      data: {
+        nazev: dto.nazev,
+        delkaKm: dto.delkaKm,
+        pocetKol: dto.pocetKol,
+        typStartu: dto.typStartu,
+        dokoncena: dto.dokoncena,
+      },
+    });
   }
 }

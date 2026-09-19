@@ -31,6 +31,7 @@ Cílem téhle první verze je **ověřit, že celý řetězec funguje end-to-end
 - `POST /organizations` — zakladatel se automaticky stává členem nové organizace (`uzivatel.organizace_id`), pokud ještě žádnou nemá; `GET /organizations` vrací jen organizaci přihlášeného uživatele, ne všechny
 - `POST /events`, `GET /events`, `GET /events/:id` — založení události jen ve vlastní organizaci (`uzivatel.organizace_id` musí odpovídat `organizaceId` v těle požadavku), `GET /events` vrací jen události vlastní organizace. Vyžaduje jen přihlášení, ne konkrétní roli — na založení první události v organizaci ještě nemůže mít žádnou.
 - `POST /events/:eventId/routes`, `POST /routes/:routeId/categories`, `POST /routes/:routeId/entries` — vyžadují roli `ADMIN`/`ORGANIZATOR` na dané události
+- `PATCH /events/:eventId`, `PATCH /routes/:routeId` — úprava události/trasy (název, datum, počet kol, typ startu, `dokoncena`), stejná role jako založení. Přesun události mezi organizacemi ani mazání zatím nepodporováno.
 - `GET .../routes`, `GET .../categories`, `GET .../entries?search=` — startovní listina, **trasa a kategorie povinné** (F03)
 - `POST /routes/:routeId/entries/import` — **import startovní listiny z CSV** (F04): multipart soubor v poli `soubor`, sloupce `cislo,prijmeni,jmeno,kategorie` (kód kategorie na trati) povinné, `rocnik,pohlavi,klub` volitelné. Chybný řádek se přeskočí a vrátí v `chyby`, zbytek souboru se naimportuje. Stejná role jako založení přihlášky.
 - `POST /routes/:routeId/records` — **jádro systému**: zápis doběhu, idempotentní přes `klientEventId`, ukládá i nerozpoznané číslo (F06, F07). Vyžaduje roli `ADMIN`/`ORGANIZATOR`/`CASOMERIC`/`STANOVISTE` na dané události.
@@ -44,7 +45,7 @@ Ověřeno end-to-end (viz commit): registrace/přihlášení → založení orga
 
 ## Co chybí (další práce ve Fázi 1/2, ne bug)
 
-- `PATCH /events/:id`, `PATCH /routes/:id` a mazání — správa tratí zatím jen zakládá, needituje ani nemaže.
+- Mazání události/trasy — zatím jen zakládání a úprava, nikdy DELETE.
 - Mezičasy na kontrolních stanovištích (`typUdalosti=MEZICAS`).
 - `/sync/events` offline-first synchronizace ([`docs/03-architecture.md §3.5`](../../docs/03-architecture.md)) — teď je jen jeden přímý zápis přes REST, ne offline fronta.
 - Export výsledků do PDF (F13) — jen XLSX zatím hotové.
