@@ -1,4 +1,5 @@
 import type { SyncPullResponseDto, SyncPushResponseDto } from "@depo/shared";
+import { TypUdalosti } from "@depo/shared";
 import { api } from "./api";
 
 /**
@@ -23,6 +24,8 @@ export interface FrontaZaznam {
   startovniCislo: number;
   klientCas: string;
   stav: FrontaStav;
+  /** DOJEZD (cíl, výchozí) nebo MEZICAS (kontrolní stanoviště, F17); OPRAVA jen u cizích stažených eventů. */
+  typUdalosti: TypUdalosti.DOJEZD | TypUdalosti.MEZICAS | TypUdalosti.OPRAVA;
   prihlaskaId?: string | null;
   casCelkem?: string | null;
   puvod: "VLASTNI" | "CIZI";
@@ -85,7 +88,11 @@ function setCursor(trasaId: string, cursor: string) {
 }
 
 /** Zapíše nový zápis do lokální fronty. Nikdy nečeká na síť (§3.5 bod 2). */
-export async function enqueueZaznam(trasaId: string, startovniCislo: number): Promise<FrontaZaznam> {
+export async function enqueueZaznam(
+  trasaId: string,
+  startovniCislo: number,
+  typUdalosti: TypUdalosti.DOJEZD | TypUdalosti.MEZICAS = TypUdalosti.DOJEZD
+): Promise<FrontaZaznam> {
   const id = crypto.randomUUID();
   const zaznam: FrontaZaznam = {
     localKey: `own:${id}`,
@@ -94,6 +101,7 @@ export async function enqueueZaznam(trasaId: string, startovniCislo: number): Pr
     startovniCislo,
     klientCas: new Date().toISOString(),
     stav: "CEKA",
+    typUdalosti,
     puvod: "VLASTNI",
   };
   await put(zaznam);
@@ -128,6 +136,7 @@ export async function flushFrontu(trasaId: string, zarizeniId: string): Promise<
         klientEventId: z.klientEventId,
         startovniCislo: z.startovniCislo,
         klientCas: z.klientCas,
+        typUdalosti: z.typUdalosti,
       })),
     });
     for (const vysledek of res.vysledky) {
@@ -162,6 +171,8 @@ export async function pullCizi(trasaId: string, zarizeniId: string): Promise<voi
         startovniCislo: z.startovniCisloRaw ?? 0,
         klientCas: z.cas,
         stav: z.stav === "NEEDS_REVIEW" ? "NEEDS_REVIEW" : "CIZI",
+        // Server (SyncService.pullEvents) vrací jen DOJEZD/OPRAVA/MEZICAS.
+        typUdalosti: z.typUdalosti as TypUdalosti.DOJEZD | TypUdalosti.MEZICAS | TypUdalosti.OPRAVA,
         prihlaskaId: z.prihlaskaId,
         casCelkem: z.casCelkem,
         puvod: "CIZI",

@@ -29,6 +29,7 @@ export class SyncService {
             zarizeniId: dto.zarizeniId,
             klientCas: event.klientCas,
             klientEventId: event.klientEventId,
+            typUdalosti: event.typUdalosti,
           },
           uzivatelId
         );
@@ -60,7 +61,7 @@ export class SyncService {
     const zaznamy = await this.prisma.zaznamUdalosti.findMany({
       where: {
         trasaId,
-        typUdalosti: { in: [TypUdalosti.DOJEZD, TypUdalosti.OPRAVA] },
+        typUdalosti: { in: [TypUdalosti.DOJEZD, TypUdalosti.OPRAVA, TypUdalosti.MEZICAS] },
         prijatoServerAt: { gt: sinceDate },
         zarizeniId: { not: zarizeniId },
       },

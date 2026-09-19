@@ -41,6 +41,8 @@ export class RecordsService {
       update: { posledniSyncAt: new Date() },
     });
 
+    const typUdalosti = dto.typUdalosti ?? TypUdalosti.DOJEZD;
+
     const prihlaska = await this.prisma.prihlaska.findFirst({
       where: { trasaId, startovniCislo: dto.startovniCislo },
       include: { startVlna: true },
@@ -60,12 +62,17 @@ export class RecordsService {
     // DOJEZD z jiného zařízení nedávno — dvě nezávislá zařízení mohla
     // zaznamenat tentýž doběh. Nic se nezahazuje, jen se to označí
     // k ručnímu rozhodnutí organizátora; legitimní další kolo (typicky ze
-    // stejného zařízení na cíli) zůstává OK.
-    const kolizniZaznam = drivejsiZaznamyDojezdu.find(
-      (z) =>
-        z.zarizeniId !== dto.zarizeniId &&
-        Math.abs(z.cas.getTime() - klientCas.getTime()) < KOLIZE_OKNO_MS
-    );
+    // stejného zařízení na cíli) zůstává OK. Netýká se MEZICAS (F17) — na
+    // více kontrolních bodech běžec logicky prochází vícekrát, to není
+    // kolize dvou zařízení tvrdících totéž o cíli.
+    const kolizniZaznam =
+      typUdalosti === TypUdalosti.DOJEZD
+        ? drivejsiZaznamyDojezdu.find(
+            (z) =>
+              z.zarizeniId !== dto.zarizeniId &&
+              Math.abs(z.cas.getTime() - klientCas.getTime()) < KOLIZE_OKNO_MS
+          )
+        : undefined;
     const stav = kolizniZaznam ? StavZaznamu.NEEDS_REVIEW : StavZaznamu.OK;
 
     const zaznam = await this.prisma.zaznamUdalosti.create({
@@ -73,7 +80,7 @@ export class RecordsService {
         trasaId,
         prihlaskaId: prihlaska?.id,
         startovniCisloRaw: dto.startovniCislo,
-        typUdalosti: TypUdalosti.DOJEZD,
+        typUdalosti,
         cas: klientCas,
         zarizeniId: dto.zarizeniId,
         uzivatelId,
@@ -84,14 +91,25 @@ export class RecordsService {
       },
     });
 
-    const startCas = posledniZaznam?.cas ?? prihlaska?.startVlna?.casStartu ?? null;
-    const casKola = startCas ? formatDuration(klientCas.getTime() - startCas.getTime()) : null;
+    // Čas na trati k tomuto bodu (split) — smysluplný jak pro cíl, tak pro
+    // mezičas. Čas od předchozího kola (casKola) dává smysl jen u DOJEZD
+    // (vícekolový závod), u MEZICAS se nepočítá.
     const casCelkem = prihlaska?.startVlna?.casStartu
       ? formatDuration(klientCas.getTime() - prihlaska.startVlna.casStartu.getTime())
       : null;
+    const casKola =
+      typUdalosti === TypUdalosti.DOJEZD
+        ? (() => {
+            const startCas = posledniZaznam?.cas ?? prihlaska?.startVlna?.casStartu ?? null;
+            return startCas ? formatDuration(klientCas.getTime() - startCas.getTime()) : null;
+          })()
+        : null;
 
-    // Fire-and-forget — nesmí zpomalit ani ohrozit odpověď na zápis měření (§3.10).
-    this.publishTargets.exportPoZaznamuProTrasu(trasaId).catch(() => {});
+    if (typUdalosti === TypUdalosti.DOJEZD) {
+      // Fire-and-forget — nesmí zpomalit ani ohrozit odpověď na zápis měření (§3.10).
+      // Mezičas výsledky neovlivňuje, export by tu byl zbytečný.
+      this.publishTargets.exportPoZaznamuProTrasu(trasaId).catch(() => {});
+    }
 
     return this.toResponse(zaznam, casKola, casCelkem);
   }

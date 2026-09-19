@@ -215,6 +215,7 @@ export function Dashboard() {
                   </button>
                   <Link to={`/startovni-listina/${t.id}`}>Startovní listina</Link>
                   <Link to={`/mereni/${t.id}`}>Měření</Link>
+                  <Link to={`/mereni/${t.id}?bod=mezicas`}>Mezičas</Link>
                   <Link to={`/vysledky/${t.id}`}>Výsledky</Link>
                   <Link to={`/kdo-bezi/${t.id}`}>Kdo běží</Link>
                   <Link to={`/konflikty/${t.id}`}>Kolize</Link>

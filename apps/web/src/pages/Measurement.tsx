@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
+import { TypUdalosti } from "@depo/shared";
 import { getDeviceId } from "../lib/api";
 import { enqueueZaznam, listRecent, startAutoSync, type FrontaZaznam } from "../lib/offline-queue";
 
@@ -7,6 +8,12 @@ const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "DNF", "0", "⌫"];
 
 export function Measurement() {
   const { routeId } = useParams<{ routeId: string }>();
+  const [searchParams] = useSearchParams();
+  // ?bod=mezicas přepne obrazovku do režimu kontrolního stanoviště (F17) —
+  // stejné UI "číslo + Enter", jen se zapisuje typUdalosti=MEZICAS místo
+  // DOJEZD a nepočítá se do výsledků.
+  const jeMezicas = searchParams.get("bod") === "mezicas";
+  const typUdalosti = jeMezicas ? TypUdalosti.MEZICAS : TypUdalosti.DOJEZD;
   const [cislo, setCislo] = useState("");
   const [posledni, setPosledni] = useState<FrontaZaznam[]>([]);
   const [chyba, setChyba] = useState<string | null>(null);
@@ -23,14 +30,14 @@ export function Measurement() {
   const zapsat = useCallback(async () => {
     if (!routeId || !cislo) return;
     try {
-      await enqueueZaznam(routeId, Number(cislo));
+      await enqueueZaznam(routeId, Number(cislo), typUdalosti);
       setCislo("");
       setChyba(null);
       obnovitPosledni();
     } catch {
       setChyba("Zápis se nepodařilo uložit ani lokálně — zkuste to prosím znovu.");
     }
-  }, [routeId, cislo, obnovitPosledni]);
+  }, [routeId, cislo, typUdalosti, obnovitPosledni]);
 
   useEffect(() => {
     if (!routeId) return;
@@ -92,7 +99,7 @@ export function Measurement() {
               textTransform: "uppercase",
             }}
           >
-            Startovní číslo
+            {jeMezicas ? "Mezičas — startovní číslo" : "Startovní číslo"}
             {!online && (
               <span
                 className="mono"
@@ -110,7 +117,15 @@ export function Measurement() {
               </span>
             )}
           </div>
-          <div className="mono" style={{ fontSize: 76, fontWeight: 700, lineHeight: 1.1, color: cislo ? "var(--tape-500)" : "var(--steel-400)" }}>
+          <div
+            className="mono"
+            style={{
+              fontSize: 76,
+              fontWeight: 700,
+              lineHeight: 1.1,
+              color: cislo ? (jeMezicas ? "var(--color-live)" : "var(--tape-500)") : "var(--steel-400)",
+            }}
+          >
             {cislo || "—"}
           </div>
         </div>
@@ -145,7 +160,7 @@ export function Measurement() {
             padding: "18px",
             borderRadius: 14,
             border: "none",
-            background: "var(--tape-500)",
+            background: jeMezicas ? "var(--color-live)" : "var(--tape-500)",
             color: "#fff",
             fontSize: 18,
             fontWeight: 800,
@@ -190,6 +205,7 @@ export function Measurement() {
             </div>
             <div style={{ fontSize: 12, color: "var(--steel-400)" }}>
               {z.casCelkem ?? new Date(z.klientCas).toLocaleTimeString("cs-CZ")}
+              {z.typUdalosti === TypUdalosti.MEZICAS && <div>mezičas</div>}
               {z.stav === "CEKA" && <div>čeká na odeslání…</div>}
               {z.stav === "NEEDS_REVIEW" && <div style={{ color: "var(--color-attention)" }}>ke kontrole — kolize stanovišť</div>}
               {z.puvod === "CIZI" && <div>z jiného zařízení</div>}

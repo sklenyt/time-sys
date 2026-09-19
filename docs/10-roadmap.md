@@ -31,7 +31,7 @@ Cíl: nahradit **nejkritičtější denní use case** — samotné měření na 
 
 **Akceptační kritérium fáze splněno:** organizátor dokáže odměřit celý menší závod (1 trať, 1 zařízení) v Depu od registrace po publikaci výsledků — ověřeno end-to-end (viz `apps/api/README.md`) včetně RBAC, oprav se zachováním času, výpočtu výsledků, XLSX/PDF exportu, CSV importu startovní listiny, FTP/SFTP publikace a responzivního UI na telefonu/tabletu.
 
-## Fáze 2 — Terén a offline (jádro hotovo, F17 zbývá)
+## Fáze 2 — Terén a offline (✅ hotovo)
 
 Cíl: plná terénní spolehlivost a síťová spolupráce mezi stanovišti.
 
@@ -39,10 +39,10 @@ Cíl: plná terénní spolehlivost a síťová spolupráce mezi stanovišti.
 - ✅ **IndexedDB lokální úložiště a offline provoz modulu měření** — `apps/web/src/lib/offline-queue.ts`. Zápis čísla se ukládá do IndexedDB okamžitě a nikdy nečeká na síť (§3.5 bod 2); ověřeno, že zápis vytvořený offline přežije i reload stránky a zůstane ve frontě se stavem „čeká na odeslání" až do obnovení připojení.
 - ✅ **Synchronizace více zařízení** (F15) — `POST/GET /routes/:id/sync/events`, viz [03-architecture.md §3.5](03-architecture.md#35-synchronizační-strategie-nejkritičtější-technické-rozhodnutí). `POST` dávkově přijímá frontu jednoho zařízení (idempotentní přes `klientEventId`, stejná cesta jako `POST /records`), `GET ?since=` vrací eventy od jiných zařízení na téže trati (delta pull, kurzor `prijato_server_at`). **Akceptační kritérium fáze ověřeno**: dva nezávislé prohlížečové kontexty (= dvě zařízení, oddělené IndexedDB i `zarizeniId`) zapisují offline nezávisle na sobě; po obnovení připojení obě do ~5 s uvidí i zápis toho druhého, bez ruční intervence.
 - ✅ **Detekce a řešení kolizí** (`NEEDS_REVIEW`) — automatická v `RecordsService.create()`: druhý DOJEZD téže přihlášky z **jiného** zařízení do 15 minut od prvního se označí `NEEDS_REVIEW` (kolize stanovišť), zatímco další kolo z **téhož** zařízení (typický víc-kolový závod) zůstává `OK`. Nic se nezahazuje — obě verze zůstávají v `zaznam_udalosti`. UI `/konflikty/:routeId` (§7.6) vypisuje nevyřešené kolize se jménem/číslem/zařízením a nechá organizátora potvrdit vyřešení (`PATCH .../resolve`).
-- ⏳ **F17 (mezičasy na kontrolních stanovištích, `typUdalosti=MEZICAS`)** — datový model i obecný sync engine už to unesou, ale chybí UI pro zápis na stanovišti a přiřazení `STANOVISTE` role ke konkrétnímu kontrolnímu bodu. Zůstává jako další krok.
-- Modul "Kdo běží / DNF" v realtime (F10) — hotovo už ve Fázi 1, viz [§7.4](07-ui-mockups.md).
+- ✅ **F17 — mezičasy na kontrolních stanovištích** (`typUdalosti=MEZICAS`) — stejná obrazovka Měření na `/mereni/:routeId?bod=mezicas` (barevně odlišená — zelená místo oranžové pásky, aby si obsluha nespletla stanoviště s cílem), stejný sync engine a role `STANOVISTE` (identita kontrolního bodu = konkrétní zařízení, žádná zvláštní entita navíc). Mezičas se **nepočítá do výsledků** (`ResultsService` bere jen DOJEZD/OPRAVA) a **nevyvolává kolizní detekci** ani mezi různými zařízeními — běžec logicky prochází víc kontrolními body, to není kolize o cíli. Ověřeno end-to-end: dvě různá zařízení nezávisle zapsala mezičas pro stejné číslo bez `NEEDS_REVIEW`, výsledky zůstaly nedotčené, záznam nese `casCelkem` (mezičas od startu), ne `casKola`.
+- Modul "Kdo běží / DNF" v realtime (F10) — hotovo už ve Fázi 1, viz [§7.4](07-ui-mockups.md). Vizualizace postupu podle mezičasů (zmíněná v mockupu) zůstává jako budoucí vylepšení, ne blokující položka.
 
-**Akceptační kritérium fáze splněno** pro cílovou stanici: dvě zařízení zapisují nezávisle offline a po obnovení spojení se data bezkonfliktně sloučí bez ruční intervence (mimo skutečné kolize, které jdou k ručnímu potvrzení). Rozšíření na skutečná kontrolní stanoviště s mezičasy (F17) čeká na UI pro STANOVISTE roli.
+**Akceptační kritérium fáze splněno**: dvě zařízení (cíl + kontrolní stanoviště) zapisují nezávisle offline a po obnovení spojení se data bezkonfliktně sloučí bez ruční intervence (mimo skutečné kolize, které jdou k ručnímu potvrzení na `/konflikty/:routeId`).
 
 ## Fáze 3 — Živé výsledky a rozšířená bezpečnost (odhad 3–5 týdnů)
 
