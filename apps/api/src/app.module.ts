@@ -11,6 +11,7 @@ import { CategoriesModule } from "./categories/categories.module";
 import { EntriesModule } from "./entries/entries.module";
 import { RecordsModule } from "./records/records.module";
 import { EventRolesModule } from "./event-roles/event-roles.module";
+import { ResultsModule } from "./results/results.module";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { RolesGuard } from "./auth/guards/roles.guard";
 
@@ -27,6 +28,7 @@ import { RolesGuard } from "./auth/guards/roles.guard";
     EntriesModule,
     RecordsModule,
     EventRolesModule,
+    ResultsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

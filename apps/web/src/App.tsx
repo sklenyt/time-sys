@@ -4,6 +4,7 @@ import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { StartList } from "./pages/StartList";
 import { Measurement } from "./pages/Measurement";
+import { Results } from "./pages/Results";
 import { isLoggedIn } from "./lib/api";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -18,6 +19,7 @@ export function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/vysledky/:routeId" element={<Results />} />
       <Route
         path="/dashboard"
         element={

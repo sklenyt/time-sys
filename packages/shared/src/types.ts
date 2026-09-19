@@ -175,6 +175,29 @@ export interface UzivatelRole {
   role: Role;
 }
 
+/** GET /routes/:id/results — jedna položka výsledků (F12). */
+export interface VysledekPolozka {
+  prihlaskaId: string;
+  startovniCislo: number;
+  prijmeni: string;
+  jmeno: string;
+  klub?: string | null;
+  kategorieId: string;
+  kategorieKod: string;
+  kategorieNazev: string;
+  casCelkem: string | null;
+  casCelkemMs: number | null;
+  poradiCelkove: number | null;
+  poradiKategorie: number | null;
+  stavUkonceni?: StavUkonceni | null;
+}
+
+export interface VysledkyResponseDto {
+  trasaId: string;
+  klasifikovani: VysledekPolozka[];
+  neklasifikovani: VysledekPolozka[];
+}
+
 /** POST /routes/:id/records — jádro workflow "číslo + Enter". */
 export interface CreateRecordDto {
   startovniCislo: number;

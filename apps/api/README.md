@@ -34,16 +34,17 @@ Cílem téhle první verze je **ověřit, že celý řetězec funguje end-to-end
 - `POST /routes/:routeId/entries`, `GET .../entries?search=` — startovní listina, **trasa a kategorie povinné** (F03)
 - `POST /routes/:routeId/records` — **jádro systému**: zápis doběhu, idempotentní přes `klientEventId`, ukládá i nerozpoznané číslo (F06, F07). Vyžaduje roli `ADMIN`/`ORGANIZATOR`/`CASOMERIC`/`STANOVISTE` na dané události.
 - `PATCH /routes/:routeId/records/:recordId/correct` — oprava startovního čísla se zachováním původního času (F08), zapisuje do `audit_log` (F09). Stejné role jako zápis.
+- `GET /routes/:routeId/results` — **výpočet výsledků on-the-fly** (F12): pořadí celkové i po kategoriích, časová penalizace, DNS/DNF/DQ a nedoběhnutí v samostatné sekci `neklasifikovani`. Veřejné bez přihlášení (F16).
 
-Ověřeno end-to-end (viz commit): registrace/přihlášení → založení organizace → událost → bootstrap role ADMIN → trasa → kategorie → přihláška → zápis doběhu → oprava záznamu → výpočet časů → idempotentní opakování zápisu.
+Ověřeno end-to-end (viz commit): registrace/přihlášení → založení organizace → událost → bootstrap role ADMIN → trasa → kategorie → přihláška → zápis doběhu → oprava záznamu → výpočet výsledků → idempotentní opakování zápisu.
 
 **Rozsah RBAC v této fázi:** chráněný je jen zápis/oprava měření (nejcitlivější operace, jádro F06/F08). Správa organizace/události/tratě/startovní listiny je zatím veřejná (bootstrap krok bez existujícího uživatele) — rozšíření RBAC i na tyto endpointy je následující krok, ne bezpečnostní díra v aktuálním rozsahu MVP.
 
 ## Co chybí (další práce ve Fázi 1/2, ne bug)
 
 - RBAC na správě organizace/události/tratě/startovní listiny (zatím veřejné).
-- `POST /routes/:id/start`, mezičasy na stanovištích.
+- `POST /routes/:id/start`, mezičasy na stanovištích — bez toho výsledky ukazují běžce jako neklasifikované (chybí `start_vlna.cas_startu`).
 - `/sync/events` offline-first synchronizace ([`docs/03-architecture.md §3.5`](../../docs/03-architecture.md)) — teď je jen jeden přímý zápis přes REST, ne offline fronta.
-- Odvozené pohledy `vysledky_view`, `kdo_bezi_view` ([`docs/04-data-model.md §4.5`](../../docs/04-data-model.md)).
+- `kdo_bezi_view` ([`docs/04-data-model.md §4.5`](../../docs/04-data-model.md)), export výsledků do XLSX (F13).
 - FTP/SFTP export (F34–F37), RFID (F22).
 - Šifrování `publikacni_cil.heslo_sifrovane` (teď je ve schématu jen sloupec, bez šifrovací vrstvy).

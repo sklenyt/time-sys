@@ -145,6 +145,7 @@ export function Dashboard() {
                 <span style={{ display: "flex", gap: 12 }}>
                   <Link to={`/startovni-listina/${t.id}`}>Startovní listina</Link>
                   <Link to={`/mereni/${t.id}`}>Měření</Link>
+                  <Link to={`/vysledky/${t.id}`}>Výsledky</Link>
                 </span>
               </li>
             ))}
