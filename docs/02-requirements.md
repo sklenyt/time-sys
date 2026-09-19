@@ -1,10 +1,10 @@
-# 2. Požadavky na nový systém
+# 2. Požadavky na systém
 
-Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.md](01-analysis.md)) a z cílů modernizace. Prioritizace metodou **MoSCoW** (Must / Should / Could / Won't — pro první verzi).
+Prioritizace metodou **MoSCoW** (Must / Should / Could / Won't — pro první verzi).
 
 ## 2.1 Funkční požadavky
 
-### Must have (MVP — bez toho systém nenahradí Access)
+### Must have (MVP)
 
 | ID | Požadavek | Vazba na use case |
 |---|---|---|
@@ -18,14 +18,14 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | F08 | Oprava čísla v zázname se zachováním původního času | UC11 |
 | F09 | Auditní log každého zápisu a opravy (kdo, kdy, původní/nová hodnota) | UC13 |
 | F10 | Přehled "kdo ještě běží / DNF" v reálném čase | UC10 |
-| F11 | Ruční označení stavu ukončení: **DNS** (nenastoupil) / **DNF** (nedokončil) / **DQ** (diskvalifikován) — potvrzeno reálným číselníkem `tblTypUkonceni`, viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md) | UC12 |
+| F11 | Ruční označení stavu ukončení: **DNS** (nenastoupil) / **DNF** (nedokončil) / **DQ** (diskvalifikován) | UC12 |
 | F12 | Výpočet pořadí — celkové i po kategoriích, TOP3 | UC14 |
 | F13 | Export výsledků do XLSX a PDF | UC15 |
 | F14 | Funkčnost **plně offline** na místě startu/cíle bez připojení k internetu | — |
 | F15 | Synchronizace dat mezi zařízeními na stanovištích a s centrální DB, jakmile je spojení dostupné | UC8 |
 | F25 | **Plně responzivní UI optimalizované pro telefon i tablet (včetně iPadu)**, ne jen desktop — časoměřič, obsluha na stanovišti i organizátor u registračního stolu běžně používají tablet nebo telefon, ne notebook. Netýká se jen "menšího okna", ale odlišného rozložení a velikosti dotykových prvků na klíčových obrazovkách (Měření, Startovní listina, Kdo běží) | — |
-| F34 | **Automatický export výsledků jako statická HTML stránka a její nahrání na FTP/SFTP server organizátora** — přímá náhrada legacy funkce `tblZavod.ftpserver`/`ftpcesta`/`htmlsoubor` (viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)); umožňuje publikovat výsledky na vlastní doméně klubu/organizátora nezávisle na tom, zda time-sys hostuje živou stránku (F16) | UC16 |
-| F35 | Konfigurovatelný spouštěč exportu — buď v pravidelném intervalu (v minutách, jako legacy `autoexportmin`), nebo okamžitě po každém novém doběhu | UC16 |
+| F34 | **Automatický export výsledků jako statická HTML stránka a její nahrání na FTP/SFTP server organizátora** — umožňuje publikovat výsledky na vlastní doméně klubu/organizátora nezávisle na tom, zda Depo hostuje živou stránku (F16) | UC16 |
+| F35 | Konfigurovatelný spouštěč exportu — buď v pravidelném intervalu (v minutách), nebo okamžitě po každém novém doběhu | UC16 |
 
 ### Should have (rychle po MVP)
 
@@ -37,8 +37,8 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | F19 | Individuální uživatelské účty místo sdíleného hesla |
 | F20 | Vyhledávání v startovní listině podle jména/klubu při zápisu na místě |
 | F21 | Import klubové databáze pro rychlejší zápis |
-| F36 | Vlastní HTML šablona/hlavička pro export (branding, styl klubového webu) — obdoba legacy `tblConfig.htmlhlavicka` |
-| F37 | Podpora více souběžných publikačních cílů (např. 2 různé FTP servery zároveň) — obdoba legacy `ftpserver`/`ftpserver2` |
+| F36 | Vlastní HTML šablona/hlavička pro export (branding, styl klubového webu) |
+| F37 | Podpora více souběžných publikačních cílů (např. 2 různé FTP servery zároveň) |
 
 ### Could have (rozšíření)
 
@@ -84,9 +84,7 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | N11 | Zálohování | Automatické průběžné zálohování dat do cloudu při dostupném připojení |
 | N12 | Rozšiřitelnost o hardware | Architektura musí umožnit napojení RFID decodérů/čteček bez závislosti na tom, zda je podporuje přímo prohlížeč (viz [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)) |
 
-## 2.3 Neměnné principy (nesmí se ztratit při modernizaci)
-
-Viz [01-analysis.md §1.11](01-analysis.md#111-důsledky-pro-návrh-nové-aplikace):
+## 2.3 Neměnné principy
 
 1. Workflow "číslo + Enter" — nejkritičtější a nejrychlejší cesta v systému.
 2. Odolnost vůči výpadku internetu na místě — tvrdý požadavek (N01).

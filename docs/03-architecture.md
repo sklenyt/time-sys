@@ -1,9 +1,9 @@
-# 3. Architektura nového systému
+# 3. Architektura systému
 
-## 3.1 Cíle modernizace
+## 3.1 Cíle návrhu
 
-1. Zachovat to, co funguje: jednoduchost workflow "číslo + Enter", auditní log, robustní offline chování.
-2. Odstranit platformní závislost na Windows/Accessu → webová aplikace přístupná z prohlížeče na jakémkoli zařízení.
+1. Jednoduchost workflow "číslo + Enter", auditní log, robustní offline chování.
+2. Žádná platformní závislost → webová aplikace přístupná z prohlížeče na jakémkoli zařízení.
 3. Umožnit skutečnou spolupráci více stanovišť v reálném čase namísto ručního kopírování souborů.
 4. Zachovat odolnost vůči výpadku internetu v místě konání závodu — klíčový požadavek, nejde slevit ve prospěch "cloud-only" řešení.
 5. Živá publikace výsledků online bez manuálního exportu/uploadu.
@@ -74,17 +74,17 @@ flowchart LR
 
 ## 3.4 Klíčové moduly a mapování na use case
 
-| Modul | Nahrazuje v Accessu | Poznámka |
-|---|---|---|
-| **Správa závodu** | formulář "Nastavení" | Web formulář — kategorie, číselné řady, typ startu |
-| **Přihlášky** | ruční import | Import CSV/Google Forms, případně vlastní registrační formulář |
-| **Zápis na místě** | formulář zápisu | Vyhledávání podle jména/klubu, offline na tabletu u stolu |
-| **Měření (jádro)** | hlavní formulář časomíry | Numpad optimalizovaný pro rychlost, identické chování na PC i tabletu |
-| **Kontrolní stanoviště** | kopírování `!!záznamy` přes USB | Stejná aplikace na libovolném zařízení, auto-sync místo USB |
-| **RFID/čárové kódy** | externí HW řešeno mimo Access | Web Serial/Web Bluetooth API nebo externí zařízení přes API |
-| **Kdo běží / DNF** | lokální dotaz na jednom PC | Živě aktualizovaný přehled dostupný všem oprávněným zařízením |
-| **Opravy a audit** | log v tabulce | Webové rozhraní s filtrováním, stejná logika zachování času |
-| **Výsledky a exporty** | ruční export/tisk | Okamžitý přepočet, TOP3, XLSX/PDF, jedním klikem publikovatelná stránka |
+| Modul | Poznámka |
+|---|---|
+| **Správa závodu** | Web formulář — kategorie, číselné řady, typ startu |
+| **Přihlášky** | Import CSV/Google Forms, případně vlastní registrační formulář |
+| **Zápis na místě** | Vyhledávání podle jména/klubu, offline na tabletu u stolu |
+| **Měření (jádro)** | Numpad optimalizovaný pro rychlost, identické chování na PC i tabletu |
+| **Kontrolní stanoviště** | Stejná aplikace na libovolném zařízení, auto-sync mezi stanovišti |
+| **RFID/čárové kódy** | Web Serial/Web Bluetooth API nebo externí zařízení přes API |
+| **Kdo běží / DNF** | Živě aktualizovaný přehled dostupný všem oprávněným zařízením |
+| **Opravy a audit** | Webové rozhraní s filtrováním, auditovatelná historie změn |
+| **Výsledky a exporty** | Okamžitý přepočet, TOP3, XLSX/PDF, jedním klikem publikovatelná stránka |
 | **Role a přístupy** | sdílené heslo na tabulku | RBAC, individuální účty, pozvánky e-mailem |
 
 ## 3.5 Synchronizační strategie (nejkritičtější technické rozhodnutí)
@@ -186,7 +186,7 @@ flowchart LR
 
 ## 3.10 Export a publikace výsledků na FTP/SFTP (F34–F37)
 
-Na rozdíl od RFID (§3.9), toto **není** odložená položka — jde o přímou funkční paritu se starou Časomírou, kterou organizátor aktivně používal (potvrzeno reálnou FTP konfigurací v [11-legacy-schema-reference.md](11-legacy-schema-reference.md)), takže patří do MVP (F34, F35 jsou Must have v [02-requirements.md](02-requirements.md)).
+Na rozdíl od RFID (§3.9), toto **není** odložená položka — jde o klíčovou funkci, kterou organizátoři reálně aktivně používají, takže patří do MVP (F34, F35 jsou Must have v [02-requirements.md](02-requirements.md)).
 
 ```mermaid
 flowchart LR
@@ -205,8 +205,8 @@ flowchart LR
     Queue -.->|"chyba → nový pokus"| Queue
 ```
 
-- **Spouštěč** je konfigurovatelný na úrovni `publikacni_cil` (§4.10 v [04-data-model.md](04-data-model.md)): buď pevný interval v minutách (odpovídá legacy `autoexportmin`), nebo okamžitě po každém přijatém `zaznam_udalosti` typu `DOJEZD`/`OPRAVA` na dané události — u malého závodu (řádově desítky zápisů, viz objemy v [11-legacy-schema-reference.md §11.3](11-legacy-schema-reference.md)) je "export po každém zápisu" klidně reálná výchozí volba bez rizika přetížení.
+- **Spouštěč** je konfigurovatelný na úrovni `publikacni_cil` (§4.10 v [04-data-model.md](04-data-model.md)): buď pevný interval v minutách, nebo okamžitě po každém přijatém `zaznam_udalosti` typu `DOJEZD`/`OPRAVA` na dané události — u malého závodu (řádově desítky zápisů) je "export po každém zápisu" klidně reálná výchozí volba bez rizika přetížení.
 - **Export worker** je samostatný proces/queue job v backendu (ne request-response cesta) — selhání FTP uploadu (výpadek hostingu, špatné heslo) nesmí nijak zpomalit ani ohrozit zápis měření, který zůstává nezávislý (stejný princip oddělení jako u realtime vrstvy, §3.6).
 - **Fronta s retry** — na rozdíl od staré Časomíry, kde selhání FTP uploadu bylo tiché (žádná chybová hláška v UI, organizátor musel sám zkontrolovat výsledky na webu), nový systém neúspěšný pokus zopakuje (exponenciální backoff, např. 3 pokusy) a viditelně to promítne do `publikacni_cil.posledni_export_stav` v UI.
 - **Renderer** generuje statickou HTML stránku ze stejného odvozeného stavu jako živá stránka výsledků (§3.6, `vysledky_view`) — jde o dva **výstupní formáty téhož zdroje pravdy**, ne dvě samostatně udržovaná data, takže nemůže dojít k rozjetí hodnot mezi "živou" a "FTP" verzí výsledků.
-- Tento kanál je záměrně nezávislý na tom, jestli organizátor používá i vestavěnou živou stránku time-sys (F16) — řeší jiný problém: **publikaci na vlastní doméně/webu klubu**, kterou si organizátor typicky udržuje roky napříč ročníky závodu a nechce ji opouštět jen kvůli výměně časomíry.
+- Tento kanál je záměrně nezávislý na tom, jestli organizátor používá i vestavěnou živou stránku Depa (F16) — řeší jiný problém: **publikaci na vlastní doméně/webu klubu**, kterou si organizátor typicky udržuje roky napříč ročníky závodu a nechce ji opouštět.

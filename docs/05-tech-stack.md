@@ -1,6 +1,6 @@
 # 5. Technologický stack a zdůvodnění
 
-Výběr je optimalizován pro tři priority dané analýzou ([01-analysis.md](01-analysis.md)): **offline-first spolehlivost**, **nízké provozní náklady** komunitních akcí a **rychlost vývoje** malým týmem.
+Výběr je optimalizován pro tři priority: **offline-first spolehlivost**, **nízké provozní náklady** komunitních akcí a **rychlost vývoje** malým týmem.
 
 ## 5.1 Přehled
 
@@ -28,7 +28,7 @@ Klíčový požadavek z analýzy je **odstranění platformní závislosti na Wi
 
 - Instalovatelná na Windows, macOS, Linux, Android i iOS z jednoho zdrojového kódu.
 - Service worker cachuje statické assety i logiku → aplikace se spustí i bez připojení.
-- IndexedDB dává lokální "databázi v prohlížeči" srovnatelnou kapacitou jako souborová databáze Accessu, ale bez nutnosti instalace enginu.
+- IndexedDB dává lokální "databázi v prohlížeči" s dostatečnou kapacitou pro offline provoz, bez nutnosti instalace enginu.
 - Žádný app store schvalovací proces ani nutnost dvou codebase (iOS/Android) jako u nativní varianty (F28 v [02-requirements.md](02-requirements.md) je vědomě "Won't have" pro MVP).
 
 ### 5.2.1 iPad/iOS — specifika, se kterými je nutné počítat
@@ -43,7 +43,7 @@ Explicitní požadavek F25 (telefon i tablet, jmenovitě iPad) naráží na zná
 
 ## 5.3 Proč vlastní event-log sync, a ne hotová CRDT knihovna
 
-Zvažovány byly Automerge a Yjs (obě řeší bezkonfliktní offline-first sync obecně). Doména časomíry má ale specifickou vlastnost zjištěnou v [11-legacy-schema-reference.md §11.2](11-legacy-schema-reference.md) (reálná data): **cca 70 % záznamů jsou čisté nové vstupy (`originál`), zbytek jsou opravy s jasně definovanou sémantikou** (přepis nuly, přepis čísla) — ne obecné konkurenční úpravy libovolných polí. Vlastní řešení nad jednoduchým append-only event logem (viz [04-data-model.md §4.2](04-data-model.md#42-klíčové-designové-rozhodnutí-zaznam_udalosti-jako-append-only-event-log)):
+Zvažovány byly Automerge a Yjs (obě řeší bezkonfliktní offline-first sync obecně). Doména časomíry má ale specifickou vlastnost: **naprostá většina záznamů jsou čisté nové vstupy (`originál`), zbytek jsou opravy s jasně definovanou sémantikou** (přepis nuly, přepis čísla) — ne obecné konkurenční úpravy libovolných polí. Vlastní řešení nad jednoduchým append-only event logem (viz [04-data-model.md §4.2](04-data-model.md#42-klíčové-designové-rozhodnutí-zaznam_udalosti-jako-append-only-event-log)):
 
 - je jednodušší na pochopení, ladění a audit (klíčové pro důvěryhodnost časomíry v závodě),
 - nemá cizí závislost s vlastní kompatibilitní historií formátu,
@@ -60,9 +60,9 @@ Python/FastAPI zůstává validní alternativou, pokud by tým měl silnější 
 
 ## 5.5 Proč PostgreSQL
 
-- Nativní `timestamptz` s mikrosekundovou přesností řeší přímo problém, který starý systém obcházel dual-timestamp trikem (viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)).
+- Nativní `timestamptz` s mikrosekundovou přesností pokrývá potřebu přesného časového razítka bez jakýchkoli dodatečných triků.
 - Row-Level Security pro multi-tenant izolaci "zdarma" bez aplikační vrstvy navíc (viz [04-data-model.md §4.6](04-data-model.md)).
-- `JSONB` pro flexibilní pole (např. `clenove_druzstva` nahrazující rigidní `prijmeni2..4/jmeno2..4` ze starého schématu).
+- `JSONB` pro flexibilní pole (např. `clenove_druzstva` pro proměnný počet členů družstva, místo rigidních sloupců `prijmeni2..4/jmeno2..4`).
 - Vyzrálé nástroje pro zálohování a point-in-time recovery — důležité, protože data ze závodu jsou **nenahraditelná** (zdroj časů se negeneruje znovu).
 
 ## 5.6 Náklady (orientační, komunitní závod řádu stovek závodníků)

@@ -4,7 +4,7 @@ Tento dokument reaguje na dva explicitní požadavky (RFID čipy do budoucna, po
 
 ## 12.1 RFID — proč to není jen "přidat sloupec s kódem čipu"
 
-Stará Časomíra měla `tblCipy` jako prosté párování `startovnicislo ↔ cip` — funkční pro nejjednodušší scénář, ale reálný provoz s čipy řeší řadu provozních situací, které v jednoduché tabulce chybí. Návrh níže je rozšíření, ne substituce — **ruční zápis "číslo + Enter" zůstává vždy dostupný jako plnohodnotná záložní cesta**, i na trati s RFID (viz [03-architecture.md §3.9](03-architecture.md)), protože žádný hardware v terénu není 100% spolehlivý (vybitá baterie čtečky, čip poškozený deštěm, závodník nemá čip vidět/přiložit).
+Prosté párování `startovnicislo ↔ cip` je funkční jen pro nejjednodušší scénář — reálný provoz s čipy řeší řadu provozních situací, které v jednoduché tabulce chybí. Návrh níže je rozšíření, ne substituce — **ruční zápis "číslo + Enter" zůstává vždy dostupný jako plnohodnotná záložní cesta**, i na trati s RFID (viz [03-architecture.md §3.9](03-architecture.md)), protože žádný hardware v terénu není 100% spolehlivý (vybitá baterie čtečky, čip poškozený deštěm, závodník nemá čip vidět/přiložit).
 
 ## 12.2 Hardwarové varianty (k rozhodnutí ve Fázi 4)
 
@@ -15,7 +15,7 @@ Stará Časomíra měla `tblCipy` jako prosté párování `startovnicislo ↔ c
 | **QR kód na startovním čísle + mobil/tablet jako scanner** | Žádný specializovaný HW, jen kamera tabletu | Nejlevnější varianta, nižší propustnost (nutné zamíření kamery), vhodné jako "chudá verze RFID" pro malé kluby — viz §12.6 |
 | **AI rozpoznávání čísla z fotografie** (F40) | Časoměřič fotí procházející závodníky běžným telefonem, cloudová AI služba rozpozná číslo z fotky (přesnost cca 90–98 % podle kvality snímku) a vygeneruje záznam automaticky — bez jakéhokoli specializovaného hardwaru | Zajímavá alternativa k RFID i k ručnímu zápisu zejména tam, kde je hodně závodníků v cíli najednou a obsluha nestíhá; navíc vzniká fotka pro závodníka jako bonus. Objeveno u RunSignup Mobile Timing V5, viz [13-konkurencni-analyza.md §13.4](13-konkurencni-analyza.md) |
 
-Doporučení pro time-sys: **nezavazovat se v datovém modelu ani API k jedné konkrétní technologii** — `kod_cipu` je obecný string (funguje pro UHF EPC kód, NFC UID i obsah QR kódu stejně), a [Local Capture Agent](03-architecture.md#39-local-capture-agent--napojení-rfid-decodérů-f22-n12) je navržený jako vyměnitelný adaptér přesně proto, aby volba konkrétního výrobce HW nezamrzla v jádru aplikace.
+Doporučení pro Depo: **nezavazovat se v datovém modelu ani API k jedné konkrétní technologii** — `kod_cipu` je obecný string (funguje pro UHF EPC kód, NFC UID i obsah QR kódu stejně), a [Local Capture Agent](03-architecture.md#39-local-capture-agent--napojení-rfid-decodérů-f22-n12) je navržený jako vyměnitelný adaptér přesně proto, aby volba konkrétního výrobce HW nezamrzla v jádru aplikace.
 
 ## 12.3 Workflow: párování čipu se závodníkem
 
@@ -49,7 +49,7 @@ Toto je moje vlastní doporučení nad rámec toho, co bylo výslovně zadáno �
 
 ## 12.6 Bezpečnost a zdraví závodníků — nejvyšší doporučená priorita
 
-Stará Časomíra tohle vůbec neřešila, a je to jedna z mála věcí, kde jde skutečně o zdraví/bezpečnost lidí, ne jen o pohodlí:
+Je to jedna z mála věcí, kde jde skutečně o zdraví/bezpečnost lidí, ne jen o pohodlí:
 
 - **Nouzový kontakt a zdravotní poznámka** (F31, už v datovém modelu §4.8) — u vytrvalostních závodů v terénu (MTB, trail) je při zranění na trati kritické mít rychlý přístup ke jménu a telefonu blízké osoby a případné zdravotní poznámce (alergie, chronické onemocnění). Doporučuji tohle zařadit **dřív než RFID** — je to jednoduché na implementaci (pár polí navíc ve startovní listině) a řeší reálné riziko.
 - **Tlačítko "SOS/nouze" v modulu Kdo běží** — organizátor jedním klikem označí závodníka jako "potřebuje pomoc" (odlišné od DNF), což ho vizuálně odliší od běžného "nedokončil" a spustí případný workflow přivolání pomoci na trati.
@@ -63,7 +63,7 @@ Stará Časomíra tohle vůbec neřešila, a je to jedna z mála věcí, kde jde
 ## 12.8 Integrita výsledků
 
 - Detekce podezřele **rychlého** mezičasu (možné zkrácení trati / chyba záznamu) jako doplněk k F33 — statistický odhad na základě rozptylu časů ostatních závodníků ve stejné kategorii/vlně, ne pevný práh.
-- Volitelný **fotofiniš/krátký video záznam z cíle** (F41) vázaný časovým razítkem na `zaznam_udalosti` — u sporných doběhů (kdo byl první) dnes stará Časomíra nenabízí nic, jednoduchý záznam s časovým razítkem by spor vyřešil bez diskuze. Inspirace: Copérnico nabízí video replay pro každého závodníka, viz [13-konkurencni-analyza.md §13.3](13-konkurencni-analyza.md).
+- Volitelný **fotofiniš/krátký video záznam z cíle** (F41) vázaný časovým razítkem na `zaznam_udalosti` — u sporných doběhů (kdo byl první) by jednoduchý záznam s časovým razítkem vyřešil spor bez diskuze. Inspirace: Copérnico nabízí video replay pro každého závodníka, viz [13-konkurencni-analyza.md §13.3](13-konkurencni-analyza.md).
 
 ## 12.9 Provozní vylepšení pro organizátora
 
@@ -74,7 +74,7 @@ Stará Časomíra tohle vůbec neřešila, a je to jedna z mála věcí, kde jde
 ## 12.10 Přístupnost a dosah
 
 - Veřejná stránka výsledků ([07-ui-mockups.md §7.5](07-ui-mockups.md)) by měla projít základní kontrolou přístupnosti (kontrast, čitelnost pro slabozraké) — sledují ji i starší návštěvníci/rodiče na mobilu často v horších světelných podmínkách (venku, na slunci).
-- Vícejazyčnost veřejné stránky (CS/EN jako minimum) — pole `stat` ve staré `tblStartovnilistina` naznačuje, že se občas objevují zahraniční účastníci.
+- Vícejazyčnost veřejné stránky (CS/EN jako minimum) — pole `stat` u přihlášky počítá s tím, že se občas objevují zahraniční účastníci.
 
 ## 12.11 K čemu bych byl naopak opatrný
 

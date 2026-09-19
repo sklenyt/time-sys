@@ -2,7 +2,7 @@
 
 Statické mockupy klíčových obrazovek nové aplikace — vytvořené jako samostatné HTML/CSS soubory (zdroj v [`/design/mockups`](../design/mockups)) a vyrenderované do PNG přes Playwright/Chromium. Design systém (barvy, typografie, komponenty) je definován v [`shared.css`](../design/mockups/shared.css) a je sdílený napříč všemi obrazovkami pro vizuální konzistenci.
 
-> **Aktualizace:** §7.1–§7.11 níže jsou původní rychlé drátěné mockupy (vlastní iterace, bez finální značky) — zůstávají jako podklad k procesní diskuzi. **§7.12 obsahuje aktuální, propracovanější vizuální směr** s finální značkou Depo, navržený v Claude Design, včetně skutečné responzivity telefon/iPad/desktop (F25). Při rozporu mezi nimi je směrodatné §7.12. Grafická identita (logo, barvy, typografie) je zdokumentovaná v [14-graficka-identita.md](14-graficka-identita.md).
+> **Aktualizace:** §7.1–§7.11 níže jsou původní rychlé drátěné mockupy (s aktualizovanou značkou Depo) — zůstávají jako podklad k procesní diskuzi. **§7.12 obsahuje aktuální, propracovanější vizuální směr**, navržený v Claude Design, včetně skutečné responzivity telefon/iPad/desktop (F25). Při rozporu mezi nimi je směrodatné §7.12. Grafická identita (logo, barvy, typografie) je zdokumentovaná v [14-graficka-identita.md](14-graficka-identita.md).
 
 **Design principy:**
 - Tmavá postranní navigace (orientace v modulech) + světlý obsah s vysokým kontrastem — čitelnost i na tabletu venku na slunci (N08 v [02-requirements.md](02-requirements.md)).
@@ -14,43 +14,43 @@ Statické mockupy klíčových obrazovek nové aplikace — vytvořené jako sam
 
 ![Dashboard](images/mockup-01-dashboard.png)
 
-Vstupní obrazovka po přihlášení organizátora. Ukazuje stav napříč tratěmi jedné akce, živé doběhy poslední aktivní trati a sekci **„Vyžaduje pozornost“** — přímé promítnutí konceptu `NEEDS_REVIEW` ze synchronizační strategie ([03-architecture.md §3.5](03-architecture.md)) a neresolvovaných zápisů čísla „0“ (viz [01-analysis.md §1.10](01-analysis.md)) do UI, aby organizátor o kolizích/chybách nemusel vědět z technického logu, ale viděl je jako běžnou pracovní frontu.
+Vstupní obrazovka po přihlášení organizátora. Ukazuje stav napříč tratěmi jedné akce, živé doběhy poslední aktivní trati a sekci **„Vyžaduje pozornost“** — přímé promítnutí konceptu `NEEDS_REVIEW` ze synchronizační strategie ([03-architecture.md §3.5](03-architecture.md)) a nezachycených/neplatných čísel do UI, aby organizátor o kolizích/chybách nemusel vědět z technického logu, ale viděl je jako běžnou pracovní frontu.
 
 ## 7.2 Nastavení trasy
 
 ![Nastavení trasy](images/mockup-02-nastaveni-trasy.png)
 
-Nahrazuje formulář „Nastavení“ ze staré Časomíry (F01, F02 v [02-requirements.md](02-requirements.md)). Výběr typu startu jako velké dotykové „pills" (hromadný/vlnový/intervalový), inline editovatelná tabulka kategorií se stejnou strukturou jako reálná `tblVekovaKategorie` (kód, název, pohlaví, ročník od–do — viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)), postranní panel se startovními vlnami.
+Formulář nastavení trasy (F01, F02 v [02-requirements.md](02-requirements.md)). Výběr typu startu jako velké dotykové „pills" (hromadný/vlnový/intervalový), inline editovatelná tabulka kategorií (kód, název, pohlaví, ročník od–do), postranní panel se startovními vlnami.
 
 ## 7.3 Měření — jádro aplikace
 
 ![Měření](images/mockup-03-mereni.png)
 
-**Nejdůležitější obrazovka celého systému** — přímý ekvivalent hlavního formuláře staré Časomíry (UC6, F06). Velký numerický displej zadávaného čísla, numpad optimalizovaný pro rychlé dotykové/klávesnicové zadání, tlačítko **ENTER** zvýrazněné zeleně jako jediná akce, která ukládá čas. Panel „Poslední zápisy“ vpravo dává časoměřiči okamžitou zpětnou vazbu (nově zapsaný záznam zvýrazněn zeleně) — v reálném provozu nahrazuje nutnost se otáčet na "diktujícího" pro kontrolu. Indikátor **offline** v horní liště explicitně komunikuje architektonický princip "žádný zápis se neztratí" (N01, N03 v [02-requirements.md](02-requirements.md)) — natvrdo viditelný stav, ne skrytá technikálie.
+**Nejdůležitější obrazovka celého systému** (UC6, F06). Velký numerický displej zadávaného čísla, numpad optimalizovaný pro rychlé dotykové/klávesnicové zadání, tlačítko **ENTER** zvýrazněné zeleně jako jediná akce, která ukládá čas. Panel „Poslední zápisy“ vpravo dává časoměřiči okamžitou zpětnou vazbu (nově zapsaný záznam zvýrazněn zeleně) — bez nutnosti se otáčet na "diktujícího" pro kontrolu. Indikátor **offline** v horní liště explicitně komunikuje architektonický princip "žádný zápis se neztratí" (N01, N03 v [02-requirements.md](02-requirements.md)) — natvrdo viditelný stav, ne skrytá technikálie.
 
 ## 7.4 Kdo ještě běží / DNF
 
 ![Kdo běží](images/mockup-04-kdo-bezi.png)
 
-Živý přehled nahrazující lokální dotaz dostupný dřív jen na jednom počítači (UC10, F10). Sloupec „Postup“ vizualizuje procento uběhnuté trati na základě mezičasů z kontrolních stanovišť — nová funkčnost umožněná síťovou spoluprací stanovišť (viz [03-architecture.md](03-architecture.md)), kterou stará offline-jen architektura neumožňovala v reálném čase.
+Živý přehled dostupný všem oprávněným zařízením v reálném čase (UC10, F10). Sloupec „Postup“ vizualizuje procento uběhnuté trati na základě mezičasů z kontrolních stanovišť — umožněno síťovou spoluprací stanovišť (viz [03-architecture.md](03-architecture.md)).
 
 ## 7.5 Živé veřejné výsledky (mobilní pohled)
 
 ![Živé výsledky](images/mockup-05-live-vysledky-mobile.png)
 
-Veřejná stránka bez nutnosti přihlášení (F16), navržená mobile-first — diváci na startu/cíli i doma sledují výsledky na telefonu. Přepínání tras a kategorií jedním klepnutím, štítek **ŽIVĚ** a časová značka „poslední záznam přijat před X s“ komunikují, že jde o skutečně živá data, ne dávkový export jako ve staré Časomíře.
+Veřejná stránka bez nutnosti přihlášení (F16), navržená mobile-first — diváci na startu/cíli i doma sledují výsledky na telefonu. Přepínání tras a kategorií jedním klepnutím, štítek **ŽIVĚ** a časová značka „poslední záznam přijat před X s“ komunikují, že jde o skutečně živá data, ne dávkový export.
 
 ## 7.6 Audit log
 
 ![Audit log](images/mockup-06-audit-log.png)
 
-Prohledávatelná a filtrovatelná obdoba starého textového `tblLogy`, ale se strukturovanými sloupci místo volného textu (viz [11-legacy-schema-reference.md §11.2](11-legacy-schema-reference.md)). Sloupec „Typ opravy“ přímo odpovídá číselníku `tblZmenyZaznamu` staré aplikace (originál, přepis nuly na číslo, přepsané číslo…), diff hodnot je vizuálně zvýrazněný (přeškrtnutá stará hodnota → zelená nová), řádek „kolize stanovišť“ ukazuje konkrétní scénář z `NEEDS_REVIEW` stavu.
+Prohledávatelný a filtrovatelný audit log se strukturovanými sloupci místo volného textu. Sloupec „Typ opravy“ přímo odpovídá enumu `typ_opravy` (originál, přepis nuly na číslo, přepsané číslo…), diff hodnot je vizuálně zvýrazněný (přeškrtnutá stará hodnota → zelená nová), řádek „kolize stanovišť“ ukazuje konkrétní scénář z `NEEDS_REVIEW` stavu.
 
 ## 7.7 Uživatelé a role
 
 ![Uživatelé a role](images/mockup-07-uzivatele-role.png)
 
-Nahrazuje "jedno sdílené heslo na tabulku" novým RBAC modelem (F18, F19, [08-security.md](08-security.md)) — pozvánky e-mailem, barevně odlišené role (Admin/Organizátor/Časoměřič/Stanoviště), a veřejný odkaz na živé výsledky včetně QR kódu pro snadné sdílení na místě konání.
+RBAC model (F18, F19, [08-security.md](08-security.md)) — pozvánky e-mailem, barevně odlišené role (Admin/Organizátor/Časoměřič/Stanoviště), a veřejný odkaz na živé výsledky včetně QR kódu pro snadné sdílení na místě konání.
 
 ## 7.8 Startovní listina
 
@@ -68,7 +68,7 @@ Nová obrazovka pro budoucí RFID modul (F22, F29, F30 — viz **[12-rfid-a-dopo
 
 ![Publikace výsledků](images/mockup-10-publikace-vysledku.png)
 
-Přímá náhrada legacy FTP exportu (F34–F37, viz [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md) pro RFID a [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37) pro tuto funkci). Klíčový rozdíl oproti staré Časomíře: **viditelný stav posledního exportu** (zelený štítek "poslední export OK", historie exportů s chybami a retry) — stará aplikace FTP upload prováděla tiše bez zpětné vazby v UI, takže selhání (např. vypršelé heslo hostingu) organizátor zjistil až při kontrole vlastního webu. Mapování tratí na výstupní soubory (`kratka.html`, `stredni.html`...) odpovídá 1:1 poli `tblZavod.htmlsoubor` ze skutečných dat analyzovaného závodu.
+Publikace výsledků na FTP/SFTP server organizátora (F34–F37, viz [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37)). Klíčová vlastnost: **viditelný stav posledního exportu** (zelený štítek "poslední export OK", historie exportů s chybami a retry), aby organizátor nemusel selhání (např. vypršelé heslo hostingu) zjišťovat až při kontrole vlastního webu. Mapování tratí na výstupní soubory (`kratka.html`, `stredni.html`...) odpovídá poli `trasa.export_soubor_nazev`.
 
 ## 7.12 Depo — obrazovky ve finální identitě (Claude Design)
 
@@ -103,14 +103,14 @@ Kolize čísel (stejné číslo zapsáno 2×, viz `NEEDS_REVIEW` v [03-architect
 
 ![Landing page — desktop a mobil](images/depo-app-04-landing.png)
 
-Marketingová stránka s jasným sdělením „Zadej číslo. Stiskni Enter. Máš výsledky." a živou ukázkou obrazovky měření přímo v hero sekci. Tři klíčové metriky (100 % funkční offline, 0,1 s rozlišení času, FTP export na váš web) komunikují přesně tři neměnné principy z [01-analysis.md §1.11](01-analysis.md).
+Marketingová stránka s jasným sdělením „Zadej číslo. Stiskni Enter. Máš výsledky." a živou ukázkou obrazovky měření přímo v hero sekci. Tři klíčové metriky (100 % funkční offline, 0,1 s rozlišení času, FTP export na váš web) komunikují tři neměnné principy Depa.
 
 ### Onboarding „Přidat na plochu" a Publikace výsledků
 
 ![Onboarding pro iOS a nastavení publikace na FTP/SFTP](images/depo-app-05-onboarding-publikace.png)
 
 - **Onboarding (mobil)** — třístupňový vizuální průvodce pro přidání PWA na plochu na iOS (Sdílet → Přidat na plochu → Potvrdit), řeší přímo omezení popsané v [05-tech-stack.md §5.2.1](05-tech-stack.md).
-- **Publikace výsledků (desktop)** — přesná realizace F34–F37: volba protokolu (SFTP/FTP), přepínače „co a kdy publikovat" (průběžné výsledky / HTML stránka / CSV pro Atletiku ČR — nový nápad nad rámec zadání, viz níže), interval nebo ruční spuštění, a **historie posledních přenosů se stavem** (úspěch/chyba) — přesně řeší nedostatek staré Časomíry popsaný v [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37) (tichý neúspěch bez zpětné vazby v UI).
+- **Publikace výsledků (desktop)** — realizace F34–F37: volba protokolu (SFTP/FTP), přepínače „co a kdy publikovat" (průběžné výsledky / HTML stránka / CSV pro Atletiku ČR — nový nápad nad rámec zadání, viz níže), interval nebo ruční spuštění, a **historie posledních přenosů se stavem** (úspěch/chyba), viz [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37).
 
 > **Nový nápad zachycený v návrhu:** přepínač „CSV pro Atletiku ČR" naznačuje export do formátu národního svazu/žebříčku — nebyl zatím v žádném dokumentu explicitně požadovaný, ale je to rozumné doplnění F34 pro atletické oddíly. Navrhuji zvážit jako **F43** ve Fázi 4, pokud o to bude zájem konkrétních klubů.
 

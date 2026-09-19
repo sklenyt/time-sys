@@ -37,7 +37,7 @@ REST pro CRUD operace a synchronizaci, WebSocket pro realtime promítnutí změn
 | Endpoint | Metoda | Popis |
 |---|---|---|
 | `/routes/{id}/start` | POST | Zahájení startu vlny — server/klient uloží aktuální čas jako `cas_startu` (UC5) |
-| `/routes/{id}/start` | DELETE | Zrušení startu (odpovídá legacy "Start-zrušeno", viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)) |
+| `/routes/{id}/start` | DELETE | Zrušení startu |
 | `/routes/{id}/records` | POST | **Jádro F06**: `{ startovni_cislo, zarizeni_id, klient_cas }` → server uloží `zaznam_udalosti` s `typ_udalosti=DOJEZD`, čas = okamžik přijetí/potvrzení na klientovi, ne ruční vstup |
 | `/records/{id}/correct` | POST | Oprava čísla se zachováním času (F08) — vytvoří nový `zaznam_udalosti` s `nahrazuje_zaznam_id` a `typ_opravy` |
 | `/routes/{id}/running` | GET | "Kdo ještě běží / DNF" — realtime přehled (F10, `kdo_bezi_view`) |
@@ -81,7 +81,7 @@ REST pro CRUD operace a synchronizaci, WebSocket pro realtime promítnutí změn
 | `/routes/{id}/results/live` | GET (veřejné, bez auth) | Veřejná živá stránka výsledků (F16), cachovaná/edge |
 | `/events/{id}/publish-targets` | GET, POST | Seznam / vytvoření publikačního cíle (FTP/FTPS/SFTP) — F34, F37 |
 | `/publish-targets/{id}` | GET, PATCH, DELETE | Detail / úprava (server, cesta, přihlašovací údaje, interval, šablona) / smazání cíle |
-| `/publish-targets/{id}/test` | POST | Otestuje připojení a přihlášení bez provedení skutečného exportu — okamžitá zpětná vazba při konfiguraci (chybělo ve staré Časomíře) |
+| `/publish-targets/{id}/test` | POST | Otestuje připojení a přihlášení bez provedení skutečného exportu — okamžitá zpětná vazba při konfiguraci |
 | `/publish-targets/{id}/export-now` | POST | Vynutí okamžitý export a upload mimo nastavený interval |
 
 ### Příklad — vytvoření publikačního cíle (`POST /events/{id}/publish-targets`)
@@ -97,7 +97,7 @@ REST pro CRUD operace a synchronizaci, WebSocket pro realtime promítnutí změn
   "heslo": "•••••••••",            // uloženo šifrovaně, nikdy nevrací v odpovědi
   "interval_minut": 5,
   "export_po_kazdem_zaznamu": true,
-  "html_sablona": null              // volitelné, jinak výchozí šablona time-sys
+  "html_sablona": null              // volitelné, jinak výchozí šablona Depo
 }
 
 // response 201
@@ -135,4 +135,4 @@ Pole `trasa.export_soubor_nazev` (viz [04-data-model.md §4.10](04-data-model.md
 | HTTP kód | Situace |
 |---|---|
 | `409 Conflict` + `stav=NEEDS_REVIEW` | Kolize při synchronizaci (např. stejné číslo doběhlo na dvou stanovištích ve stejném kole) — vrací obě konkurenční verze k ručnímu rozhodnutí organizátora |
-| `422 Unprocessable Entity` | `startovni_cislo` nenalezeno ve startovní listině — záznam se přesto uloží (`prihlaska_id = null`), endpoint vrací `202 Accepted` s varováním, ne tvrdou chybu (zachování legacy chování "ulož i neplatné číslo, oprav později") |
+| `422 Unprocessable Entity` | `startovni_cislo` nenalezeno ve startovní listině — záznam se přesto uloží (`prihlaska_id = null`), endpoint vrací `202 Accepted` s varováním, ne tvrdou chybu (F07 — ulož i neplatné číslo, oprav později) |

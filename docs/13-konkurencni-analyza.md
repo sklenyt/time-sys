@@ -1,6 +1,6 @@
 # 13. Konkurenční analýza — přehled podobných systémů
 
-Celkový přehled trhu časoměřičských a závodních systémů — ne jen výběr funkcí zajímavých pro time-sys, ale ucelený obrázek toho, co jednotlivé nástroje dělají, pro koho jsou, a jak fungují jako celek. Konkrétní doporučení, co z toho zvážit pro time-sys, je shrnuté na konci v §13.6.
+Celkový přehled trhu časoměřičských a závodních systémů — ne jen výběr funkcí zajímavých pro Depo, ale ucelený obrázek toho, co jednotlivé nástroje dělají, pro koho jsou, a jak fungují jako celek. Konkrétní doporučení, co z toho zvážit pro Depo, je shrnuté na konci v §13.6.
 
 ## 13.1 Metodika a omezení
 
@@ -8,11 +8,11 @@ Průzkum vychází z webového vyhledávání (výsledkové úryvky) a přímo s
 
 ## 13.2 Mapa trhu — pět kategorií
 
-| Kategorie | Zástupci | Business model | Kam patří time-sys |
+| Kategorie | Zástupci | Business model | Kam patří Depo |
 |---|---|---|---|
 | **Profesionální/enterprise (hardware-first)** | MYLAPS, RACE RESULT, ChronoTrack Live, SportIdent/Copérnico | Prodej/pronájem hardwaru + software licence, řádově statisíce Kč | Ne — jiná liga rozpočtu |
 | **Registrační platformy s vestavěnou časomírou** | RunSignup | Zdarma pořadateli, provize z platební brány placená účastníkem | Ne přímo, ale zajímavý byznys model |
-| **Volně dostupné nástroje pro malé závody** | PikaTimer, fsTimer, OpenRaceTiming, result.software, Webscorer, PrimaRun, Mobilní časomíra, **stará Časomíra** | Zdarma / open-source, obsluhuje sám organizátor | **Ano — přímá konkurence** |
+| **Volně dostupné nástroje pro malé závody** | PikaTimer, fsTimer, OpenRaceTiming, result.software, Webscorer, PrimaRun, Mobilní časomíra | Zdarma / open-source, obsluhuje sám organizátor | **Ano — přímá konkurence** |
 | **České časoměřičské služby (outsourcing)** | results.cz, SportSoft, WOWTIMING.CZ, AM Chrono | Placená služba na klíč s vlastní obsluhou | Ne — jiný typ rozhodnutí (dělat sám vs. objednat) |
 | **Divácké/engagement nadstavby** | RaceJoy | Doplněk k existující časomíře, ne samostatný systém | Inspirace pro budoucí rozšíření |
 
@@ -24,11 +24,11 @@ Nizozemská firma, jeden z nejrozšířenějších profesionálních systémů n
 
 ### RACE RESULT — kompletní balíček s transparentním ceníkem
 
-Německá firma působící ve 120+ zemích, nabízí **celý řetězec** — online registrace, transpondéry, časomíra, skórovací software — jako jeden produkt bez licenčního poplatku za samotný software (platí se jen hardware). Zajímavé je, že mají **veřejně dostupný ceník hardwaru** (dekodér Ubidium ~3 790 USD, transpondéry MotorKart V3 ~85 USD/ks s 3,5letou výdrží baterie, bezdrátový Loop Box pro mezičasy ~2 390 USD) — na rozdíl od většiny konkurence, která ceny sděluje jen na vyžádání. To dělá z RACE RESULT srovnatelně dostupnější volbu pro středně velké závody, které už na freeware nástroj typu Časomíra vyrostly, ale na MYLAPS ještě nemají rozpočet.
+Německá firma působící ve 120+ zemích, nabízí **celý řetězec** — online registrace, transpondéry, časomíra, skórovací software — jako jeden produkt bez licenčního poplatku za samotný software (platí se jen hardware). Zajímavé je, že mají **veřejně dostupný ceník hardwaru** (dekodér Ubidium ~3 790 USD, transpondéry MotorKart V3 ~85 USD/ks s 3,5letou výdrží baterie, bezdrátový Loop Box pro mezičasy ~2 390 USD) — na rozdíl od většiny konkurence, která ceny sděluje jen na vyžádání. To dělá z RACE RESULT srovnatelně dostupnější volbu pro středně velké závody, které už na freeware nástroj vyrostly, ale na MYLAPS ještě nemají rozpočet.
 
 ### ChronoTrack Live — end-to-end správa se zaměřením na diváky
 
-Americká platforma pokrývající celý závod od registrace po výsledky, s důrazem na **zapojení diváků**: vestavěný **vložitelný widget živých výsledků** (iframe/JS snippet) pro vlastní web organizátora, a **SMS aktualizace** informující diváky o postupu závodníka na trati. Škáluje od lokálních 5K až po OCR závody a triatlony s vlnovým startem. Typický příklad platformy, která řeší podobné problémy jako time-sys (živé výsledky, komunikace s diváky), ale na výrazně vyšší cenové hladině a s vlastním hardwarem.
+Americká platforma pokrývající celý závod od registrace po výsledky, s důrazem na **zapojení diváků**: vestavěný **vložitelný widget živých výsledků** (iframe/JS snippet) pro vlastní web organizátora, a **SMS aktualizace** informující diváky o postupu závodníka na trati. Škáluje od lokálních 5K až po OCR závody a triatlony s vlnovým startem. Typický příklad platformy, která řeší podobné problémy jako Depo (živé výsledky, komunikace s diváky), ale na výrazně vyšší cenové hladině a s vlastním hardwarem.
 
 ### SportIdent + Copérnico — dominance v orientačním běhu a modulární časomíra
 
@@ -38,21 +38,21 @@ Americká platforma pokrývající celý závod od registrace po výsledky, s d�
 
 Obsluhuje takřka 40 000 závodů a 13 milionů registrací ročně (2026), typicky pro 5K/10K/půlmaraton až po velké seriály. **Byznys model:** software je pro pořadatele **zcela zdarma** (žádné předplatné, žádná provize z tržby závodu) — jediný příjem je transakční poplatek za platbu (typicky 6 % + 1 USD za nákup), který si organizátor může nechat zaplatit účastníkem, rozdělit, nebo absorbovat sám; u bezplatných závodů se poplatek neúčtuje vůbec. Zdarma dostává organizátor i tvorbu webu závodu, e-mailový marketing, mobilní RaceDay app a neomezené focení. V srpnu 2026 spustili **RaceDay Scoring V6** (přepsáno do Rustu pro rychlost) a novou **fotografickou časomíru** — časoměřič fotí startovní čísla mobilem/tabletem na běžné trati, AI z fotek automaticky rozpozná číslo a vygeneruje časový záznam i sdílitelnou fotku pro závodníka zároveň. Tohle je zásadně jiný přístup než RFID i než ruční zápis — bez hardwarové investice, jen s běžným telefonem (§13.4).
 
-### PikaTimer (open-source) — nejbližší přímý vzor pro time-sys
+### PikaTimer (open-source) — nejbližší přímý vzor pro Depo
 
-Desktopová Java aplikace pod GPLv3, zdarma, určená přesně pro naši cílovou skupinu. Umí přímý import z RFID systémů, vlastní definice kategorií/cen, alfanumerická startovní čísla, sledování traťových rekordů, "in-progress" report (kdo odstartoval, ale nedoběhl), a — klíčově — **automatický upload HTML reportů na FTP/FTPS/SFTP** v pravidelném intervalu (30 s až 5 min). Chybí jí ale síťová spolupráce více zařízení, realtime vrstva a rolové řízení přístupu — je to jednouživatelská desktopová appka, ne webová multi-device platforma, což je přesně mezera, kterou time-sys zaplňuje.
+Desktopová Java aplikace pod GPLv3, zdarma, určená přesně pro naši cílovou skupinu. Umí přímý import z RFID systémů, vlastní definice kategorií/cen, alfanumerická startovní čísla, sledování traťových rekordů, "in-progress" report (kdo odstartoval, ale nedoběhl), a — klíčově — **automatický upload HTML reportů na FTP/FTPS/SFTP** v pravidelném intervalu (30 s až 5 min). Chybí jí ale síťová spolupráce více zařízení, realtime vrstva a rolové řízení přístupu — je to jednouživatelská desktopová appka, ne webová multi-device platforma, což je přesně mezera, kterou Depo zaplňuje.
 
 ### fsTimer (open-source) — stejná cílová skupina jako my
 
 Cross-platformní (Win/Mac/Linux) nástroj cílený explicitně na "malé až středně velké charitativní 5K závody" — identická definice cílové skupiny jako naše. Řeší registraci, zápis časů a tisk výsledků. Potvrzuje, že tahle mezera trhu (svépomocná časomíra pro komunitní závody) je reálná a dlouhodobě obsazovaná víc menšími nezávislými projekty než jedním dominantním hráčem.
 
-### OpenRaceTiming (open-source) — architektonicky nejblíž time-sys
+### OpenRaceTiming (open-source) — architektonicky nejblíž Depu
 
-Modulární systém komunikující přes in-memory event bus s **event sourcing** vzorem (data tečou z hardwaru přes event store do dalších komponent), s podporou pluggable device connectors (MyLaps, RaceResult, Omega, finish-line kamera, manuální klávesnice jako fallback) a flexibilním nasazením — čistě lokálně bez internetu, nebo klient/server, nebo cloud. Nezávisle došel ke stejné architektuře jako time-sys (§13.4).
+Modulární systém komunikující přes in-memory event bus s **event sourcing** vzorem (data tečou z hardwaru přes event store do dalších komponent), s podporou pluggable device connectors (MyLaps, RaceResult, Omega, finish-line kamera, manuální klávesnice jako fallback) a flexibilním nasazením — čistě lokálně bez internetu, nebo klient/server, nebo cloud. Nezávisle došel ke stejné architektuře jako Depo (§13.4).
 
 ### result.software (open-source) — filozoficky příbuzný projekt
 
-Nová generace open-source časoměřičského softwaru pod licencí LGPL-3.0, sloganem "Your timing. Your data. Your results." Plný obsah webu nebyl v tomto prostředí dostupný k ověření (blokovaný přístup), ale filozofie — vlastní kontrola nad daty, ne uzamčení v proprietárním cloudu — je v souladu s tím, jak je navržený time-sys (self-hosted, otevřený datový model).
+Nová generace open-source časoměřičského softwaru pod licencí LGPL-3.0, sloganem "Your timing. Your data. Your results." Plný obsah webu nebyl v tomto prostředí dostupný k ověření (blokovaný přístup), ale filozofie — vlastní kontrola nad daty, ne uzamčení v proprietárním cloudu — je v souladu s tím, jak je navržené Depo (self-hosted, otevřený datový model).
 
 ### Webscorer — mobilní appka pokrývající celý proces
 
@@ -64,11 +64,11 @@ Appka pro účastníky a diváky (distribuovaná mj. přes RunSignup) s GPS live
 
 ### České časoměřičské služby (results.cz, SportSoft, WOWTIMING.CZ, AM Chrono)
 
-Firmy, které **přivezou vlastní čipový systém a obsluhu** — organizátor si nekupuje ani neinstaluje software, objednává kompletní službu. WOWTIMING.CZ nabízí kompletní čipovou časomíru pro běžecké závody (registrace, zpracování výsledků, živé přehledy publikované do sekund od doběhu). SportSoft provozuje vlastní portál s průběžnými výsledky během závodu. Jde o jinou kategorii rozhodování než time-sys/Časomíra — "objednat službu" vs. "měřit si to sami" — ale relevantní jako připomínka, že čím spolehlivější a jednodušší bude time-sys, tím míň důvodů bude tyhle služby (dražší) objednávat jen kvůli časomíře.
+Firmy, které **přivezou vlastní čipový systém a obsluhu** — organizátor si nekupuje ani neinstaluje software, objednává kompletní službu. WOWTIMING.CZ nabízí kompletní čipovou časomíru pro běžecké závody (registrace, zpracování výsledků, živé přehledy publikované do sekund od doběhu). SportSoft provozuje vlastní portál s průběžnými výsledky během závodu. Jde o jinou kategorii rozhodování než Depo — "objednat službu" vs. "měřit si to sami" — ale relevantní jako připomínka, že čím spolehlivější a jednodušší bude Depo, tím míň důvodů bude tyhle služby (dražší) objednávat jen kvůli časomíře.
 
 ### PrimaRun a Mobilní časomíra — přímí čeští konkurenti stejné kategorie
 
-**Časomíra PrimaRun** je zdarma dostupná aplikace pro malé pořadatele s webovou částí (registrace, publikace výsledků) a desktopovou částí pro obsluhu na místě — velmi podobný koncept jako stará Časomíra, jen jiný autor. **Mobilní časomíra** (czechtriseries.cz) jde ještě dál směrem k tomu, co plánuje time-sys — měření přímo přes mobilní telefony, s bezpečnostními klíči generovanými organizátorem pro připojení zařízení, a samotná mobilní aplikace je zdarma. Tyhle dva nástroje jsou nejbližší přímí konkurenti time-sys na českém trhu a stojí za hlubší srovnání, až budou k dispozici jejich screenshoty/dokumentace (nebyly v tomto prostředí dostupné k prozkoumání kvůli blokovanému přístupu na jejich domény).
+**Časomíra PrimaRun** je zdarma dostupná aplikace pro malé pořadatele s webovou částí (registrace, publikace výsledků) a desktopovou částí pro obsluhu na místě. **Mobilní časomíra** (czechtriseries.cz) jde ještě dál směrem k tomu, co plánuje Depo — měření přímo přes mobilní telefony, s bezpečnostními klíči generovanými organizátorem pro připojení zařízení, a samotná mobilní aplikace je zdarma. Tyhle dva nástroje jsou nejbližší přímí konkurenti Depa na českém trhu a stojí za hlubší srovnání, až budou k dispozici jejich screenshoty/dokumentace (nebyly v tomto prostředí dostupné k prozkoumání kvůli blokovanému přístupu na jejich domény).
 
 ## 13.4 Nové nápady ze širšího průzkumu
 
@@ -77,7 +77,7 @@ Toto jsou zjištění, která se neváží úzce na FTP export, ale vyplynula z 
 - **AI rozpoznávání startovních čísel z fotek** (RunSignup Mobile Timing V5, komerční nástroje jako RaceTagger, 9Pic BibTrack) — časoměřič vyfotí procházející závodníky běžným telefonem/tabletem, AI z fotky rozpozná startovní číslo (udávaná přesnost 90–98 % podle kvality snímku) a vytvoří časový záznam automaticky. Tohle je **genuinně zajímavá třetí cesta** vedle ručního zápisu a RFID — nevyžaduje žádnou hardwarovou investici (na rozdíl od RFID antén, viz [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)), jen telefon, který má obsluha stejně u sebe, a navíc rovnou vzniká fotka pro závodníka jako bonus. Stojí za zvážení jako **alternativa k RFID ve Fázi 4**, možná i dřív — technicky jde o rozšíření Local Capture Agent konceptu (§3.9 v [03-architecture.md](03-architecture.md)) o "foto → AI → event" pipeline místo "RFID čtečka → event".
 - **Video záznam pro řešení sporných doběhů** (Copérnico) — potvrzuje a rozšiřuje naši dřívější myšlenku fotofiniše ([12-rfid-a-doporuceni.md §12.8](12-rfid-a-doporuceni.md)) o konkrétní realizaci: krátké video ne jen fotka, navázané na konkrétního závodníka.
 - **Pluginový/kioskový ekosystém** (Copérnico) — namísto jedné monolitické appky nabízí oddělené "kiosky" pro výdej čísel, obrazovky s výsledky na místě, sledování běžců. Naše architektura (§3.3 v [03-architecture.md](03-architecture.md)) je na tohle už připravená (oddělené role/zařízení), jen jsme to takhle explicitně nepojmenovali — stojí za zvážení nabídnout "kioskový režim" (jen zobrazení výsledků na velké obrazovce v cíli) jako lehkou variantu veřejné live stránky.
-- **Byznys model "zdarma pořadateli, poplatek z platby"** (RunSignup) — mimo scope samotné časomíry (F27 zůstává Won't have, viz [02-requirements.md](02-requirements.md)), ale relevantní jako inspirace pro **dlouhodobou udržitelnost projektu time-sys jako celku**, pokud by měl v budoucnu přerůst v komerčně provozovanou multi-tenant platformu (F24) — bez nutnosti účtovat klubům přímý poplatek za časomíru.
+- **Byznys model "zdarma pořadateli, poplatek z platby"** (RunSignup) — mimo scope samotné časomíry (F27 zůstává Won't have, viz [02-requirements.md](02-requirements.md)), ale relevantní jako inspirace pro **dlouhodobou udržitelnost Depa jako celku**, pokud by mělo v budoucnu přerůst v komerčně provozovanou multi-tenant platformu (F24) — bez nutnosti účtovat klubům přímý poplatek za časomíru.
 - **Automatická pravidla pro detekci chyb s historií akcí** (Copérnico) — validuje náš přístup s řízeným číselníkem `typ_opravy` a append-only auditním logem ([04-data-model.md §4.2](04-data-model.md)), jen jde ještě dál směrem k automatizaci (systém sám navrhne DQ/penalizaci podle pravidla, ne jen zaloguje ruční zásah) — inspirace pro budoucí rozšíření F33 (detekce podezřelých časů).
 
 ## 13.5 Souhrnná srovnávací tabulka
@@ -93,14 +93,13 @@ Toto jsou zjištění, která se neváží úzce na FTP export, ale vyplynula z 
 | fsTimer | Malý nástroj | Ano | Ano | Ne | Export | Neznámo | Zdarma (open-source) |
 | OpenRaceTiming | Malý nástroj | Neznámo | **Ano (client-only mód)** | Pluggable konektory | Ano | Neznámo | Zdarma (open-source) |
 | Webscorer | Malý nástroj (mobilní) | Ano | Ano (appka) | Ne | Ano | Neznámo | Freemium |
-| stará Časomíra | Malý nástroj | Import | Ano (jediný PC) | Přes čtečku čipů/kódů | Export HTML | **FTP** | Zdarma |
-| **time-sys (návrh)** | Malý nástroj | Ano (import i ruční) | **Ano (multi-device sync)** | Plánováno (Fáze 4) + AI foto k zvážení | Ano (WebSocket) | **FTP/SFTP + embed (plánováno)** | Zdarma / open-source |
+| **Depo (návrh)** | Malý nástroj | Ano (import i ruční) | **Ano (multi-device sync)** | Plánováno (Fáze 4) + AI foto k zvážení | Ano (WebSocket) | **FTP/SFTP + embed (plánováno)** | Zdarma / open-source |
 
-## 13.6 Co si z toho odnést pro time-sys — prioritizované
+## 13.6 Co si z toho odnést pro Depo — prioritizované
 
-| Nápad | Zdroj | Stav v time-sys |
+| Nápad | Zdroj | Stav v Depu |
 |---|---|---|
-| Automatický FTP/FTPS/SFTP export v intervalu | PikaTimer, stará Časomíra | ✅ Navrženo jako F34/F35 (Must have, Fáze 1) — viz [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37) |
+| Automatický FTP/FTPS/SFTP export v intervalu | PikaTimer | ✅ Navrženo jako F34/F35 (Must have, Fáze 1) — viz [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37) |
 | Traťové rekordy napříč ročníky | PikaTimer | ✅ Navrženo jako F26 |
 | "Kdo běží" přehled | PikaTimer ("in-progress") | ✅ Navrženo jako F10 |
 | Event-sourcing architektura, offline-first | OpenRaceTiming | ✅ Nezávisle stejný návrh — validace [04-data-model.md §4.2](04-data-model.md) |

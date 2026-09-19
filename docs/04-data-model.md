@@ -1,6 +1,6 @@
-# 4. Datový model nového systému
+# 4. Datový model
 
-Model vychází z reálného schématu staré aplikace ([11-legacy-schema-reference.md](11-legacy-schema-reference.md)), doplněný o entity, které starý systém řešil jen konvencí nebo vůbec (organizace, uživatelé/role, formální "událost" nad tratěmi, strukturovaný event log místo textového). Cílová databáze: **PostgreSQL** (zdůvodnění v [05-tech-stack.md](05-tech-stack.md)).
+Cílová databáze: **PostgreSQL** (zdůvodnění v [05-tech-stack.md](05-tech-stack.md)).
 
 ## 4.1 ERD — přehled
 
@@ -154,16 +154,16 @@ erDiagram
 
 ## 4.2 Klíčové designové rozhodnutí: `zaznam_udalosti` jako append-only event log
 
-Toto je centrální tabulka celého systému (nahrazuje `tblZaznamy` + částečně `tblLogy` ze starého modelu) a zároveň nosič synchronizační strategie z [03-architecture.md §3.5](03-architecture.md#35-synchronizační-strategie-nejkritičtější-technické-rozhodnutí):
+Toto je centrální tabulka celého systému a zároveň nosič synchronizační strategie z [03-architecture.md §3.5](03-architecture.md#35-synchronizační-strategie-nejkritičtější-technické-rozhodnutí):
 
 - **Nikdy se needituje, jen přidává.** Oprava čísla není `UPDATE` staré hodnoty, ale nový řádek `typ_udalosti = 'OPRAVA'`, `nahrazuje_zaznam_id = <id předchozího>`. Aktuální platná hodnota se odvozuje jako "poslední řádek v řetězci `nahrazuje_zaznam_id`".
-- **`startovni_cislo_raw`** se ukládá vždy (i když se nepodaří napárovat na `prihlaska_id`) — přímý ekvivalent chování "neexistující/prázdné číslo → řádek s 0" ze starého systému (viz [01-analysis.md §1.10](01-analysis.md)), jen bez nutnosti fixního placeholder řádku v `prihlaska`.
+- **`startovni_cislo_raw`** se ukládá vždy (i když se nepodaří napárovat na `prihlaska_id`) — nezachycené/neplatné číslo se nikdy nezahazuje, jen bez nutnosti fixního placeholder řádku v `prihlaska`.
 - **`stav`** nabývá `OK` / `NEEDS_REVIEW` — druhá hodnota pro kolize při synchronizaci více zařízení (viz architektura).
-- **`vytvoreno_klient_at` vs. `prijato_server_at`** — dvojí časové razítko: první je čas na zařízení v okamžiku zápisu (rozhodující pro výpočet výsledků — ekvivalent starého `datumcas`+`datumcasMS` triku, ale nativně přesný v PostgreSQL), druhý je čas přijetí serverem (pro diagnostiku synchronizace, ne pro výpočet výsledků).
+- **`vytvoreno_klient_at` vs. `prijato_server_at`** — dvojí časové razítko: první je čas na zařízení v okamžiku zápisu (rozhodující pro výpočet výsledků, nativně přesný `timestamptz` v PostgreSQL), druhý je čas přijetí serverem (pro diagnostiku synchronizace, ne pro výpočet výsledků).
 - `typ_udalosti`: `START`, `DOJEZD`, `MEZICAS`, `OPRAVA`, `DNS`, `DNF`, `DQ`.
-- `typ_opravy`: enum přímo navazující na starý číselník `tblZmenyZaznamu` — `ORIGINAL`, `PREPIS_POSLEDNIHO_RADKU`, `PREPIS_NULY_NA_CISLO`, `PREPSANE_CISLO`, `ZMENA_V_UPRAVACH` (viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)).
+- `typ_opravy`: enum popisující typ korekce — `ORIGINAL`, `PREPIS_POSLEDNIHO_RADKU`, `PREPIS_NULY_NA_CISLO`, `PREPSANE_CISLO`, `ZMENA_V_UPRAVACH`.
 
-Výsledky (`GET /races/{id}/results`, viz [06-api-design.md](06-api-design.md)) se **počítají z `zaznam_udalosti` on-the-fly nebo do materializovaného view**, nikdy se needituje/needukládá zvlášť jako ve staré `tblVysledky` (typický Access anti-pattern "plochá tabulka jako cache tisku").
+Výsledky (`GET /races/{id}/results`, viz [06-api-design.md](06-api-design.md)) se **počítají z `zaznam_udalosti` on-the-fly nebo do materializovaného view**, nikdy se needituje/needukládá zvlášť jako plochá "cache" tabulka pro tisk.
 
 ## 4.3 Role a přístup
 
@@ -179,7 +179,7 @@ Výsledky (`GET /races/{id}/results`, viz [06-api-design.md](06-api-design.md)) 
 
 ## 4.4 Klíčové indexy a integritní pravidla
 
-- `prihlaska (trasa_id, startovni_cislo)` — `UNIQUE` (stejné pravidlo jako `tblStartovnilistina_startovnicislo_idx` ve starém systému, ale správně composite přes trať, ne globálně).
+- `prihlaska (trasa_id, startovni_cislo)` — `UNIQUE` jako composite přes trať, ne globálně (jedno startovní číslo může existovat na více tratích jedné akce).
 - `zaznam_udalosti (trasa_id, cas)` — index pro rychlé řazení/výpočet pořadí.
 - `zaznam_udalosti (prihlaska_id)`, `zaznam_udalosti (startovni_cislo_raw)` — pro dohledání historie konkrétního závodníka/čísla.
 - `cip (kod_cipu)` — `UNIQUE`.
@@ -187,43 +187,33 @@ Výsledky (`GET /races/{id}/results`, viz [06-api-design.md](06-api-design.md)) 
 
 ## 4.5 Odvozené (počítané) pohledy
 
-| View | Účel | Nahrazuje |
-|---|---|---|
-| `vysledky_view` | Pořadí celkové, po kategoriích, TOP3, časová penalizace zohledněna | `tblVysledky`/`tblVysledkyTMP` |
-| `kdo_bezi_view` | Startovní čísla s `START`, ale bez odpovídajícího `DOJEZD` v posledním kole a bez `DNF/DNS/DQ` | dotaz nad `tblStart`/`tblZaznamy` v Accessu |
-| `audit_trail_view` | Sloučený pohled `zaznam_udalosti` (typ OPRAVA) + `audit_log` pro UI auditu | `tblLogy` (textový) |
+| View | Účel |
+|---|---|
+| `vysledky_view` | Pořadí celkové, po kategoriích, TOP3, časová penalizace zohledněna |
+| `kdo_bezi_view` | Startovní čísla s `START`, ale bez odpovídajícího `DOJEZD` v posledním kole a bez `DNF/DNS/DQ` |
+| `audit_trail_view` | Sloučený pohled `zaznam_udalosti` (typ OPRAVA) + `audit_log` pro UI auditu |
 
 ## 4.6 Multi-tenancy (Should/Could have)
 
 `organizace` je top-level entita. V PostgreSQL se izolace řeší přes **Row-Level Security (RLS)** s politikou `organizace_id = current_setting('app.current_org')`, nastavovanou middlewarem backendu po ověření JWT. V MVP lze RLS nasadit rovnou (nízké dodatečné náklady), i když je zpočátku jen jedna organizace — zamezí to nutnosti pozdější bolestivé migrace.
 
-## 4.7 Co z legacy schématu záměrně nepřebíráme 1:1
-
-Viz [11-legacy-schema-reference.md §11.4](11-legacy-schema-reference.md#114-mapování-starý--nový-model-přehled) pro kompletní mapovací tabulku. Shrnutí nejdůležitějších změn:
-
-- Dual-timestamp ms-hack → jediný `timestamptz` s mikrosekundovou přesností.
-- Plochá "cache" tabulka výsledků → odvozený view/materialized view.
-- Textový, volně formátovaný log → strukturovaná `zaznam_udalosti` + `audit_log`.
-- Chybějící entita nad tratěmi → nová `udalost`.
-- Technické Access-specifické tabulky (`tblSloupce`, `tblLokalizace`, `tblImport*`) → standardní webové ekvivalenty (konfigurace UI v kódu frontendu, i18n framework, generický CSV/XLSX import modul, viz [05-tech-stack.md](05-tech-stack.md)).
-
 ## 4.8 Povinná pole při registraci: trasa a kategorie
 
-`prihlaska.trasa_id` a `prihlaska.kategorie_id` jsou **`NOT NULL`** — na rozdíl od staré `tblStartovniListina`, kde `idvekovakategorie` byl nepovinný sloupec a v reálných datech se skutečně vyskytovaly řádky bez přiřazené kategorie (viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)). Důvod zpřísnění (požadavek F03 v [02-requirements.md](02-requirements.md)):
+`prihlaska.trasa_id` a `prihlaska.kategorie_id` jsou **`NOT NULL`** (požadavek F03 v [02-requirements.md](02-requirements.md)):
 
-- Bez `trasa_id` nelze závodníka jednoznačně zařadit do `zaznam_udalosti` ani do výpočtu výsledků — u vícetraťové akce (viz [01-analysis.md §1.10](01-analysis.md), zjištění o "závodu" jako trati, ne akci) je volba tratě první a nezbytná otázka při registraci.
-- Bez `kategorie_id` nelze dopočítat pořadí v kategorii ani TOP3 (F12) — chybějící kategorie byla v praxi zdroj ručních oprav po závodě.
+- Bez `trasa_id` nelze závodníka jednoznačně zařadit do `zaznam_udalosti` ani do výpočtu výsledků — u vícetraťové akce je volba tratě první a nezbytná otázka při registraci.
+- Bez `kategorie_id` nelze dopočítat pořadí v kategorii ani TOP3 (F12) — chybějící kategorie je v praxi častý zdroj ručních oprav po závodě.
 
-Aplikační vrstva (ne jen databáze) kategorii **automaticky předvyplní** podle ročníku narození a pohlaví (stejná logika jako `vekod`/`vekdo` ve staré `tblVekovaKategorie`), ale UI vždy vyžaduje viditelné potvrzení hodnoty před uložením (viz mockup [07-ui-mockups.md §7.8](07-ui-mockups.md)) — uživatel nikdy neuloží přihlášku s prázdnou kategorií "omylem", ale zároveň může kategorii vědomě přepsat (např. závodník startující v jiné než "své" kategorii).
+Aplikační vrstva (ne jen databáze) kategorii **automaticky předvyplní** podle ročníku narození a pohlaví, ale UI vždy vyžaduje viditelné potvrzení hodnoty před uložením (viz mockup [07-ui-mockups.md §7.8](07-ui-mockups.md)) — uživatel nikdy neuloží přihlášku s prázdnou kategorií "omylem", ale zároveň může kategorii vědomě přepsat (např. závodník startující v jiné než "své" kategorii).
 
 ## 4.9 RFID čip — životní cyklus
 
-Entita `cip` je rozšířená oproti staré `tblCipy` (`id, startovnicislo, cip` — jen prosté párování) o pole potřebná pro reálný provoz s fyzickými čipy jako spotřebním/vratným materiálem:
+Entita `cip` nese pole potřebná pro reálný provoz s fyzickými čipy jako spotřebním/vratným materiálem:
 
 | Pole | Účel |
 |---|---|
 | `stav` | `PRIREZEN` / `VRACEN` / `ZTRACEN` / `ZALOZNI` — životní cyklus čipu v rámci jedné akce |
-| `zalozni` | Příznak, že jde o náhradní čip vydaný za ztracený/nefunkční originál (bez ztráty historie měření na starém čipu) |
+| `zalozni` | Příznak, že jde o náhradní čip vydaný za ztracený/nefunkční originál (bez ztráty historie měření na původním čipu) |
 | `vratna_zaloha` | Částka vybrané vratné zálohy (běžná praxe u vícepoužitelných UHF čipů) |
 | `vydano_at` / `vraceno_at` | Časové razítko výdeje a vrácení — podklad pro vyúčtování nevrácených záloh po závodě |
 
@@ -231,13 +221,13 @@ Podrobný návrh workflow párování, hardwarové varianty a doporučený "loca
 
 ## 4.10 Publikační cíl — export výsledků na FTP/SFTP (F34–F37)
 
-`publikacni_cil` je přímá náhrada polí `ftpserver`/`ftpserver2`, `ftpcesta`, `ftpuzivatel`, `ftpheslo` a `tblConfig.autoexport`/`autoexportmin` ze staré Časomíry (viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)) — reálná data z inspekce dodaného souboru potvrdila, že tuto funkci organizátor skutečně aktivně používal (nakonfigurovaný FTP server a cesta pro všechny čtyři tratě jedné akce).
+`publikacni_cil` umožňuje organizátorovi publikovat výsledky jako statickou HTML stránku na vlastním FTP/SFTP serveru, nezávisle na živé stránce hostované Depem (F16).
 
-- Váže se na `udalost`, ne na `trasa` — v legacy datech měly všechny tratě jedné akce společný FTP server, jen jiný výstupní soubor (`tblZavod.htmlsoubor`: `kratka.html`, `stredni.html`, `dlouha.html`...). To odpovídá novému `trasa.export_soubor_nazev`.
-- `protokol` podporuje `FTP` (kvůli kompatibilitě s běžným českým webhostingem, který SFTP často nenabízí), `FTPS` i `SFTP` — na rozdíl od staré aplikace, kde bylo k dispozici jen prosté FTP.
-- `heslo_sifrovane` — narozdíl od staré `tblZavod.ftpheslo`/`tblConfig.smtpheslo`, které byly v databázi uložené **v čistém textu** (potvrzeno inspekcí reálného souboru), se v novém systému šifrují (viz [08-security.md §8.4](08-security.md)).
-- `interval_minut` + `export_po_kazdem_zaznamu` pokrývají oba legacy scénáře najednou: pravidelný interval (`autoexportmin`) i okamžitý export po každém zápisu (komentář u `tblConfig.autoexport`: "Exportovat automaticky po načtení čipu?").
-- `html_sablona` odpovídá `tblConfig.htmlhlavicka` — volitelná vlastní HTML hlavička/styl, aby exportovaná stránka ladila s existujícím webem klubu.
-- `posledni_export_at`/`posledni_export_stav` (`OK`/`CHYBA`) — legacy aplikace neměla žádnou viditelnou zpětnou vazbu, jestli poslední FTP upload skutečně proběhl; nový systém to zobrazuje přímo v UI (viz mockup [07-ui-mockups.md §7.10](07-ui-mockups.md)), aby si organizátor nemusel ověřovat úspěch exportu ručně na webu.
+- Váže se na `udalost`, ne na `trasa` — typicky mají všechny tratě jedné akce společný FTP server, jen jiný výstupní soubor. To odpovídá `trasa.export_soubor_nazev`.
+- `protokol` podporuje `FTP` (kvůli kompatibilitě s běžným českým webhostingem, který SFTP často nenabízí), `FTPS` i `SFTP`.
+- `heslo_sifrovane` — přístupové údaje se v databázi vždy šifrují (viz [08-security.md §8.4](08-security.md)), nikdy neukládají v čistém textu.
+- `interval_minut` + `export_po_kazdem_zaznamu` pokrývají oba scénáře publikace: pravidelný interval i okamžitý export po každém zápisu.
+- `html_sablona` — volitelná vlastní HTML hlavička/styl, aby exportovaná stránka ladila s existujícím webem klubu.
+- `posledni_export_at`/`posledni_export_stav` (`OK`/`CHYBA`) se zobrazují přímo v UI (viz mockup [07-ui-mockups.md §7.10](07-ui-mockups.md)), aby si organizátor nemusel ověřovat úspěch exportu ručně na webu.
 
 Renderování statické HTML stránky se počítá stejně jako `vysledky_view` (§4.5) — jde jen o jiný výstupní formát téhož odvozeného stavu, ne o samostatně udržovaná data. Podrobný návrh exportního mechanismu (plánovač, fronta, opakování při chybě) viz [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37).

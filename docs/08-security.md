@@ -1,14 +1,14 @@
 # 8. Bezpečnost, role a řízení přístupu
 
-## 8.1 Výchozí stav a cíl
+## 8.1 Cíl
 
-Stará Časomíra měla bezpečnost na úrovni "jedno heslo pro celý soubor + samostatná hesla pro citlivé tabulky (`!!starty`, `!!záznamy`)" — žádné individuální účty, žádné rolové řízení, žádná auditovatelnost přístupu (viz [01-analysis.md §1.3](01-analysis.md)). Cíl nového systému: individuální účty, RBAC, šifrování, auditovatelnost — bez zvýšení bariéry vstupu pro netechnické organizátory.
+Individuální účty, RBAC, šifrování citlivých dat a auditovatelnost každé změny — bez zvýšení bariéry vstupu pro netechnické organizátory.
 
 ## 8.2 Autentizace
 
 - **JWT** (access token krátké životnosti ~15 min + refresh token, viz [05-tech-stack.md](05-tech-stack.md)) — zvoleno místo session cookies kvůli offline klientům, kteří mohou být dlouho bez spojení a musí umět bezpečně obnovit relaci po návratu online.
 - Hesla hashovaná **bcrypt/argon2**, nikdy neukládaná ani nelogovaná v čitelné podobě.
-- Pozvánky spolupracovníků e-mailem s jednorázovým odkazem pro nastavení hesla — nahrazuje sdílení jednoho hesla ústně/SMS (běžná praxe u staré Časomíry).
+- Pozvánky spolupracovníků e-mailem s jednorázovým odkazem pro nastavení hesla — žádné sdílení jednoho společného hesla ústně/SMS.
 - Podpora 2FA (TOTP) jako **Could have** pro role `ADMIN`/`ORGANIZATOR` — nekritické pro MVP, ale nízkonákladové doplnění vzhledem k citlivosti dat (osobní údaje závodníků).
 
 ## 8.3 RBAC — role a oprávnění
@@ -27,11 +27,11 @@ Podrobný model rolí viz [04-data-model.md §4.3](04-data-model.md#43-role-a-p�
 
 - **HTTPS/TLS všude** — API, WebSocket (`wss://`), veřejná stránka výsledků. Žádná výjimka ani pro lokální síť na stanovišti (self-signed cert akceptovatelný jen v LAN fallback režimu, viz §8.6).
 - Data at-rest: šifrování disku na úrovni managed databáze (standard u cloudových poskytovatelů, viz [05-tech-stack.md](05-tech-stack.md)).
-- Citlivá pole (SMTP heslo, FTP přihlašovací údaje — legacy `tblConfig`/`tblZavod` obsahovaly tato hesla **v čistém textu**, viz [11-legacy-schema-reference.md](11-legacy-schema-reference.md)) se v novém systému ukládají šifrovaně (např. přes KMS/vault), nikdy ne plain-text ve sloupci databáze — toto je konkrétní bezpečnostní regrese staré aplikace, kterou nový systém vědomě opravuje.
+- Citlivá pole (SMTP heslo, FTP přihlašovací údaje) se ukládají šifrovaně (např. přes KMS/vault), nikdy ne plain-text ve sloupci databáze.
 
 ## 8.5 Auditovatelnost
 
-- Každá mutace dat (oprava záznamu, změna role, smazání přihlášky) prochází přes `audit_log` / `zaznam_udalosti` s vazbou na `uzivatel_id` (ne jen "kdo seděl u klávesnice", jako v legacy `tblLogy` s textovým polem bez identity uživatele).
+- Každá mutace dat (oprava záznamu, změna role, smazání přihlášky) prochází přes `audit_log` / `zaznam_udalosti` s vazbou na konkrétní `uzivatel_id`, ne jen na zařízení.
 - Log je **append-only** i na úrovni databázových oprávnění (role aplikace nemá `DELETE`/`UPDATE` na auditní tabulky) — nelze "zamést stopy" ani při kompromitaci API vrstvy.
 
 ## 8.6 Offline provoz a lokální síť — specifické riziko
@@ -44,7 +44,7 @@ Offline-first architektura ([03-architecture.md](03-architecture.md)) zavádí b
 
 ## 8.7 Ochrana osobních údajů (GDPR)
 
-Startovní listina obsahuje osobní údaje (jméno, ročník narození, e-mail, telefon, klub) — v rozsahu srovnatelném se starým systémem, ale s explicitními požadavky:
+Startovní listina obsahuje osobní údaje (jméno, ročník narození, e-mail, telefon, klub), s explicitními požadavky:
 
 - Právní základ zpracování: plnění smlouvy (účast v závodě) / oprávněný zájem pořadatele (zveřejnění výsledků).
 - Minimalizace: pole `email`/`mobil` nejsou nikdy součástí veřejné `results/live` odpovědi (jen jméno, klub, kategorie, čas).

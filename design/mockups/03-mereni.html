@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<title>time-sys — Měření</title>
+<title>Depo — Měření</title>
 <link rel="stylesheet" href="shared.css">
 <style>
   body{background:var(--navy-950)}
@@ -13,7 +13,7 @@
     padding:0 24px;background:var(--navy-900);border-bottom:1px solid rgba(255,255,255,.08);
   }
   .measure-top .who{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:14px}
-  .measure-top .who .mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--orange-500),var(--red-500));display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:800}
+  .measure-top .who .mark{width:28px;height:28px;border-radius:8px;background:var(--navy-950);display:flex;align-items:center;justify-content:center}
   .offline-pill{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--amber-500);background:rgba(245,158,11,.12);padding:6px 12px;border-radius:999px}
   .left-pane{padding:28px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .elapsed{color:var(--slate-400);font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
@@ -49,7 +49,7 @@
 <div id="icon-sprite-slot"></div>
 <div class="measure-shell">
   <div class="measure-top">
-    <div class="who"><div class="mark">tS</div>Měření — Krátká 20 km · Cíl</div>
+    <div class="who"><div class="mark"><svg viewBox="0 0 96 96" width="20" height="20" aria-hidden="true"><path fill="#fff" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FF4A17"/></svg></div>Měření — Krátká 20 km · Cíl</div>
     <div class="offline-pill"><svg class="ic" style="width:14px;height:14px"><use href="#ic-wifi-off"/></svg>Offline — 7 záznamů čeká na odeslání</div>
   </div>
 
