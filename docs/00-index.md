@@ -2,7 +2,7 @@
 
 Moderní webová náhrada desktopové aplikace **Časomíra** (prozavody.cz, MS Access) pro měření časů sportovních závodů. Tento adresář obsahuje kompletní analýzu, architekturu a návrh nové aplikace.
 
-> **Pracovní název produktu: Depo.** `time-sys` zůstává interním názvem repozitáře/kódu, "Depo" je zamýšlená značka směrem k uživatelům (viz zdůvodnění a alternativy v konverzaci k tomuto dokumentačnímu balíku). Přejmenování napříč mockupy a dokumenty proběhne až po potvrzení vizuální identity.
+> **Produkt: Depo.** `time-sys` zůstává interním názvem repozitáře/kódu, "Depo" je značka směrem k uživatelům — grafická identita (logo, barvy, typografie) je hotová, viz [14-graficka-identita.md](14-graficka-identita.md). Přejmenování napříč staršími mockupy v `docs/07-ui-mockups.md` §7.1–§7.11 (vytvořenými před finální identitou) je jen kosmetické a proběhne při přechodu do kódu.
 
 ## Obsah dokumentace
 
@@ -21,6 +21,7 @@ Moderní webová náhrada desktopové aplikace **Časomíra** (prozavody.cz, MS 
 | 11 | [11-legacy-schema-reference.md](11-legacy-schema-reference.md) | Referenční přehled **reálného** schématu vytěženého z dodaného `.accde` souboru |
 | 12 | [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md) | Detailní návrh RFID čipů (hardware, párování, edge cases) + obecná doporučení pro další rozvoj |
 | 13 | [13-konkurencni-analyza.md](13-konkurencni-analyza.md) | Celkový přehled trhu — profily 13 podobných systémů (MYLAPS, RACE RESULT, ChronoTrack, SportIdent/Copérnico, RunSignup, PikaTimer, fsTimer, OpenRaceTiming, Webscorer, RaceJoy, české nástroje a služby) a co z nich zvážit |
+| 14 | [14-graficka-identita.md](14-graficka-identita.md) | Grafická identita Depo — logo, barevný systém, typografie, brand guideline (navrženo v Claude Design) |
 
 ## Shrnutí v jedné větě
 

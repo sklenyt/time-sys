@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDEEF1; }
+  a { color: #C2340C; text-decoration: none; }
+  a:hover { color: #FF4A17; }
+</style>
+</helmet>
+
+<div style="font-family: Archivo, Helvetica, sans-serif; color: #0B1220; padding: 56px; display: flex; flex-direction: column; gap: 56px; background: #EDEEF1;">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; border-bottom: 2px solid #0B1220; padding-bottom: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: #6B7683;">Depo / vizuální identita</div>
+      <div style="font-size: 44px; font-weight: 800; letter-spacing: -0.03em;">Grafická identita a značka</div>
+    </div>
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683; text-align: right; line-height: 1.7;">Artboardy 01–06<br />Aplikace: <a href="#a09">Měření</a> · <a href="#a08">Dashboard</a></div>
+  </div>
+
+  <!-- 01 LOGO EXPLORATION -->
+  <section id="a01" style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 22px; padding: 40px; display: flex; flex-direction: column; gap: 32px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; background: #0B1220; color: #FFFFFF; padding: 5px 9px; border-radius: 6px;">01</div>
+      <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Průzkum loga — čtyři koncepty</div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">mark 96 px · navy #0B1220 · akcent #FF4A17</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px;">
+
+      <div style="border: 1px solid #E4E7EC; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="background: #F6F7F9; padding: 44px; display: flex; justify-content: center;">
+          <div style="position: relative; width: 96px; height: 96px; border-radius: 22px; background: #0B1220;">
+            <div style="position: absolute; left: 20px; top: 20px; width: 56px; height: 12px; border-radius: 3px; background: #FFFFFF;"></div>
+            <div style="position: absolute; left: 24px; top: 32px; width: 12px; height: 38px; background: #FFFFFF;"></div>
+            <div style="position: absolute; left: 60px; top: 32px; width: 12px; height: 38px; background: #FFFFFF;"></div>
+            <div style="position: absolute; left: 20px; top: 70px; width: 56px; height: 6px; border-radius: 3px; background: #FF4A17;"></div>
+          </div>
+        </div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #E4E7EC;">
+          <div style="font-size: 16px; font-weight: 700;">A — Vjezd do depa</div>
+          <div style="font-size: 13px; line-height: 1.5; color: #56606E; text-wrap: pretty;">Brána se dvěma pilíři a prahovou linií. Nejvíc „místo, kam se sbíhají data“. Čitelné i v 16 px.</div>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #E4E7EC; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="background: #F6F7F9; padding: 44px; display: flex; justify-content: center;">
+          <div style="position: relative; width: 96px; height: 96px; border-radius: 22px; background: #0B1220;">
+            <div style="position: absolute; left: 42px; top: 14px; width: 12px; height: 9px; border-radius: 2px; background: #FFFFFF;"></div>
+            <div style="position: absolute; left: 20px; top: 24px; width: 56px; height: 56px; border: 10px solid #FFFFFF; border-radius: 50%; box-sizing: border-box;"></div>
+            <div style="position: absolute; left: 46px; top: 36px; width: 5px; height: 20px; border-radius: 3px; background: #FF4A17; transform: rotate(38deg); transform-origin: 50% 100%;"></div>
+          </div>
+        </div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #E4E7EC;">
+          <div style="font-size: 16px; font-weight: 700;">B — Stopky</div>
+          <div style="font-size: 13px; line-height: 1.5; color: #56606E; text-wrap: pretty;">Nejjednoznačnější k tématu času, ale nejgeneričtější — stopky má v logu půlka časoměřičských nástrojů.</div>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #E4E7EC; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 0 2px #FF4A17 inset;">
+        <div style="background: #F6F7F9; padding: 44px; display: flex; justify-content: center;">
+          <div style="position: relative; width: 96px; height: 96px; border-radius: 22px; background: #0B1220; overflow: hidden;">
+            <div style="position: absolute; left: 22px; top: 22px; width: 12px; height: 52px; background: #FFFFFF;"></div>
+            <div style="position: absolute; left: 28px; top: 22px; width: 40px; height: 52px; border: 12px solid #FFFFFF; border-left: none; border-radius: 0 26px 26px 0; box-sizing: border-box;"></div>
+            <div style="position: absolute; left: 22px; top: 44px; width: 62px; height: 8px; background: #FF4A17;"></div>
+          </div>
+        </div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #E4E7EC;">
+          <div style="font-size: 16px; font-weight: 700;">C — „D“ s cílovou linií <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #C2340C;">VYBRÁNO</span></div>
+          <div style="font-size: 13px; line-height: 1.5; color: #56606E; text-wrap: pretty;">Monogram D rozdělený cílovou páskou, která přetéká přes okraj. Iniciála + moment doběhu v jednom, funguje i jako favicon 16 px.</div>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #E4E7EC; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="background: #F6F7F9; padding: 44px; display: flex; justify-content: center;">
+          <div style="position: relative; width: 96px; height: 96px; border-radius: 22px; background: #0B1220; overflow: hidden;">
+            <div style="position: absolute; left: 14px; top: 26px; width: 74px; height: 11px; background: #FF4A17; transform: skewX(-22deg);"></div>
+            <div style="position: absolute; left: 14px; top: 43px; width: 74px; height: 11px; background: #FFFFFF; transform: skewX(-22deg);"></div>
+            <div style="position: absolute; left: 14px; top: 60px; width: 46px; height: 11px; background: #FFFFFF; opacity: 0.55; transform: skewX(-22deg);"></div>
+          </div>
+        </div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #E4E7EC;">
+          <div style="font-size: 16px; font-weight: 700;">D — Boxy v depu</div>
+          <div style="font-size: 13px; line-height: 1.5; color: #56606E; text-wrap: pretty;">Rychlostní, motoristický rytmus. Silné jako vzor pro grafiku, ale bez vazby na „D“ a v malých velikostech splývá.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 LOCKUP -->
+  <section id="a02" style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 22px; padding: 40px; display: flex; flex-direction: column; gap: 32px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; background: #0B1220; color: #FFFFFF; padding: 5px 9px; border-radius: 6px;">02</div>
+      <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Finální lockup</div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">horizontální pro hlavičku · čtvercový pro ikonu</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 24px;">
+      <div style="border: 1px solid #E4E7EC; border-radius: 16px; padding: 48px; display: flex; flex-direction: column; gap: 40px; background: #FFFFFF;">
+        <div style="display: flex; align-items: center; gap: 18px;">
+          <div style="position: relative; width: 64px; height: 64px; border-radius: 15px; background: #0B1220; overflow: hidden; flex: none;">
+            <div style="position: absolute; left: 15px; top: 15px; width: 8px; height: 34px; background: #FFFFFF;"></div>
+            <div style="position: absolute; left: 19px; top: 15px; width: 26px; height: 34px; border: 8px solid #FFFFFF; border-left: none; border-radius: 0 17px 17px 0; box-sizing: border-box;"></div>
+            <div style="position: absolute; left: 15px; top: 29px; width: 42px; height: 6px; background: #FF4A17;"></div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-size: 42px; font-weight: 800; letter-spacing: -0.035em; line-height: 1;">Depo</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; color: #6B7683;">časomíra závodů</div>
+          </div>
+        </div>
+        <div style="height: 1px; background: #E4E7EC;"></div>
+        <div style="display: flex; align-items: center; gap: 36px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="position: relative; width: 32px; height: 32px; border-radius: 8px; background: #0B1220; overflow: hidden; flex: none;">
+              <div style="position: absolute; left: 8px; top: 8px; width: 4px; height: 17px; background: #FFFFFF;"></div>
+              <div style="position: absolute; left: 10px; top: 8px; width: 13px; height: 17px; border: 4px solid #FFFFFF; border-left: none; border-radius: 0 9px 9px 0; box-sizing: border-box;"></div>
+              <div style="position: absolute; left: 8px; top: 15px; width: 21px; height: 3px; background: #FF4A17;"></div>
+            </div>
+            <div style="font-size: 21px; font-weight: 800; letter-spacing: -0.03em;">Depo</div>
+          </div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B7683;">32 px — velikost v hlavičce appky</div>
+        </div>
+      </div>
+
+      <div style="border-radius: 16px; padding: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; background: #0B1220;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+          <div style="position: relative; width: 84px; height: 84px; border-radius: 19px; background: #FF4A17; overflow: hidden;">
+            <div style="position: absolute; left: 19px; top: 19px; width: 11px; height: 46px; background: #FFFFFF;"></div>
+            <div style="position: absolute; left: 24px; top: 19px; width: 36px; height: 46px; border: 11px solid #FFFFFF; border-left: none; border-radius: 0 23px 23px 0; box-sizing: border-box;"></div>
+            <div style="position: absolute; left: 19px; top: 38px; width: 56px; height: 7px; background: #0B1220;"></div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+            <div style="font-size: 34px; font-weight: 800; letter-spacing: -0.03em; color: #FFFFFF; line-height: 1;">Depo</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: #8C97A6;">časomíra</div>
+          </div>
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8C97A6;">vertikální / čtvercová varianta</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 APP ICON ON HOME SCREEN -->
+  <section id="a03" style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 22px; padding: 40px; display: flex; flex-direction: column; gap: 32px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; background: #0B1220; color: #FFFFFF; padding: 5px 9px; border-radius: 6px;">03</div>
+      <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">PWA ikona na ploše</div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">iOS 390×844 · iPad 820×620 výřez</div>
+    </div>
+
+    <div style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
+
+      <div style="width: 330px; height: 660px; border-radius: 44px; background: #0B1220; border: 9px solid #23262C; box-sizing: border-box; padding: 18px; display: flex; flex-direction: column; position: relative; overflow: hidden;">
+        <div style="position: absolute; inset: 0; background: radial-gradient(120% 80% at 20% 0%, #1B2740 0%, #0B1220 60%);"></div>
+        <div style="position: relative; display: flex; justify-content: space-between; align-items: center; padding: 6px 10px 22px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #FFFFFF;">
+          <div>9:41</div>
+          <div style="display: flex; gap: 5px; align-items: center;">
+            <div style="width: 16px; height: 9px; border: 1px solid #FFFFFF; border-radius: 2px;"></div>
+          </div>
+        </div>
+        <div style="position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 14px;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 7px;"><div style="width: 58px; height: 58px; border-radius: 14px; background: #2E3A4E;"></div><div style="font-size: 10px; color: #E7EAEF;">Kalendář</div></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 7px;"><div style="width: 58px; height: 58px; border-radius: 14px; background: #3A4657;"></div><div style="font-size: 10px; color: #E7EAEF;">Mapy</div></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 7px;"><div style="width: 58px; height: 58px; border-radius: 14px; background: #2A3547;"></div><div style="font-size: 10px; color: #E7EAEF;">Počasí</div></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 7px;"><div style="width: 58px; height: 58px; border-radius: 14px; background: #333F52;"></div><div style="font-size: 10px; color: #E7EAEF;">Pošta</div></div>
+
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 7px;">
+            <div style="position: relative; width: 58px; height: 58px; border-radius: 14px; background: #0B1220; box-shadow: 0 0 0 2px #FF4A17, 0 10px 24px rgba(255,74,23,0.35); overflow: hidden;">
+              <div style="position: absolute; left: 14px; top: 13px; width: 7px; height: 32px; background: #FFFFFF;"></div>
+              <div style="position: absolute; left: 17px; top: 13px; width: 24px; height: 32px; border: 7px solid #FFFFFF; border-left: none; border-radius: 0 16px 16px 0; box-sizing: border-box;"></div>
+              <div style="position: absolute; left: 14px; top: 26px; width: 38px; height: 5px; background: #FF4A17;"></div>
+            </div>
+            <div style="font-size: 10px; color: #FFFFFF; font-weight: 600;">Depo</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 7px;"><div style="width: 58px; height: 58px; border-radius: 14px; background: #2E3A4E;"></div><div style="font-size: 10px; color: #E7EAEF;">Fotky</div></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 7px;"><div style="width: 58px; height: 58px; border-radius: 14px; background: #3A4657;"></div><div style="font-size: 10px; color: #E7EAEF;">Hodiny</div></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 7px;"><div style="width: 58px; height: 58px; border-radius: 14px; background: #2A3547;"></div><div style="font-size: 10px; color: #E7EAEF;">Nastavení</div></div>
+        </div>
+        <div style="position: relative; margin-top: auto; display: flex; justify-content: center; gap: 6px; padding-bottom: 8px;">
+          <div style="width: 5px; height: 5px; border-radius: 50%; background: #FFFFFF;"></div>
+          <div style="width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.35);"></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; min-width: 420px; display: flex; flex-direction: column; gap: 24px;">
+        <div style="border-radius: 26px; background: #121B2C; border: 8px solid #23262C; padding: 26px 30px; display: flex; flex-direction: column; gap: 22px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8C97A6;">iPad · plocha</div>
+          <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 24px 18px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;"><div style="width: 72px; height: 72px; border-radius: 17px; background: #2E3A4E;"></div><div style="font-size: 11px; color: #E7EAEF;">Soubory</div></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+              <div style="position: relative; width: 72px; height: 72px; border-radius: 17px; background: #0B1220; box-shadow: 0 0 0 2px #FF4A17, 0 12px 28px rgba(255,74,23,0.32); overflow: hidden;">
+                <div style="position: absolute; left: 17px; top: 16px; width: 9px; height: 40px; background: #FFFFFF;"></div>
+                <div style="position: absolute; left: 21px; top: 16px; width: 30px; height: 40px; border: 9px solid #FFFFFF; border-left: none; border-radius: 0 20px 20px 0; box-sizing: border-box;"></div>
+                <div style="position: absolute; left: 17px; top: 32px; width: 48px; height: 6px; background: #FF4A17;"></div>
+              </div>
+              <div style="font-size: 11px; color: #FFFFFF; font-weight: 600;">Depo</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;"><div style="width: 72px; height: 72px; border-radius: 17px; background: #3A4657;"></div><div style="font-size: 11px; color: #E7EAEF;">Tabulky</div></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;"><div style="width: 72px; height: 72px; border-radius: 17px; background: #2A3547;"></div><div style="font-size: 11px; color: #E7EAEF;">Kamera</div></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;"><div style="width: 72px; height: 72px; border-radius: 17px; background: #333F52;"></div><div style="font-size: 11px; color: #E7EAEF;">Poznámky</div></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;"><div style="width: 72px; height: 72px; border-radius: 17px; background: #2E3A4E;"></div><div style="font-size: 11px; color: #E7EAEF;">Zprávy</div></div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 18px; flex-wrap: wrap;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div style="position: relative; width: 44px; height: 44px; border-radius: 11px; background: #0B1220; overflow: hidden;">
+              <div style="position: absolute; left: 10px; top: 10px; width: 6px; height: 24px; background: #FFFFFF;"></div>
+              <div style="position: absolute; left: 13px; top: 10px; width: 18px; height: 24px; border: 6px solid #FFFFFF; border-left: none; border-radius: 0 12px 12px 0; box-sizing: border-box;"></div>
+              <div style="position: absolute; left: 10px; top: 20px; width: 29px; height: 4px; background: #FF4A17;"></div>
+            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6B7683;">44</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div style="position: relative; width: 32px; height: 32px; border-radius: 8px; background: #0B1220; overflow: hidden;">
+              <div style="position: absolute; left: 8px; top: 8px; width: 4px; height: 17px; background: #FFFFFF;"></div>
+              <div style="position: absolute; left: 10px; top: 8px; width: 13px; height: 17px; border: 4px solid #FFFFFF; border-left: none; border-radius: 0 9px 9px 0; box-sizing: border-box;"></div>
+              <div style="position: absolute; left: 8px; top: 15px; width: 21px; height: 3px; background: #FF4A17;"></div>
+            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6B7683;">32</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div style="position: relative; width: 16px; height: 16px; border-radius: 4px; background: #0B1220; overflow: hidden;">
+              <div style="position: absolute; left: 4px; top: 4px; width: 2px; height: 8px; background: #FFFFFF;"></div>
+              <div style="position: absolute; left: 5px; top: 4px; width: 7px; height: 8px; border: 2px solid #FFFFFF; border-left: none; border-radius: 0 5px 5px 0; box-sizing: border-box;"></div>
+              <div style="position: absolute; left: 4px; top: 7px; width: 11px; height: 2px; background: #FF4A17;"></div>
+            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6B7683;">16</div>
+          </div>
+          <div style="align-self: center; font-size: 13px; color: #56606E; max-width: 300px; text-wrap: pretty;">Ikona drží čitelnost až do favicony — cílová linie zůstává jediným vodorovným prvkem.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 COLOR SYSTEM -->
+  <section id="a04" style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 22px; padding: 40px; display: flex; flex-direction: column; gap: 32px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; background: #0B1220; color: #FFFFFF; padding: 5px 9px; border-radius: 6px;">04</div>
+      <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Barevný systém</div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">kontrast textu min. 4,5:1 — čitelnost na slunci</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 28px;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #6B7683;">Instrumentální modř — navigace, obrazovka měření</div>
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px;">
+          <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+            <div style="height: 110px; background: #05090F;"></div>
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Ink 900</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#05090F</div></div>
+          </div>
+          <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+            <div style="height: 110px; background: #0B1220;"></div>
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Navy 800 · základ</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#0B1220</div></div>
+          </div>
+          <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+            <div style="height: 110px; background: #121B2C;"></div>
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Navy 700 · panely</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#121B2C</div></div>
+          </div>
+          <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+            <div style="height: 110px; background: #1F2C44;"></div>
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Navy 600 · klávesy</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#1F2C44</div></div>
+          </div>
+          <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+            <div style="height: 110px; background: #8C97A6;"></div>
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Steel 400 · popisky</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#8C97A6</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px;">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #6B7683;">Akcent — cílová páska, Enter</div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+            <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+              <div style="height: 110px; background: #FF6A34;"></div>
+              <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Tape 400</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#FF6A34</div></div>
+            </div>
+            <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+              <div style="height: 110px; background: #FF4A17;"></div>
+              <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Tape 500 · hlavní</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#FF4A17</div></div>
+            </div>
+            <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+              <div style="height: 110px; background: #C2340C;"></div>
+              <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Tape 700 · text</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#C2340C</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #6B7683;">Sémantika stavů</div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+            <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+              <div style="height: 110px; background: #0E9F6E; display: flex; align-items: flex-end; padding: 12px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #FFFFFF;">LIVE · ONLINE</div></div>
+              <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Zelená</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#0E9F6E</div></div>
+            </div>
+            <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+              <div style="height: 110px; background: #E9A21B; display: flex; align-items: flex-end; padding: 12px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #3A2503;">POZOR</div></div>
+              <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Jantarová</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#E9A21B</div></div>
+            </div>
+            <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+              <div style="height: 110px; background: #D92D20; display: flex; align-items: flex-end; padding: 12px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #FFFFFF;">KOLIZE · DNF</div></div>
+              <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Červená</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#D92D20</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #6B7683;">Světlé plochy — tabulky, formuláře, venkovní čitelnost</div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
+          <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+            <div style="height: 78px; background: #FFFFFF;"></div>
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Paper</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#FFFFFF</div></div>
+          </div>
+          <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+            <div style="height: 78px; background: #F6F7F9;"></div>
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Surface</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#F6F7F9</div></div>
+          </div>
+          <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+            <div style="height: 78px; background: #DDE0E6;"></div>
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Line</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#DDE0E6</div></div>
+          </div>
+          <div style="border-radius: 14px; overflow: hidden; border: 1px solid #E4E7EC;">
+            <div style="height: 78px; background: #56606E;"></div>
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 13px; font-weight: 600;">Text sekundární</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">#56606E</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 TYPE SPECIMEN -->
+  <section id="a05" style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 22px; padding: 40px; display: flex; flex-direction: column; gap: 32px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; background: #0B1220; color: #FFFFFF; padding: 5px 9px; border-radius: 6px;">05</div>
+      <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Typografie</div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">Archivo (UI) + JetBrains Mono (čísla, časy, startovní čísla)</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+      <div style="display: flex; flex-direction: column; gap: 22px;">
+        <div style="display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid #E4E7EC; padding-bottom: 18px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #6B7683;">Archivo · humanistický grotesk</div>
+          <div style="font-size: 62px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.05;">Doběh v cíli</div>
+          <div style="font-size: 17px; line-height: 1.55; color: #56606E; text-wrap: pretty;">Příušnice žluťoučký kůň úpěl ďábelské ódy. Sazba pro rozhraní, popisky a texty pro netechnické organizátory.</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; align-items: baseline; gap: 18px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8C97A6; width: 116px; flex: none;">Display / 800 / 48</div><div style="font-size: 48px; font-weight: 800; letter-spacing: -0.03em;">Depo</div></div>
+          <div style="display: flex; align-items: baseline; gap: 18px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8C97A6; width: 116px; flex: none;">Title / 700 / 28</div><div style="font-size: 28px; font-weight: 700;">Jarní běh Mělník</div></div>
+          <div style="display: flex; align-items: baseline; gap: 18px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8C97A6; width: 116px; flex: none;">Heading / 600 / 20</div><div style="font-size: 20px; font-weight: 600;">Vyžaduje pozornost</div></div>
+          <div style="display: flex; align-items: baseline; gap: 18px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8C97A6; width: 116px; flex: none;">Body / 400 / 16</div><div style="font-size: 16px;">Startovní listina, kategorie a trasy</div></div>
+          <div style="display: flex; align-items: baseline; gap: 18px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8C97A6; width: 116px; flex: none;">Label / 600 / 12 caps</div><div style="font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;">Trasa · kategorie</div></div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 22px; background: #0B1220; border-radius: 18px; padding: 32px;">
+        <div style="display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid #1F2C44; padding-bottom: 18px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #8C97A6;">JetBrains Mono · všechna čísla</div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 66px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.02em; line-height: 1;">01:24:07</div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #8C97A6;">0123456789 · rozlišené 0/O a 1/l/I</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; align-items: baseline; gap: 18px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B7683; width: 116px; flex: none;">Numpad / 700 / 96</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 72px; font-weight: 700; color: #FF6A34; line-height: 1;">147</div></div>
+          <div style="display: flex; align-items: baseline; gap: 18px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B7683; width: 116px; flex: none;">Čas / 500 / 32</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 500; color: #FFFFFF;">00:47:12,4</div></div>
+          <div style="display: flex; align-items: baseline; gap: 18px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B7683; width: 116px; flex: none;">Tabulka / 500 / 16</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 16px; color: #E7EAEF; font-variant-numeric: tabular-nums;">087 · 01:02:33</div></div>
+          <div style="display: flex; align-items: baseline; gap: 18px;"><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B7683; width: 116px; flex: none;">Stav / 700 / 12 caps</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #0E9F6E;">SYNCHRONIZOVÁNO</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 MINI GUIDELINE -->
+  <section id="a06" style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 22px; padding: 40px; display: flex; flex-direction: column; gap: 28px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; background: #0B1220; color: #FFFFFF; padding: 5px 9px; border-radius: 6px;">06</div>
+      <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Mini brand guideline</div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7683;">jedna strana pro organizátory a dodavatele</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+      <div style="border: 1px solid #E4E7EC; border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 18px;">
+        <div style="font-size: 17px; font-weight: 700;">Ochranná zóna a minimální velikost</div>
+        <div style="display: flex; align-items: center; gap: 32px; flex-wrap: wrap;">
+          <div style="position: relative; padding: 22px; border: 1px dashed #C2340C; border-radius: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="position: relative; width: 44px; height: 44px; border-radius: 11px; background: #0B1220; overflow: hidden; flex: none;">
+                <div style="position: absolute; left: 10px; top: 10px; width: 6px; height: 24px; background: #FFFFFF;"></div>
+                <div style="position: absolute; left: 13px; top: 10px; width: 18px; height: 24px; border: 6px solid #FFFFFF; border-left: none; border-radius: 0 12px 12px 0; box-sizing: border-box;"></div>
+                <div style="position: absolute; left: 10px; top: 20px; width: 29px; height: 4px; background: #FF4A17;"></div>
+              </div>
+              <div style="font-size: 27px; font-weight: 800; letter-spacing: -0.03em;">Depo</div>
+            </div>
+            <div style="position: absolute; top: 4px; left: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #C2340C;">½ výšky marku</div>
+          </div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #56606E; line-height: 1.9;">min. lockup 96 px<br />min. mark 16 px<br />vždy na plné barvě</div>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #E4E7EC; border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 18px;">
+        <div style="font-size: 17px; font-weight: 700;">Co nedělat</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div style="display: flex; align-items: center; gap: 12px; background: #FDF2F0; border-radius: 12px; padding: 14px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: #0B1220; transform: rotate(-12deg); flex: none;"></div>
+            <div style="font-size: 13px; color: #8A2A18;">Nenaklánět ani nedeformovat</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; background: #FDF2F0; border-radius: 12px; padding: 14px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: #0E9F6E; flex: none;"></div>
+            <div style="font-size: 13px; color: #8A2A18;">Žádné barvy mimo paletu</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; background: #FDF2F0; border-radius: 12px; padding: 14px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: repeating-linear-gradient(45deg, #0B1220 0 6px, #FFFFFF 6px 12px); flex: none;"></div>
+            <div style="font-size: 13px; color: #8A2A18;">Žádná šachovnice a vlaječky</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; background: #FDF2F0; border-radius: 12px; padding: 14px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: #0B1220; box-shadow: 0 6px 12px rgba(11,18,32,0.55); flex: none;"></div>
+            <div style="font-size: 13px; color: #8A2A18;">Žádné stíny a efekty na marku</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #E4E7EC; border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="font-size: 17px; font-weight: 700;">Barvy v kostce</div>
+        <div style="display: flex; border-radius: 12px; overflow: hidden; height: 56px;">
+          <div style="flex: 2; background: #0B1220;"></div>
+          <div style="flex: 1; background: #1F2C44;"></div>
+          <div style="flex: 1; background: #FF4A17;"></div>
+          <div style="flex: 0.6; background: #0E9F6E;"></div>
+          <div style="flex: 0.6; background: #E9A21B;"></div>
+          <div style="flex: 0.6; background: #D92D20;"></div>
+          <div style="flex: 1.4; background: #F6F7F9;"></div>
+        </div>
+        <div style="font-size: 14px; line-height: 1.6; color: #56606E; text-wrap: pretty;">Navy nese navigaci a obrazovku měření, akcent jen pro akci doběhu a Enter. Sémantické barvy nikdy dekorativně.</div>
+      </div>
+
+      <div style="border: 1px solid #E4E7EC; border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="font-size: 17px; font-weight: 700;">Typografie v kostce</div>
+        <div style="display: flex; gap: 28px; align-items: flex-end; flex-wrap: wrap;">
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-size: 38px; font-weight: 800; letter-spacing: -0.03em; line-height: 1;">Aa</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B7683;">Archivo 400–800</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 38px; font-weight: 700; line-height: 1;">07</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B7683;">JetBrains Mono 400–700</div>
+          </div>
+          <div style="font-size: 14px; line-height: 1.6; color: #56606E; flex: 1; min-width: 180px; text-wrap: pretty;">Každá číslice v aplikaci je mono a tabulární — časy se nikdy nehýbou při přepisu.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #0B1220; border-radius: 16px; padding: 22px 28px; flex-wrap: wrap;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #8C97A6;">Hlas značky</div>
+      <div style="font-size: 18px; font-weight: 600; color: #FFFFFF; flex: 1; min-width: 260px; text-wrap: pretty;">Věcně, krátce, v druhé osobě. „Zadej číslo a stiskni Enter.“ Nikdy vykřičníky, nikdy emoji.</div>
+    </div>
+  </section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1680, &quot;height&quot;: 1000}}"></script>
+</body>
+</html>

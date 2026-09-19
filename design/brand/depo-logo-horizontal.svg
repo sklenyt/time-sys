@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 64" width="260" height="64" role="img" aria-label="Depo — časomíra závodů">
+  <title>Depo — horizontální logo</title>
+  <defs>
+    <clipPath id="depo-logo-h-clip">
+      <rect width="64" height="64" rx="15" />
+    </clipPath>
+  </defs>
+
+  <!-- značka -->
+  <rect width="64" height="64" rx="15" fill="#0B1220" />
+  <g clip-path="url(#depo-logo-h-clip)">
+    <path
+      fill="#FFFFFF"
+      fill-rule="evenodd"
+      d="M15,15 L28,15 A17,17 0 0 1 28,49 L15,49 Z
+         M23,23 L28,23 A9,9 0 0 1 28,41 L23,41 Z" />
+    <rect x="15" y="29" width="41" height="6" fill="#FF4A17" />
+  </g>
+
+  <!-- wordmark -->
+  <text x="82" y="34" font-family="Archivo, 'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="30" letter-spacing="-1" fill="#0B1220">Depo</text>
+  <text x="82" y="50" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="500" font-size="10" letter-spacing="2.2" fill="#6B7683">ČASOMÍRA ZÁVODŮ</text>
+</svg>

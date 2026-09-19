@@ -58,6 +58,7 @@ Požadavky vycházejí z use case analýzy stávající aplikace ([01-analysis.m
 | F40 | Rozpoznání startovního čísla z fotografie pomocí AI (foto z mobilu/tabletu → automatický záznam + fotka pro závodníka) jako alternativa k RFID bez hardwarové investice, viz [13-konkurencni-analyza.md §13.4](13-konkurencni-analyza.md) |
 | F41 | Krátký video záznam u cíle vázaný na konkrétní `zaznam_udalosti`, pro řešení sporných doběhů |
 | F42 | "Kioskový" režim veřejné live stránky — zjednodušené zobrazení optimalizované pro promítání na velké obrazovce v cíli (bez interakce) |
+| F43 | Export výsledků ve formátu pro národní svaz/žebříček (např. CSV pro Atletiku ČR) — nápad z návrhu obrazovky Publikace výsledků, viz [07-ui-mockups.md §7.12](07-ui-mockups.md) |
 
 ### Won't have (v první verzi vědomě vynecháno)
 
