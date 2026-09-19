@@ -1,4 +1,4 @@
-import { Body, Controller, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
 import { RecordsService } from "./records.service";
 import { CreateRecordDto } from "./dto/create-record.dto";
 import { CorrectRecordDto } from "./dto/correct-record.dto";
@@ -31,5 +31,21 @@ export class RecordsController {
     @CurrentUser() user: AuthenticatedUser
   ) {
     return this.records.correct(routeId, recordId, dto, user.id);
+  }
+
+  @Roles(...MERI_ROLE)
+  @Get("conflicts")
+  conflicts(@Param("routeId", ParseUUIDPipe) routeId: string) {
+    return this.records.listConflicts(routeId);
+  }
+
+  @Roles(...MERI_ROLE)
+  @Patch(":recordId/resolve")
+  resolve(
+    @Param("routeId", ParseUUIDPipe) routeId: string,
+    @Param("recordId", ParseUUIDPipe) recordId: string,
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+    return this.records.resolveConflict(routeId, recordId, user.id);
   }
 }

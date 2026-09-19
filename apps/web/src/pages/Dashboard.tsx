@@ -217,6 +217,7 @@ export function Dashboard() {
                   <Link to={`/mereni/${t.id}`}>Měření</Link>
                   <Link to={`/vysledky/${t.id}`}>Výsledky</Link>
                   <Link to={`/kdo-bezi/${t.id}`}>Kdo běží</Link>
+                  <Link to={`/konflikty/${t.id}`}>Kolize</Link>
                   <button onClick={() => deleteRoute(t.id, t.nazev)} style={{ ...linkButtonStyle, color: "var(--color-danger)" }}>
                     Smazat
                   </button>

@@ -31,17 +31,18 @@ Cíl: nahradit **nejkritičtější denní use case** — samotné měření na 
 
 **Akceptační kritérium fáze splněno:** organizátor dokáže odměřit celý menší závod (1 trať, 1 zařízení) v Depu od registrace po publikaci výsledků — ověřeno end-to-end (viz `apps/api/README.md`) včetně RBAC, oprav se zachováním času, výpočtu výsledků, XLSX/PDF exportu, CSV importu startovní listiny, FTP/SFTP publikace a responzivního UI na telefonu/tabletu.
 
-## Fáze 2 — Terén a offline (odhad 4–6 týdnů)
+## Fáze 2 — Terén a offline (jádro hotovo, F17 zbývá)
 
 Cíl: plná terénní spolehlivost a síťová spolupráce mezi stanovišti.
 
-- PWA shell, Service Worker, instalovatelnost — včetně iOS/iPadOS specifik (vlastní "Přidat na plochu" onboarding, safe-area layout) (N01, N05, F25)
-- IndexedDB lokální úložiště a plně offline provoz modulu měření
-- Synchronizace více zařízení/stanovišť (F15, F17) — event-log sync dle [03-architecture.md §3.5](03-architecture.md)
-- Detekce a řešení kolizí (`NEEDS_REVIEW`) v UI (§7.1, §7.6)
-- Modul "Kdo běží / DNF" v realtime (F10) — [§7.4](07-ui-mockups.md)
+- ✅ **PWA shell, Service Worker, instalovatelnost** (N01, N05) — `vite-plugin-pwa`, manifest + precache workboxem. Ověřeno Playwrightem proti produkčnímu buildu: `context.setOffline(true)` a reload stránky stále naservíruje celou appku (Landing/Dashboard/Měření), ne chybu prohlížeče.
+- ✅ **IndexedDB lokální úložiště a offline provoz modulu měření** — `apps/web/src/lib/offline-queue.ts`. Zápis čísla se ukládá do IndexedDB okamžitě a nikdy nečeká na síť (§3.5 bod 2); ověřeno, že zápis vytvořený offline přežije i reload stránky a zůstane ve frontě se stavem „čeká na odeslání" až do obnovení připojení.
+- ✅ **Synchronizace více zařízení** (F15) — `POST/GET /routes/:id/sync/events`, viz [03-architecture.md §3.5](03-architecture.md#35-synchronizační-strategie-nejkritičtější-technické-rozhodnutí). `POST` dávkově přijímá frontu jednoho zařízení (idempotentní přes `klientEventId`, stejná cesta jako `POST /records`), `GET ?since=` vrací eventy od jiných zařízení na téže trati (delta pull, kurzor `prijato_server_at`). **Akceptační kritérium fáze ověřeno**: dva nezávislé prohlížečové kontexty (= dvě zařízení, oddělené IndexedDB i `zarizeniId`) zapisují offline nezávisle na sobě; po obnovení připojení obě do ~5 s uvidí i zápis toho druhého, bez ruční intervence.
+- ✅ **Detekce a řešení kolizí** (`NEEDS_REVIEW`) — automatická v `RecordsService.create()`: druhý DOJEZD téže přihlášky z **jiného** zařízení do 15 minut od prvního se označí `NEEDS_REVIEW` (kolize stanovišť), zatímco další kolo z **téhož** zařízení (typický víc-kolový závod) zůstává `OK`. Nic se nezahazuje — obě verze zůstávají v `zaznam_udalosti`. UI `/konflikty/:routeId` (§7.6) vypisuje nevyřešené kolize se jménem/číslem/zařízením a nechá organizátora potvrdit vyřešení (`PATCH .../resolve`).
+- ⏳ **F17 (mezičasy na kontrolních stanovištích, `typUdalosti=MEZICAS`)** — datový model i obecný sync engine už to unesou, ale chybí UI pro zápis na stanovišti a přiřazení `STANOVISTE` role ke konkrétnímu kontrolnímu bodu. Zůstává jako další krok.
+- Modul "Kdo běží / DNF" v realtime (F10) — hotovo už ve Fázi 1, viz [§7.4](07-ui-mockups.md).
 
-**Akceptační kritérium fáze:** dvě zařízení (cíl + 1 kontrolní stanoviště) zapisují nezávisle offline a po obnovení spojení se data bezkonfliktně sloučí bez ruční intervence (mimo skutečné kolize).
+**Akceptační kritérium fáze splněno** pro cílovou stanici: dvě zařízení zapisují nezávisle offline a po obnovení spojení se data bezkonfliktně sloučí bez ruční intervence (mimo skutečné kolize, které jdou k ručnímu potvrzení). Rozšíření na skutečná kontrolní stanoviště s mezičasy (F17) čeká na UI pro STANOVISTE roli.
 
 ## Fáze 3 — Živé výsledky a rozšířená bezpečnost (odhad 3–5 týdnů)
 

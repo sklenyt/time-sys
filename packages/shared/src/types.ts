@@ -249,7 +249,7 @@ export interface CreateRecordDto {
 export interface RecordResponseDto {
   id: string;
   trasaId: string;
-  startovniCisloRaw: number;
+  startovniCisloRaw: number | null;
   prihlaskaId: string | null;
   typUdalosti: TypUdalosti;
   cas: string;
@@ -261,6 +261,44 @@ export interface RecordResponseDto {
 export interface CorrectRecordDto {
   noveStartovniCislo: number;
   typOpravy: TypOpravy;
+}
+
+/**
+ * Offline synchronizace (F15, 03-architecture.md §3.5) — dávkový zápis
+ * eventů vzniklých lokálně na zařízení, zatímco bylo bez připojení.
+ */
+export interface SyncEventDto {
+  klientEventId: string;
+  startovniCislo: number;
+  klientCas: string;
+}
+
+export interface SyncPushResultItem {
+  klientEventId: string;
+  stav: StavZaznamu | "CHYBA";
+  zaznam?: RecordResponseDto;
+  chyba?: string;
+}
+
+export interface SyncPushResponseDto {
+  vysledky: SyncPushResultItem[];
+}
+
+export interface SyncPullResponseDto {
+  cursor: string;
+  eventy: RecordResponseDto[];
+}
+
+/**
+ * Kolize stanovišť k ručnímu rozhodnutí organizátora (03-architecture.md
+ * §3.5 bod 5) — obě verze zůstávají v `zaznam_udalosti`, tohle je jen
+ * pohled na ty se `stav=NEEDS_REVIEW`.
+ */
+export interface ConflictItemDto extends RecordResponseDto {
+  zarizeniId: string;
+  startovniCislo: number | null;
+  prijmeni: string | null;
+  jmeno: string | null;
 }
 
 export interface SyncEventsRequestDto {

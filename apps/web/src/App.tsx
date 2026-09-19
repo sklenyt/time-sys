@@ -7,6 +7,7 @@ import { Measurement } from "./pages/Measurement";
 import { Results } from "./pages/Results";
 import { Running } from "./pages/Running";
 import { PublishTargets } from "./pages/PublishTargets";
+import { Conflicts } from "./pages/Conflicts";
 import { isLoggedIn } from "./lib/api";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -59,6 +60,14 @@ export function App() {
         element={
           <RequireAuth>
             <PublishTargets />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/konflikty/:routeId"
+        element={
+          <RequireAuth>
+            <Conflicts />
           </RequireAuth>
         }
       />

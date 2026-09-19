@@ -1,36 +1,51 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { RecordResponseDto } from "@depo/shared";
-import { api, getDeviceId } from "../lib/api";
+import { getDeviceId } from "../lib/api";
+import { enqueueZaznam, listRecent, startAutoSync, type FrontaZaznam } from "../lib/offline-queue";
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "DNF", "0", "⌫"];
 
 export function Measurement() {
   const { routeId } = useParams<{ routeId: string }>();
   const [cislo, setCislo] = useState("");
-  const [posledni, setPosledni] = useState<RecordResponseDto[]>([]);
-  const [odesilam, setOdesilam] = useState(false);
+  const [posledni, setPosledni] = useState<FrontaZaznam[]>([]);
   const [chyba, setChyba] = useState<string | null>(null);
+  const [online, setOnline] = useState(navigator.onLine);
 
+  const obnovitPosledni = useCallback(() => {
+    if (!routeId) return;
+    listRecent(routeId).then(setPosledni);
+  }, [routeId]);
+
+  // Zápis se ukládá lokálně do IndexedDB okamžitě a nikdy nečeká na síť
+  // (F15, 03-architecture.md §3.5) — odeslání na server běží na pozadí
+  // přes startAutoSync a opakuje se, dokud se nepodaří.
   const zapsat = useCallback(async () => {
-    if (!routeId || !cislo || odesilam) return;
-    setOdesilam(true);
-    setChyba(null);
+    if (!routeId || !cislo) return;
     try {
-      const zaznam = await api.post<RecordResponseDto>(`/routes/${routeId}/records`, {
-        startovniCislo: Number(cislo),
-        zarizeniId: getDeviceId(),
-        klientCas: new Date().toISOString(),
-        klientEventId: crypto.randomUUID(),
-      });
-      setPosledni((p) => [zaznam, ...p].slice(0, 8));
+      await enqueueZaznam(routeId, Number(cislo));
       setCislo("");
-    } catch (e) {
-      setChyba(e instanceof Error ? e.message : "Zápis se nepodařilo odeslat — zůstává ve frontě.");
-    } finally {
-      setOdesilam(false);
+      setChyba(null);
+      obnovitPosledni();
+    } catch {
+      setChyba("Zápis se nepodařilo uložit ani lokálně — zkuste to prosím znovu.");
     }
-  }, [routeId, cislo, odesilam]);
+  }, [routeId, cislo, obnovitPosledni]);
+
+  useEffect(() => {
+    if (!routeId) return;
+    obnovitPosledni();
+    const zastavitSync = startAutoSync(routeId, getDeviceId(), obnovitPosledni);
+    const naOnline = () => setOnline(true);
+    const naOffline = () => setOnline(false);
+    window.addEventListener("online", naOnline);
+    window.addEventListener("offline", naOffline);
+    return () => {
+      zastavitSync();
+      window.removeEventListener("online", naOnline);
+      window.removeEventListener("offline", naOffline);
+    };
+  }, [routeId, obnovitPosledni]);
 
   const stiskniKlavesu = useCallback(
     (k: string) => {
@@ -65,8 +80,35 @@ export function Measurement() {
             textAlign: "center",
           }}
         >
-          <div style={{ fontSize: 12, letterSpacing: 2, color: "var(--steel-400)", textTransform: "uppercase" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 12,
+              letterSpacing: 2,
+              color: "var(--steel-400)",
+              textTransform: "uppercase",
+            }}
+          >
             Startovní číslo
+            {!online && (
+              <span
+                className="mono"
+                style={{
+                  background: "var(--color-attention)",
+                  color: "var(--ink-900)",
+                  borderRadius: 6,
+                  padding: "2px 6px",
+                  fontSize: 10,
+                  letterSpacing: 0,
+                  textTransform: "none",
+                }}
+              >
+                offline — ukládá se lokálně
+              </span>
+            )}
           </div>
           <div className="mono" style={{ fontSize: 76, fontWeight: 700, lineHeight: 1.1, color: cislo ? "var(--tape-500)" : "var(--steel-400)" }}>
             {cislo || "—"}
@@ -96,7 +138,7 @@ export function Measurement() {
 
         <button
           onClick={zapsat}
-          disabled={!cislo || odesilam}
+          disabled={!cislo}
           style={{
             width: "100%",
             maxWidth: 420,
@@ -122,7 +164,7 @@ export function Measurement() {
         </h3>
         {posledni.map((z) => (
           <div
-            key={z.id}
+            key={z.localKey}
             style={{
               display: "flex",
               alignItems: "center",
@@ -137,22 +179,32 @@ export function Measurement() {
                 width: 44,
                 height: 44,
                 borderRadius: 10,
-                background: z.prihlaskaId ? "var(--navy-700)" : "var(--color-attention)",
+                background: stavBarvaPozadi(z),
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 700,
               }}
             >
-              {z.startovniCisloRaw}
+              {z.startovniCislo}
             </div>
             <div style={{ fontSize: 12, color: "var(--steel-400)" }}>
-              {z.casCelkem ?? new Date(z.cas).toLocaleTimeString("cs-CZ")}
-              {!z.prihlaskaId && <div>nerozpoznáno — k opravě</div>}
+              {z.casCelkem ?? new Date(z.klientCas).toLocaleTimeString("cs-CZ")}
+              {z.stav === "CEKA" && <div>čeká na odeslání…</div>}
+              {z.stav === "NEEDS_REVIEW" && <div style={{ color: "var(--color-attention)" }}>ke kontrole — kolize stanovišť</div>}
+              {z.puvod === "CIZI" && <div>z jiného zařízení</div>}
+              {z.stav === "OK" && z.puvod === "VLASTNI" && !z.prihlaskaId && <div>nerozpoznáno — k opravě</div>}
             </div>
           </div>
         ))}
       </div>
     </div>
   );
+}
+
+function stavBarvaPozadi(z: FrontaZaznam): string {
+  if (z.stav === "NEEDS_REVIEW") return "var(--color-attention)";
+  if (z.stav === "CEKA") return "var(--navy-600)";
+  if (z.puvod === "VLASTNI" && !z.prihlaskaId) return "var(--color-attention)";
+  return "var(--navy-700)";
 }
