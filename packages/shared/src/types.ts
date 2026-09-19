@@ -301,13 +301,15 @@ export interface ConflictItemDto extends RecordResponseDto {
   jmeno: string | null;
 }
 
-export interface SyncEventsRequestDto {
-  zarizeniId: string;
-  events: ZaznamUdalosti[];
-}
-
-export interface SyncEventsResponseDto {
-  prijato: number;
-  noveUdalosti: ZaznamUdalosti[];
-  cursor: string;
+/** Auditní log s filtrováním (Fáze 3, §7.6) — jeden řádek = jedna oprava zápisu měření (F09). */
+export interface AuditLogPolozka {
+  id: string;
+  cas: string;
+  uzivatelId: string | null;
+  uzivatelJmeno: string | null;
+  uzivatelEmail: string | null;
+  entita: string;
+  entitaId: string;
+  puvodniHodnota: Record<string, unknown> | null;
+  novaHodnota: Record<string, unknown> | null;
 }

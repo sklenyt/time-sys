@@ -44,16 +44,20 @@ Cíl: plná terénní spolehlivost a síťová spolupráce mezi stanovišti.
 
 **Akceptační kritérium fáze splněno**: dvě zařízení (cíl + kontrolní stanoviště) zapisují nezávisle offline a po obnovení spojení se data bezkonfliktně sloučí bez ruční intervence (mimo skutečné kolize, které jdou k ručnímu potvrzení na `/konflikty/:routeId`).
 
-## Fáze 3 — Živé výsledky a rozšířená bezpečnost (odhad 3–5 týdnů)
+## Fáze 3 — Živé výsledky a rozšířená bezpečnost (✅ hotovo, F41 vyjmuto)
 
-- Realtime publikace výsledků (WebSocket/SSE), veřejná mobilní stránka (F16) — [§7.5](07-ui-mockups.md)
-- Podpora více souběžných publikačních cílů a vlastní HTML šablony (F36, F37) — rozšíření základního FTP exportu z Fáze 1
-- Vložitelný embed widget živých výsledků (F38) — viz [13-konkurencni-analyza.md §13.6](13-konkurencni-analyza.md)
-- Kioskový režim live stránky pro promítání v cíli (F42), fotofiniš/video záznam sporných doběhů (F41)
-- Auditní log v UI s filtrováním (§7.6)
-- HTTPS/TLS, šifrování citlivých polí, GDPR retenční politika
+- ✅ **Realtime publikace výsledků přes SSE** (F16) — `GET /routes/:id/results/live`, veřejné bez přihlášení jako `/results`. `ResultsEventsService` (in-memory RxJS `Subject`, jedna instance API — při škálování na víc instancí by to nahradil Redis pub/sub, viz [03-architecture.md §3.6](03-architecture.md)) pošle nový přepočet při každém DOJEZD/OPRAVA zápisu (debounce 300 ms proti záplavě z dávkového sync). `Results.tsx` se připojuje přes `EventSource` se zobrazením odznaku „● ŽIVĚ"; při selhání SSE spadne zpět na obyčejný `GET`. Ověřeno end-to-end: zápis z jednoho "zařízení" se okamžitě promítne na otevřené stránce výsledků bez ručního refreshe.
+- ✅ **Více souběžných publikačních cílů** (F36) — už fungovalo od Fáze 1 (`PublishTargetsService` iteruje přes všechny `publikacniCil` událost/trasu).
+- ✅ **Vlastní HTML šablony** (F37) — `renderResultsHtml` (`apps/api/src/publish-targets/render-results-html.ts`) rozpozná značky `{{NAZEV_TRASY}}`, `{{TABULKA_VYSLEDKU}}`, `{{RADKY_VYSLEDKU}}`, `{{POCET_KLASIFIKOVANYCH}}`, `{{AKTUALIZOVANO}}` v `htmlSablona` — pokud jsou přítomné, celá šablona nahradí výchozí stránku (organizátor řídí vlastní `<head>`/CSS/branding), jinak se `htmlSablona` chová jako dřív (vloží se jako hlavička). Ověřeno end-to-end proti reálnému FTP serveru.
+- ✅ **Vložitelný embed widget** (F38) — `/embed/vysledky/:routeId`, bezhlavá varianta pro `<iframe>` na webu organizátora (žádná appka Depo kolem), živě přes stejné SSE. Dashboard nabízí tlačítko "Embed" s hotovým `<iframe>` kódem ke zkopírování.
+- ✅ **Kioskový režim** (F42) — `/kiosk/:routeId`, celoobrazovková tmavá varianta s automatickým pomalým scrollováním dlouhého seznamu (pauza nahoře/dole) pro promítání v cíli.
+- ✅ **Auditní log v UI s filtrováním** (§7.6) — `/audit/:routeId`, filtr podle data a uživatele, diff starých/nových hodnot barevně odlišený (přeškrtnutá stará hodnota → zelená nová), zahrnuje i GDPR anonymizace přihlášek.
+- ✅ **HTTPS/TLS** — appka počítá s TLS terminovaným před ní (reverzní proxy/managed platforma), `helmet()` + `trust proxy` v `apps/api/src/main.ts` nastavují HSTS a další bezpečnostní hlavičky; konkrétní nasazení viz [08-security.md §8.8](08-security.md).
+- ✅ **Šifrování citlivých polí** — nouzový kontakt a zdravotní poznámka přihlášky (F31) šifrované AES-256-GCM stejným mechanismem jako FTP hesla (F34), rozšifrované jen v API odpovědi autorizovanému volajícímu.
+- ✅ **GDPR retenční politika** — `DELETE /routes/:id/entries/:id` (právo na výmaz, anonymizace bez ztráty integrity výsledků/auditu) + denní naplánovaná úloha mažící přihlášky u událostí starších než `GDPR_RETENCE_DNI` (výchozí 2 roky). Ověřeno end-to-end včetně přímého spuštění retenční úlohy.
+- Fotofiniš/video záznam sporných doběhů (F41) — vyjmuto z rozsahu; vyžaduje kamerový hardware a je svou povahou blíž Fázi 4 (RFID/HW rozšíření) než softwarové bezpečnostní/živé funkci této fáze.
 
-**Akceptační kritérium fáze:** organizátor pozve spolupracovníky s odlišnými rolemi bez sdílení hesla; diváci sledují výsledky na mobilu bez manuálního uploadu.
+**Akceptační kritérium fáze splněno:** organizátor pozve spolupracovníky s odlišnými rolemi bez sdílení hesla (RBAC hotové od Fáze 1); diváci sledují výsledky na mobilu bez manuálního uploadu (živé SSE, embed, kiosek).
 
 ## Fáze 4 — RFID/čtečky a rozšíření (odhad průběžně, dle poptávky)
 

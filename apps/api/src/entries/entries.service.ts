@@ -1,10 +1,11 @@
 import { ConflictException, Injectable } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+import { Prisma, type Prihlaska } from "@prisma/client";
 import { parse } from "csv-parse/sync";
 import { ImportEntriesResponseDto, Pohlavi, TypStartu } from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateEntryDto } from "./dto/create-entry.dto";
 import { StartVlnyService } from "../start-vlny/start-vlny.service";
+import { decryptSecret, encryptSecret } from "../common/secret-crypto";
 
 @Injectable()
 export class EntriesService {
@@ -17,7 +18,7 @@ export class EntriesService {
     const startVlnaId = dto.startVlnaId ?? (await this.vychoziVlnaProHromadnyStart(trasaId));
 
     try {
-      return await this.prisma.prihlaska.create({
+      const prihlaska = await this.prisma.prihlaska.create({
         data: {
           trasaId,
           startovniCislo: dto.startovniCislo,
@@ -28,10 +29,12 @@ export class EntriesService {
           klub: dto.klub,
           kategorieId: dto.kategorieId,
           startVlnaId,
-          nouzovyKontakt: dto.nouzovyKontakt,
-          zdravotniPoznamka: dto.zdravotniPoznamka,
+          // Citlivé osobní údaje (F31) — nikdy plain-text ve sloupci (§8.4).
+          nouzovyKontakt: dto.nouzovyKontakt ? encryptSecret(dto.nouzovyKontakt) : undefined,
+          zdravotniPoznamka: dto.zdravotniPoznamka ? encryptSecret(dto.zdravotniPoznamka) : undefined,
         },
       });
+      return odsifrovatPrihlasku(prihlaska);
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         throw new ConflictException(
@@ -108,8 +111,8 @@ export class EntriesService {
     return { importovano, chyby };
   }
 
-  findAllForRoute(trasaId: string, search?: string) {
-    return this.prisma.prihlaska.findMany({
+  async findAllForRoute(trasaId: string, search?: string) {
+    const prihlasky = await this.prisma.prihlaska.findMany({
       where: {
         trasaId,
         ...(search
@@ -125,6 +128,7 @@ export class EntriesService {
       include: { kategorie: true },
       orderBy: { startovniCislo: "asc" },
     });
+    return prihlasky.map(odsifrovatPrihlasku);
   }
 
   /**
@@ -140,5 +144,23 @@ export class EntriesService {
     }
     const vlna = await this.startVlny.findOrCreateDefault(trasaId);
     return vlna.id;
+  }
+}
+
+/** Rozšifruje citlivé osobní údaje (F31) před vrácením z API — v DB zůstávají jen šifrované. */
+function odsifrovatPrihlasku<T extends Pick<Prihlaska, "nouzovyKontakt" | "zdravotniPoznamka">>(prihlaska: T): T {
+  return {
+    ...prihlaska,
+    nouzovyKontakt: prihlaska.nouzovyKontakt ? bezpecneDesifrovat(prihlaska.nouzovyKontakt) : prihlaska.nouzovyKontakt,
+    zdravotniPoznamka: prihlaska.zdravotniPoznamka ? bezpecneDesifrovat(prihlaska.zdravotniPoznamka) : prihlaska.zdravotniPoznamka,
+  };
+}
+
+function bezpecneDesifrovat(hodnota: string): string {
+  try {
+    return decryptSecret(hodnota);
+  } catch {
+    // starší nešifrovaná data z doby před zavedením šifrování (pokud existují)
+    return hodnota;
   }
 }

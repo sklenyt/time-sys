@@ -16,6 +16,7 @@ import { ResultsModule } from "./results/results.module";
 import { StartVlnyModule } from "./start-vlny/start-vlny.module";
 import { PublishTargetsModule } from "./publish-targets/publish-targets.module";
 import { SyncModule } from "./sync/sync.module";
+import { AuditLogModule } from "./audit-log/audit-log.module";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { RolesGuard } from "./auth/guards/roles.guard";
 
@@ -37,6 +38,7 @@ import { RolesGuard } from "./auth/guards/roles.guard";
     StartVlnyModule,
     PublishTargetsModule,
     SyncModule,
+    AuditLogModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

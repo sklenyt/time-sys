@@ -4,18 +4,8 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
-/**
- * Statická HTML stránka výsledků pro FTP/SFTP export (F34, F36) — stejná
- * data jako GET /routes/:id/results, jiný výstupní formát. Volitelná
- * hlavička organizátora (html_sablona / udalost.html_hlavicka) se vkládá
- * beze změny, aby exportovaná stránka ladila s webem klubu.
- */
-export function renderResultsHtml(
-  trasaNazev: string,
-  vysledky: VysledkyResponseDto,
-  hlavicka?: string | null
-): string {
-  const radky = vysledky.klasifikovani
+function vykreslitRadky(vysledky: VysledkyResponseDto): string {
+  return vysledky.klasifikovani
     .map(
       (p) => `<tr>
         <td>${p.poradiCelkove}</td>
@@ -27,6 +17,48 @@ export function renderResultsHtml(
       </tr>`
     )
     .join("\n");
+}
+
+function vykreslitTabulku(radky: string): string {
+  return `<table>
+  <thead><tr><th>Celk.</th><th>Kat.</th><th>Č.</th><th>Jméno</th><th>Kategorie</th><th>Čas</th></tr></thead>
+  <tbody>
+${radky}
+  </tbody>
+</table>`;
+}
+
+const ZNACKY_SABLONY = ["{{NAZEV_TRASY}}", "{{TABULKA_VYSLEDKU}}", "{{RADKY_VYSLEDKU}}", "{{POCET_KLASIFIKOVANYCH}}", "{{AKTUALIZOVANO}}"];
+
+/**
+ * Vlastní HTML šablona (F37) — pokud `sablona` obsahuje aspoň jednu ze
+ * značek výše, bere se jako CELÁ stránka (organizátor si řídí vlastní
+ * <head>/CSS/branding) a značky se nahradí. Jinak (zpětná kompatibilita
+ * s F34) se `sablona`/`udalost.htmlHlavicka` chová jako dřív — vloží se
+ * jako hlavička před výchozí tabulku.
+ */
+function nahraditZnacky(sablona: string, trasaNazev: string, vysledky: VysledkyResponseDto): string {
+  const radky = vykreslitRadky(vysledky);
+  return sablona
+    .replaceAll("{{NAZEV_TRASY}}", escapeHtml(trasaNazev))
+    .replaceAll("{{TABULKA_VYSLEDKU}}", vykreslitTabulku(radky))
+    .replaceAll("{{RADKY_VYSLEDKU}}", radky)
+    .replaceAll("{{POCET_KLASIFIKOVANYCH}}", String(vysledky.klasifikovani.length))
+    .replaceAll("{{AKTUALIZOVANO}}", new Date().toLocaleString("cs-CZ"));
+}
+
+/**
+ * Statická HTML stránka výsledků pro FTP/SFTP export (F34, F36, F37) —
+ * stejná data jako GET /routes/:id/results, jiný výstupní formát.
+ */
+export function renderResultsHtml(
+  trasaNazev: string,
+  vysledky: VysledkyResponseDto,
+  hlavickaNeboSablona?: string | null
+): string {
+  if (hlavickaNeboSablona && ZNACKY_SABLONY.some((znacka) => hlavickaNeboSablona.includes(znacka))) {
+    return nahraditZnacky(hlavickaNeboSablona, trasaNazev, vysledky);
+  }
 
   return `<!doctype html>
 <html lang="cs">
@@ -42,14 +74,9 @@ export function renderResultsHtml(
 </style>
 </head>
 <body>
-${hlavicka ?? ""}
+${hlavickaNeboSablona ?? ""}
 <h1>Výsledky — ${escapeHtml(trasaNazev)}</h1>
-<table>
-  <thead><tr><th>Celk.</th><th>Kat.</th><th>Č.</th><th>Jméno</th><th>Kategorie</th><th>Čas</th></tr></thead>
-  <tbody>
-${radky}
-  </tbody>
-</table>
+${vykreslitTabulku(vykreslitRadky(vysledky))}
 </body>
 </html>
 `;

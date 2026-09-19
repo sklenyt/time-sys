@@ -1,17 +1,37 @@
-import { Controller, Get, Param, ParseUUIDPipe, Res } from "@nestjs/common";
+import { Controller, Get, MessageEvent, Param, ParseUUIDPipe, Res, Sse } from "@nestjs/common";
 import type { Response } from "express";
+import { Observable, from, merge, of } from "rxjs";
+import { debounceTime, map, switchMap } from "rxjs/operators";
 import { ResultsService } from "./results.service";
+import { ResultsEventsService } from "./results-events.service";
 import { Public } from "../auth/decorators/public.decorator";
 
 /** Veřejné bez přihlášení (F16 — živá stránka výsledků). */
 @Public()
 @Controller("routes/:routeId/results")
 export class ResultsController {
-  constructor(private readonly results: ResultsService) {}
+  constructor(
+    private readonly results: ResultsService,
+    private readonly events: ResultsEventsService
+  ) {}
 
   @Get()
   get(@Param("routeId", ParseUUIDPipe) routeId: string) {
     return this.results.getResults(routeId);
+  }
+
+  /**
+   * Živé výsledky přes Server-Sent Events (F16, 03-architecture.md §3.6).
+   * Pošle aktuální stav hned při připojení a znovu po každé změně
+   * (nový doběh/oprava) — realtime vrstva je doplněk, klient bez SSE
+   * dostane stejná data přes GET výše.
+   */
+  @Sse("live")
+  live(@Param("routeId", ParseUUIDPipe) routeId: string): Observable<MessageEvent> {
+    return merge(of(null), this.events.sledovatZmeny(routeId).pipe(debounceTime(300))).pipe(
+      switchMap(() => from(this.results.getResults(routeId))),
+      map((data) => ({ data }))
+    );
   }
 
   @Get("export.xlsx")

@@ -12,9 +12,10 @@ function getKey(): Buffer {
 }
 
 /**
- * Šifrování citlivých polí (FTP/SFTP heslo) uložených v databázi (F34,
- * 08-security.md §8.4) — nikdy plain-text ve sloupci, na rozdíl od
- * ftpheslo/smtpheslo v legacy schématu.
+ * Šifrování citlivých polí uložených v databázi (F34, F31, 08-security.md
+ * §8.4) — nikdy plain-text ve sloupci, na rozdíl od ftpheslo/smtpheslo
+ * v legacy schématu. Používá se pro FTP/SFTP hesla i pro citlivé osobní
+ * údaje přihlášky (nouzový kontakt, zdravotní poznámka, Fáze 3).
  */
 export function encryptSecret(plaintext: string): string {
   const iv = randomBytes(IV_LENGTH);

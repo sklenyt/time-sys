@@ -25,9 +25,9 @@ Podrobný model rolí viz [04-data-model.md §4.3](04-data-model.md#43-role-a-p�
 
 ## 8.4 Šifrování a přenos dat
 
-- **HTTPS/TLS všude** — API, WebSocket (`wss://`), veřejná stránka výsledků. Žádná výjimka ani pro lokální síť na stanovišti (self-signed cert akceptovatelný jen v LAN fallback režimu, viz §8.6).
+- **HTTPS/TLS všude** — API, SSE (`/results/live`), veřejná stránka výsledků. Žádná výjimka ani pro lokální síť na stanovišti (self-signed cert akceptovatelný jen v LAN fallback režimu, viz §8.6). ✅ Konkrétní nasazení viz §8.8.
 - Data at-rest: šifrování disku na úrovni managed databáze (standard u cloudových poskytovatelů, viz [05-tech-stack.md](05-tech-stack.md)).
-- Citlivá pole (SMTP heslo, FTP přihlašovací údaje) se ukládají šifrovaně (např. přes KMS/vault), nikdy ne plain-text ve sloupci databáze.
+- ✅ Citlivá pole se ukládají šifrovaně (AES-256-GCM, `apps/api/src/common/secret-crypto.ts`), nikdy ne plain-text ve sloupci databáze — FTP/SFTP přihlašovací údaje (F34) i osobní údaje přihlášky, nouzový kontakt a zdravotní poznámka (F31). Rozšifrují se jen při vrácení z API autorizovanému volajícímu, v databázi zůstávají opaque.
 
 ## 8.5 Auditovatelnost
 
@@ -47,6 +47,19 @@ Offline-first architektura ([03-architecture.md](03-architecture.md)) zavádí b
 Startovní listina obsahuje osobní údaje (jméno, ročník narození, e-mail, telefon, klub), s explicitními požadavky:
 
 - Právní základ zpracování: plnění smlouvy (účast v závodě) / oprávněný zájem pořadatele (zveřejnění výsledků).
-- Minimalizace: pole `email`/`mobil` nejsou nikdy součástí veřejné `results/live` odpovědi (jen jméno, klub, kategorie, čas).
-- Právo na výmaz: proces smazání přihlášky na žádost závodníka i po skončení závodu — historické `zaznam_udalosti` se anonymizují (odpojení `prihlaska_id`), ne mažou celé (kvůli integritě výsledků a auditu).
-- Retenční politika: doporučeno definovat dobu uchování osobních dat po závodě (např. 2 roky) s automatickým vymazáním/anonymizací po expiraci — nad rámec MVP, ale nutné před ostrým multi-tenant provozem (F24).
+- ✅ Minimalizace: pole `email`/`telefon` nejsou nikdy součástí veřejné `results`/`results/live` odpovědi (jen jméno, klub, kategorie, čas) — ověřeno v `VysledekPolozka` (`packages/shared/src/types.ts`).
+- ✅ Právo na výmaz: `DELETE /routes/:id/entries/:entryId` (`GdprService.anonymizovatPrihlasku`) smaže přihlášku celou (jméno, kontakt, zdravotní poznámka), ale `zaznam_udalosti` zůstává — jen se odpojí `prihlaska_id`, aby výsledky a audit log neztratily integritu. Zapisuje se i do `audit_log` (entita `prihlaska`).
+- ✅ Retenční politika: naplánovaná úloha (`GdprService.anonymizovatStareUdalosti`, jednou denně) automaticky anonymizuje přihlášky u událostí starších než `GDPR_RETENCE_DNI` (výchozí 730 dní / 2 roky, konfigurovatelné přes `.env`) stejnou cestou jako ruční výmaz.
+
+## 8.8 Nasazení HTTPS/TLS — konkrétní kroky
+
+`apps/api` je čisté HTTP API (NestJS/Express) a `apps/web` je statická PWA shell — ani jedno neterminuje TLS samo, to zajišťuje vrstva před nimi (§3.7). API už počítá s provozem za touto vrstvou: `app.set("trust proxy", 1)` (aby `X-Forwarded-*` hlavičky od proxy byly důvěryhodné) a `helmet()` middleware (`apps/api/src/main.ts`) — nastavuje `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options` a další standardní bezpečnostní hlavičky na každou odpověď včetně SSE streamu `/results/live`.
+
+Doporučené cesty k reálnému TLS certifikátu:
+
+1. **Managed platforma** (Render/Railway/Fly.io, viz §3.7) — TLS terminuje platforma automaticky na přiřazené doméně, appka dostává provoz už jako obyčejné HTTP za proxy. Není potřeba nic dalšího konfigurovat, jen zajistit, že `trust proxy` (výše) je zapnuté, aby `req.secure`/`X-Forwarded-Proto` fungovaly správně pro HSTS a redirecty.
+2. **Vlastní VPS/Docker** — reverzní proxy (Caddy nebo nginx + certbot) před oběma appkami:
+   - **Caddy** je nejjednodušší varianta — automatický Let's Encrypt certifikát bez ruční konfigurace, stačí `Caddyfile` s `reverse_proxy` bloky pro `apps/api` (port 3000) a `apps/web` (statické soubory nebo vlastní port).
+   - **nginx + certbot** — klasická varianta, `certbot --nginx` pro vydání/obnovu certifikátu, `proxy_pass` na `http://localhost:3000` pro `/api/`, statické soubory `apps/web/dist` pro zbytek.
+   - V obou případech proxy posílá `X-Forwarded-Proto: https` a `X-Forwarded-For`, které `trust proxy` výše respektuje.
+3. **Lokální síť na stanovišti bez internetu** (§8.6) — self-signed certifikát je jediná možnost, protože Let's Encrypt vyžaduje veřejně dostupnou doménu; prohlížeč nahlásí varování, které si tým na místě musí vědomě odkliknout (jednorázově, ne při každém požadavku, díky uloženému výjimce v prohlížeči).

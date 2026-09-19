@@ -99,6 +99,11 @@ export function Dashboard() {
     }
   }
 
+  function ukazatEmbedKod(routeId: string) {
+    const kod = `<iframe src="${window.location.origin}/embed/vysledky/${routeId}" width="360" height="480" style="border:0"></iframe>`;
+    window.prompt("Zkopírujte kód pro vložení živých výsledků na web (F38):", kod);
+  }
+
   async function deleteEvent(eventId: string, nazev: string) {
     if (!window.confirm(`Opravdu smazat akci "${nazev}"? Tuto akci nelze vrátit zpět.`)) return;
     try {
@@ -217,8 +222,15 @@ export function Dashboard() {
                   <Link to={`/mereni/${t.id}`}>Měření</Link>
                   <Link to={`/mereni/${t.id}?bod=mezicas`}>Mezičas</Link>
                   <Link to={`/vysledky/${t.id}`}>Výsledky</Link>
+                  <Link to={`/kiosk/${t.id}`} target="_blank" rel="noreferrer">
+                    Kiosek
+                  </Link>
+                  <button onClick={() => ukazatEmbedKod(t.id)} style={linkButtonStyle}>
+                    Embed
+                  </button>
                   <Link to={`/kdo-bezi/${t.id}`}>Kdo běží</Link>
                   <Link to={`/konflikty/${t.id}`}>Kolize</Link>
+                  <Link to={`/audit/${t.id}`}>Audit</Link>
                   <button onClick={() => deleteRoute(t.id, t.nazev)} style={{ ...linkButtonStyle, color: "var(--color-danger)" }}>
                     Smazat
                   </button>

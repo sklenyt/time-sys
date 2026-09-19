@@ -7,13 +7,36 @@ export function Results() {
   const { routeId } = useParams<{ routeId: string }>();
   const [vysledky, setVysledky] = useState<VysledkyResponseDto | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [zive, setZive] = useState(false);
 
+  // Živé výsledky přes Server-Sent Events (F16, 03-architecture.md §3.6) —
+  // realtime vrstva je doplněk, ne závislost: pokud SSE selže dřív, než
+  // přijde první zpráva, spadneme zpět na obyčejný GET.
   useEffect(() => {
     if (!routeId) return;
-    api
-      .get<VysledkyResponseDto>(`/routes/${routeId}/results`)
-      .then(setVysledky)
-      .catch((e) => setError(e instanceof Error ? e.message : "Chyba načítání"));
+    setError(null);
+    let dostalData = false;
+    const es = new EventSource(`${API_BASE}/routes/${routeId}/results/live`);
+    es.onmessage = (e) => {
+      dostalData = true;
+      setZive(true);
+      setError(null);
+      try {
+        setVysledky(JSON.parse(e.data));
+      } catch {
+        // poškozený rámec — počkáme na další
+      }
+    };
+    es.onerror = () => {
+      setZive(false);
+      if (!dostalData) {
+        api
+          .get<VysledkyResponseDto>(`/routes/${routeId}/results`)
+          .then(setVysledky)
+          .catch((err) => setError(err instanceof Error ? err.message : "Chyba načítání"));
+      }
+    };
+    return () => es.close();
   }, [routeId]);
 
   if (!vysledky) return <div style={{ padding: 24 }}>{error ?? "Načítám…"}</div>;
@@ -21,7 +44,28 @@ export function Results() {
   return (
     <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-        <h1 style={{ fontWeight: 800 }}>Výsledky</h1>
+        <h1 style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 800 }}>
+          Výsledky
+          {zive && (
+            <span
+              className="mono"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                background: "var(--color-live)",
+                color: "#fff",
+                borderRadius: 6,
+                padding: "2px 8px",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 1,
+              }}
+            >
+              ● ŽIVĚ
+            </span>
+          )}
+        </h1>
         <span style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <a href={`${API_BASE}/routes/${routeId}/results/export.xlsx`} className="mono">
             Stáhnout XLSX

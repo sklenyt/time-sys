@@ -8,6 +8,9 @@ import { Results } from "./pages/Results";
 import { Running } from "./pages/Running";
 import { PublishTargets } from "./pages/PublishTargets";
 import { Conflicts } from "./pages/Conflicts";
+import { EmbedResults } from "./pages/EmbedResults";
+import { Kiosk } from "./pages/Kiosk";
+import { AuditLog } from "./pages/AuditLog";
 import { isLoggedIn } from "./lib/api";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -23,6 +26,16 @@ export function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/vysledky/:routeId" element={<Results />} />
+      <Route path="/embed/vysledky/:routeId" element={<EmbedResults />} />
+      <Route path="/kiosk/:routeId" element={<Kiosk />} />
+      <Route
+        path="/audit/:routeId"
+        element={
+          <RequireAuth>
+            <AuditLog />
+          </RequireAuth>
+        }
+      />
       <Route
         path="/dashboard"
         element={

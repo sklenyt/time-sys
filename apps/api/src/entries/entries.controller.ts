@@ -2,7 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Post,
@@ -15,10 +18,15 @@ import { Role } from "@depo/shared";
 import { EntriesService } from "./entries.service";
 import { CreateEntryDto } from "./dto/create-entry.dto";
 import { Roles } from "../auth/decorators/roles.decorator";
+import { CurrentUser, AuthenticatedUser } from "../auth/decorators/current-user.decorator";
+import { GdprService } from "../gdpr/gdpr.service";
 
 @Controller("routes/:routeId/entries")
 export class EntriesController {
-  constructor(private readonly entries: EntriesService) {}
+  constructor(
+    private readonly entries: EntriesService,
+    private readonly gdpr: GdprService
+  ) {}
 
   @Roles(Role.ADMIN, Role.ORGANIZATOR)
   @Post()
@@ -42,5 +50,21 @@ export class EntriesController {
   @Get()
   findAll(@Param("routeId", ParseUUIDPipe) routeId: string, @Query("search") search?: string) {
     return this.entries.findAllForRoute(routeId, search);
+  }
+
+  /**
+   * Právo na výmaz (GDPR, docs/08-security.md §8.7) — přihláška se smaže
+   * celá, ale `zaznam_udalosti` zůstává (jen se odpojí `prihlaska_id`),
+   * aby výsledky a audit log neztratily integritu.
+   */
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Delete(":entryId")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  anonymize(
+    @Param("routeId", ParseUUIDPipe) routeId: string,
+    @Param("entryId", ParseUUIDPipe) entryId: string,
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+    return this.gdpr.anonymizovatPrihlasku(routeId, entryId, user.id);
   }
 }

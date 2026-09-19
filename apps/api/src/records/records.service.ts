@@ -7,6 +7,7 @@ import { CreateRecordDto } from "./dto/create-record.dto";
 import { CorrectRecordDto } from "./dto/correct-record.dto";
 import { formatDuration } from "../common/format-duration";
 import { PublishTargetsService } from "../publish-targets/publish-targets.service";
+import { ResultsEventsService } from "../results/results-events.service";
 
 /**
  * "Ve stejném kole" (03-architecture.md §3.5) — okno, v němž se druhý
@@ -19,7 +20,8 @@ const KOLIZE_OKNO_MS = 15 * 60 * 1000;
 export class RecordsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly publishTargets: PublishTargetsService
+    private readonly publishTargets: PublishTargetsService,
+    private readonly resultsEvents: ResultsEventsService
   ) {}
 
   /**
@@ -107,8 +109,9 @@ export class RecordsService {
 
     if (typUdalosti === TypUdalosti.DOJEZD) {
       // Fire-and-forget — nesmí zpomalit ani ohrozit odpověď na zápis měření (§3.10).
-      // Mezičas výsledky neovlivňuje, export by tu byl zbytečný.
+      // Mezičas výsledky neovlivňuje, export ani živé přepočítání by tu bylo zbytečné.
       this.publishTargets.exportPoZaznamuProTrasu(trasaId).catch(() => {});
+      this.resultsEvents.oznamZmenu(trasaId);
     }
 
     return this.toResponse(zaznam, casKola, casCelkem);
@@ -164,6 +167,7 @@ export class RecordsService {
       },
     });
 
+    this.resultsEvents.oznamZmenu(trasaId);
     return this.toResponse(opravenyZaznam);
   }
 
