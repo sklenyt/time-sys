@@ -6,10 +6,14 @@ import { PrismaService } from "../prisma/prisma.service";
 import { CreateRecordDto } from "./dto/create-record.dto";
 import { CorrectRecordDto } from "./dto/correct-record.dto";
 import { formatDuration } from "../common/format-duration";
+import { PublishTargetsService } from "../publish-targets/publish-targets.service";
 
 @Injectable()
 export class RecordsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly publishTargets: PublishTargetsService
+  ) {}
 
   /**
    * Zápis doběhu — jádro celého systému (F06). Idempotentní přes
@@ -65,6 +69,9 @@ export class RecordsService {
     const casCelkem = prihlaska?.startVlna?.casStartu
       ? formatDuration(klientCas.getTime() - prihlaska.startVlna.casStartu.getTime())
       : null;
+
+    // Fire-and-forget — nesmí zpomalit ani ohrozit odpověď na zápis měření (§3.10).
+    this.publishTargets.exportPoZaznamuProTrasu(trasaId).catch(() => {});
 
     return this.toResponse(zaznam, casKola, casCelkem);
   }

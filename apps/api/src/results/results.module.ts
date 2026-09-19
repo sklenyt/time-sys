@@ -5,5 +5,6 @@ import { ResultsService } from "./results.service";
 @Module({
   controllers: [ResultsController, RunningController],
   providers: [ResultsService],
+  exports: [ResultsService],
 })
 export class ResultsModule {}

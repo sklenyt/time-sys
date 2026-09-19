@@ -6,6 +6,7 @@ import { StartList } from "./pages/StartList";
 import { Measurement } from "./pages/Measurement";
 import { Results } from "./pages/Results";
 import { Running } from "./pages/Running";
+import { PublishTargets } from "./pages/PublishTargets";
 import { isLoggedIn } from "./lib/api";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -50,6 +51,14 @@ export function App() {
         element={
           <RequireAuth>
             <Running />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/publikace/:eventId"
+        element={
+          <RequireAuth>
+            <PublishTargets />
           </RequireAuth>
         }
       />

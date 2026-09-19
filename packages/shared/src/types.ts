@@ -179,6 +179,16 @@ export interface PublikacniCil {
   posledniExportStav?: StavExportu | null;
 }
 
+/** POST /publish-targets/:id/test a .../export-now (F34–F37). */
+export interface PublishTestResponseDto {
+  ok: boolean;
+  zprava: string;
+}
+
+export interface PublishExportResponseDto {
+  stav: StavExportu;
+}
+
 export interface UzivatelRole {
   id: string;
   uzivatelId: string;

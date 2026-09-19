@@ -8,7 +8,7 @@ import { AuthenticatedUser } from "../decorators/current-user.decorator";
 /**
  * Role se váže na konkrétní událost (uzivatel_role.udalost_id), viz
  * 08-security.md §8.3. Cílová událost se dohledá z `eventId` v route
- * parametrech, nebo z `routeId`/`id` přes vztah trasa -> událost.
+ * parametrech, nebo z `routeId`/`cilId` přes vztah trasa/publikační cíl -> událost.
  *
  * ADMIN přiřazený na libovolné události v rámci organizace má přístup
  * ke všem událostem té organizace (viz role ADMIN v 04-data-model.md §4.3).
@@ -77,6 +77,10 @@ export class RolesGuard implements CanActivate {
     if (params.routeId) {
       const trasa = await this.prisma.trasa.findUnique({ where: { id: params.routeId } });
       return trasa?.udalostId ?? null;
+    }
+    if (params.cilId) {
+      const cil = await this.prisma.publikacniCil.findUnique({ where: { id: params.cilId } });
+      return cil?.udalostId ?? null;
     }
     return null;
   }

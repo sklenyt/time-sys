@@ -44,6 +44,7 @@ export class RoutesService {
         pocetKol: dto.pocetKol,
         typStartu: dto.typStartu,
         dokoncena: dto.dokoncena,
+        exportSouborNazev: dto.exportSouborNazev,
       },
     });
   }

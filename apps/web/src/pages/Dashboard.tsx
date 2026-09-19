@@ -158,6 +158,9 @@ export function Dashboard() {
             <button onClick={() => renameEvent(u.id, u.nazev)} style={linkButtonStyle}>
               Přejmenovat
             </button>
+            <Link to={`/publikace/${u.id}`} style={{ fontSize: 13 }}>
+              Publikace (FTP/SFTP)
+            </Link>
           </div>
           <p className="mono" style={{ color: "var(--text-secondary)", margin: "0 0 12px" }}>
             {u.datum.slice(0, 10)}

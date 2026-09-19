@@ -23,4 +23,10 @@ export class UpdateRouteDto {
   @IsOptional()
   @IsBoolean()
   dokoncena?: boolean;
+
+  /** Výstupní soubor pro FTP/SFTP export výsledků (F34–F37), např. "10km.html". */
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  exportSouborNazev?: string;
 }

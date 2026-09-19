@@ -20,6 +20,8 @@ npx prisma migrate dev --schema=apps/api/prisma/schema.prisma
 npm run dev:api
 ```
 
+`.env` musí navíc obsahovat `PUBLISH_TARGET_ENC_KEY` — 32 bajtů (64 hex znaků) pro šifrování FTP/SFTP hesel, viz `.env.example`.
+
 API poslouchá na `http://localhost:3000/api/v1`, zdravotní kontrola na `GET /api/v1/health`.
 
 ## Co je hotové (proof-of-concept vertikální řez)
@@ -40,8 +42,9 @@ Cílem téhle první verze je **ověřit, že celý řetězec funguje end-to-end
 - `GET /routes/:routeId/results/export.xlsx` — **export výsledků do XLSX** (F13), stejná data jako `/results`, veřejné stejně jako ono.
 - `POST/DELETE /routes/:routeId/start`, `GET/POST .../start-waves` — zahájení/zrušení startu vlny (UC5). U hromadného startu (`typStartu=HROMADNY`) se výchozí vlna založí automaticky při první přihlášce na trať, takže `POST .../start` funguje bez nutnosti cokoli zvlášť konfigurovat. Stejné role jako zápis měření, kromě `STANOVISTE` (start řídí jen `ADMIN`/`ORGANIZATOR`/`CASOMERIC`).
 - `GET /routes/:routeId/running` — **"Kdo ještě běží / DNF"** (F10): přihlášení bez DNS/DNF/DQ, kteří ještě nemají doběh, s časem na trati od startu. Vyžaduje přihlášení (provozní přehled pro obsluhu, ne veřejná stránka jako výsledky).
+- `POST/GET /events/:eventId/publish-targets`, `PATCH/POST .../test`/`.../export-now` na `/publish-targets/:cilId` — **publikace výsledků na FTP/FTPS/SFTP** (F34–F37). Heslo se šifruje `PUBLISH_TARGET_ENC_KEY` (AES-256-GCM) a nikdy se nevrací v odpovědi. `.../test` skutečně naváže spojení a přihlásí se bez uploadu; `.../export-now` vyrenderuje statickou HTML stránku výsledků pro každou trasu události (`trasa.export_soubor_nazev`, výchozí `<id>.html`) a nahraje ji. Export se navíc spouští automaticky: ihned po každém zápisu měření pro cíle s `export_po_kazdem_zaznamu=true`, a jednou za minutu plánovačem (`PublishSchedulerService`) pro cíle, kterým uplynul `interval_minut`. Obojí běží fire-and-forget — chyba exportu nikdy neovlivní odpověď na zápis měření. Vyžaduje roli `ADMIN`/`ORGANIZATOR`.
 
-Ověřeno end-to-end (viz commit): registrace/přihlášení → založení organizace → událost → bootstrap role ADMIN → trasa → kategorie → přihláška → start → zápis doběhu → oprava záznamu → výpočet výsledků → idempotentní opakování zápisu. Ověřeno i záporně: neautentizovaný požadavek na kterýkoli z výše uvedených zápisů dostane 401, pokus založit událost v cizí organizaci 403, a `GET /organizations` cizí organizaci nikdy nevrátí.
+Ověřeno end-to-end (viz commit): registrace/přihlášení → založení organizace → událost → bootstrap role ADMIN → trasa → kategorie → přihláška → start → zápis doběhu → oprava záznamu → výpočet výsledků → idempotentní opakování zápisu. Ověřeno i záporně: neautentizovaný požadavek na kterýkoli z výše uvedených zápisů dostane 401, pokus založit událost v cizí organizaci 403, a `GET /organizations` cizí organizaci nikdy nevrátí. FTP export ověřen proti reálnému lokálnímu FTP serveru (pyftpdlib) — úspěšné i neúspěšné přihlášení, ruční export, automatický export po zápisu měření a automatický export naplánovaným intervalem, vše se souborem skutečně nahraným na disk serveru.
 
 ## Co chybí (další práce ve Fázi 1/2, ne bug)
 
@@ -49,5 +52,5 @@ Ověřeno end-to-end (viz commit): registrace/přihlášení → založení orga
 - Mezičasy na kontrolních stanovištích (`typUdalosti=MEZICAS`).
 - `/sync/events` offline-first synchronizace ([`docs/03-architecture.md §3.5`](../../docs/03-architecture.md)) — teď je jen jeden přímý zápis přes REST, ne offline fronta.
 - Export výsledků do PDF (F13) — jen XLSX zatím hotové.
-- FTP/SFTP export (F34–F37), RFID (F22).
-- Šifrování `publikacni_cil.heslo_sifrovane` (teď je ve schématu jen sloupec, bez šifrovací vrstvy).
+- RFID (F22).
+- Mazání publikačního cíle — zatím jen zakládání a úprava.
