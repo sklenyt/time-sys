@@ -1,0 +1,66 @@
+/**
+ * Design tokeny Depo — viz docs/14-graficka-identita.md.
+ * Zdroj pravdy pro barvy a typografii napříč appkou.
+ */
+:root {
+  /* Tmavá paleta — navigace, obrazovka Měření */
+  --ink-900: #05090f;
+  --navy-800: #0b1220;
+  --navy-700: #121b2c;
+  --navy-600: #1f2c44;
+  --steel-400: #8c97a6;
+
+  /* Akcent — cílová páska, Enter */
+  --tape-400: #ff6a34;
+  --tape-500: #ff4a17;
+  --tape-700: #c2340c;
+
+  /* Sémantika stavů */
+  --color-live: #0e9f6e;
+  --color-attention: #e9a21b;
+  --color-danger: #d92d20;
+
+  /* Světlé plochy */
+  --paper: #ffffff;
+  --surface: #f6f7f9;
+  --line: #dde0e6;
+  --text-secondary: #56606e;
+
+  --font-ui: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  background: var(--surface);
+  color: var(--navy-800);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Pravidlo z brand guideline: každé číslo/čas/startovní číslo je mono. */
+.mono,
+time,
+.bib-number {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  font-family: inherit;
+}
