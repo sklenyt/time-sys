@@ -6,11 +6,31 @@ import { CreateOrganizationDto } from "./dto/create-organization.dto";
 export class OrganizationsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(dto: CreateOrganizationDto) {
-    return this.prisma.organizace.create({ data: { nazev: dto.nazev } });
+  /**
+   * Zakladatel se stává členem nové organizace (pokud ještě žádnou nemá) —
+   * bez toho by nikdy nesplnil kontrolu členství v EventsController.create.
+   */
+  async create(dto: CreateOrganizationDto, uzivatelId: string) {
+    const organizace = await this.prisma.organizace.create({ data: { nazev: dto.nazev } });
+
+    const uzivatel = await this.prisma.uzivatel.findUnique({ where: { id: uzivatelId } });
+    if (!uzivatel?.organizaceId) {
+      await this.prisma.uzivatel.update({
+        where: { id: uzivatelId },
+        data: { organizaceId: organizace.id },
+      });
+    }
+
+    return organizace;
   }
 
-  findAll() {
-    return this.prisma.organizace.findMany({ orderBy: { vytvorenoAt: "desc" } });
+  /** Multi-tenancy zatím bez RLS (viz 04-data-model.md §4.6) — omezeno aspoň na organizaci uživatele. */
+  async findAllForUser(uzivatelId: string) {
+    const uzivatel = await this.prisma.uzivatel.findUnique({ where: { id: uzivatelId } });
+    if (!uzivatel?.organizaceId) {
+      return [];
+    }
+    const organizace = await this.prisma.organizace.findUnique({ where: { id: uzivatel.organizaceId } });
+    return organizace ? [organizace] : [];
   }
 }

@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from "@nestjs/common";
+import { Role } from "@depo/shared";
 import { CategoriesService } from "./categories.service";
 import { CreateCategoryDto } from "./dto/create-category.dto";
-import { Public } from "../auth/decorators/public.decorator";
+import { Roles } from "../auth/decorators/roles.decorator";
 
-/** Zatím veřejné, viz poznámka v OrganizationsController. */
-@Public()
 @Controller("routes/:routeId/categories")
 export class CategoriesController {
   constructor(private readonly categories: CategoriesService) {}
 
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
   @Post()
   create(@Param("routeId", ParseUUIDPipe) routeId: string, @Body() dto: CreateCategoryDto) {
     return this.categories.create(routeId, dto);

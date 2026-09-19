@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from "@nestjs/common";
+import { Role } from "@depo/shared";
 import { EntriesService } from "./entries.service";
 import { CreateEntryDto } from "./dto/create-entry.dto";
-import { Public } from "../auth/decorators/public.decorator";
+import { Roles } from "../auth/decorators/roles.decorator";
 
-/** Zatím veřejné, viz poznámka v OrganizationsController. */
-@Public()
 @Controller("routes/:routeId/entries")
 export class EntriesController {
   constructor(private readonly entries: EntriesService) {}
 
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
   @Post()
   create(@Param("routeId", ParseUUIDPipe) routeId: string, @Body() dto: CreateEntryDto) {
     return this.entries.create(routeId, dto);
