@@ -47,8 +47,8 @@ Cílem téhle první verze je **ověřit, že celý řetězec funguje end-to-end
 
 Ověřeno end-to-end (viz commit): registrace/přihlášení → založení organizace → událost → bootstrap role ADMIN → trasa → kategorie → přihláška → start → zápis doběhu → oprava záznamu → výpočet výsledků → idempotentní opakování zápisu. Ověřeno i záporně: neautentizovaný požadavek na kterýkoli z výše uvedených zápisů dostane 401, pokus založit událost v cizí organizaci 403, a `GET /organizations` cizí organizaci nikdy nevrátí. FTP export ověřen proti reálnému lokálnímu FTP serveru (pyftpdlib) — úspěšné i neúspěšné přihlášení, ruční export, automatický export po zápisu měření a automatický export naplánovaným intervalem, vše se souborem skutečně nahraným na disk serveru. Mazání ověřeno včetně negativních případů — smazání trasy/události se startovní listinou vrací `409 Conflict` a data zůstanou zachována, smazání prázdné entity/publikačního cíle vrací `204` a následné čtení `404`.
 
-## Co chybí (další práce ve Fázi 1/2, ne bug)
+## Co chybí (práce ve Fázi 2/4, ne bug — Fáze 1 je hotová, viz `docs/10-roadmap.md`)
 
-- Mezičasy na kontrolních stanovištích (`typUdalosti=MEZICAS`).
+- Mezičasy na kontrolních stanovištích (`typUdalosti=MEZICAS` v datovém modelu už existuje) — dává smysl až s F17 (více stanovišť + synchronizace), ne jako izolovaný zápis na jednom zařízení.
 - `/sync/events` offline-first synchronizace ([`docs/03-architecture.md §3.5`](../../docs/03-architecture.md)) — teď je jen jeden přímý zápis přes REST, ne offline fronta.
-- RFID (F22).
+- RFID (F22, Fáze 4).

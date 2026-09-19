@@ -10,7 +10,7 @@ Fáze navazují na cíle architektury ([03-architecture.md §3.1](03-architectur
 | Grafická identita Depo (logo, barvy, typografie) | ✅ [14-graficka-identita.md](14-graficka-identita.md) |
 | Validace návrhu s organizátorem (uživatelský feedback na mockupy a workflow) | ⏳ další krok — viz §10.5 |
 
-## Fáze 1 — Základní kostra a MVP jádro
+## Fáze 1 — Základní kostra a MVP jádro (✅ hotovo)
 
 Cíl: nahradit **nejkritičtější denní use case** — samotné měření na jedné trati na jednom zařízení.
 
@@ -27,9 +27,9 @@ Cíl: nahradit **nejkritičtější denní use case** — samotné měření na 
 - ✅ **Modul měření** — číslo + Enter, zachování systémového času (F06, F07) — [§7.3](07-ui-mockups.md), jádro dle [04-data-model.md §4.2](04-data-model.md). Hotovo od prvního commitu scaffoldu, ověřeno end-to-end přes klávesnici v prohlížeči.
 - ✅ **Responzivní layout pro telefon/tablet/desktop** (F25, N08) — [05-tech-stack.md §5.2.1](05-tech-stack.md). Ověřeno Playwrightem na 320/390/768 px šířkách bez vodorovného přetečení stránky. Formulářové řádky (Přehled akcí, Startovní listina) používají `flex-wrap` od prvního řádku kódu, tabulky (Startovní listina, Výsledky, Kdo běží) mají vlastní vodorovně scrollovatelný wrapper (`.table-scroll`) místo rozbití layoutu stránky. Obrazovka Měření (dvousloupcová klávesnice + Poslední zápisy) se pod 860 px skládá pod sebe (`.measurement-layout` v `styles/tokens.css`), aby se boční panel neořezával mimo viewport na telefonu/iPadu — dřívější pevný `grid-template-columns` bez media query byl reálný bug, ne jen chybějící ověření.
 - ✅ **Automatický export výsledků na FTP/SFTP jako statická HTML stránka** (F34, F35) — [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37), mockup [§7.10](07-ui-mockups.md). `publikacni_cil.heslo_sifrovane` šifrováno AES-256-GCM, nikdy plain-text ani v API odpovědi. Spouští se ručně (`.../export-now`), automaticky po každém zápisu měření (`export_po_kazdem_zaznamu`), nebo naplánovaným intervalem (`interval_minut`, kontrola jednou za minutu) — ověřeno end-to-end proti reálnému FTP serveru.
-- Backend API pro jedno zařízení/jednu trať bez multi-device synchronizace (zjednodušená verze `/sync/events` — jen lokální perzistence, cloud sync odložen na Fázi 2)
+- Backend API pro jedno zařízení/jednu trať bez multi-device synchronizace (zjednodušená verze `/sync/events` — jen lokální perzistence, cloud sync odložen na Fázi 2). Mezičasy na kontrolních stanovištích (`typUdalosti=MEZICAS` už v datovém modelu existuje) záměrně čekají na Fázi 2 se stejným zdůvodněním — `STANOVISTE` role a F17 dávají smysl až se skutečnou synchronizací více zařízení, ne jako izolovaný zápis na jednom.
 
-**Akceptační kritérium fáze:** organizátor dokáže odměřit celý menší závod (1 trať, 1 zařízení) v Depu od registrace po publikaci výsledků.
+**Akceptační kritérium fáze splněno:** organizátor dokáže odměřit celý menší závod (1 trať, 1 zařízení) v Depu od registrace po publikaci výsledků — ověřeno end-to-end (viz `apps/api/README.md`) včetně RBAC, oprav se zachováním času, výpočtu výsledků, XLSX/PDF exportu, CSV importu startovní listiny, FTP/SFTP publikace a responzivního UI na telefonu/tabletu.
 
 ## Fáze 2 — Terén a offline (odhad 4–6 týdnů)
 
