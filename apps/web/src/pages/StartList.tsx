@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { Kategorie, Prihlaska, Trasa } from "@depo/shared";
+import type { ImportEntriesResponseDto, Kategorie, Prihlaska, Trasa } from "@depo/shared";
 import { Pohlavi } from "@depo/shared";
 import { api } from "../lib/api";
 
@@ -16,6 +16,8 @@ export function StartList() {
   const [jmeno, setJmeno] = useState("");
   const [kategorieId, setKategorieId] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [importVysledek, setImportVysledek] = useState<ImportEntriesResponseDto | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function reload() {
     if (!routeId) return;
@@ -68,6 +70,23 @@ export function StartList() {
     }
   }
 
+  async function importCsv(soubor: File) {
+    if (!routeId) return;
+    setError(null);
+    setImportVysledek(null);
+    try {
+      const formData = new FormData();
+      formData.append("soubor", soubor);
+      const vysledek = await api.postForm<ImportEntriesResponseDto>(`/routes/${routeId}/entries/import`, formData);
+      setImportVysledek(vysledek);
+      reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Import se nezdařil");
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
   if (!trasa) return <div style={{ padding: 24 }}>{error ?? "Načítám…"}</div>;
 
   return (
@@ -111,6 +130,29 @@ export function StartList() {
               Přidat do listiny
             </button>
           </div>
+
+          <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12 }}>
+            <label className="mono" style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+              Import z CSV (sloupce: cislo, prijmeni, jmeno, kategorie, volitelně rocnik, pohlavi, klub)
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              onChange={(e) => e.target.files?.[0] && importCsv(e.target.files[0])}
+            />
+          </div>
+          {importVysledek && (
+            <p className="mono" style={{ fontSize: 13, marginTop: 8 }}>
+              Importováno {importVysledek.importovano}.
+              {importVysledek.chyby.length > 0 && (
+                <span style={{ color: "var(--color-danger)" }}>
+                  {" "}
+                  Chyby: {importVysledek.chyby.map((c) => `řádek ${c.radek}: ${c.zprava}`).join("; ")}
+                </span>
+              )}
+            </p>
+          )}
         </section>
       )}
 

@@ -75,6 +75,17 @@ export interface Prihlaska {
   stavUkonceni?: StavUkonceni | null;
 }
 
+/** POST /routes/:id/entries/import — CSV import startovní listiny (F04). */
+export interface ImportEntriesRowError {
+  radek: number;
+  zprava: string;
+}
+
+export interface ImportEntriesResponseDto {
+  importovano: number;
+  chyby: ImportEntriesRowError[];
+}
+
 export interface Cip {
   id: string;
   prihlaskaId: string;

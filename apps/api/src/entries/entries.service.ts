@@ -1,6 +1,7 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
-import { TypStartu } from "@depo/shared";
+import { parse } from "csv-parse/sync";
+import { ImportEntriesResponseDto, Pohlavi, TypStartu } from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateEntryDto } from "./dto/create-entry.dto";
 import { StartVlnyService } from "../start-vlny/start-vlny.service";
@@ -39,6 +40,72 @@ export class EntriesService {
       }
       throw err;
     }
+  }
+
+  /**
+   * Import startovní listiny z CSV (F04, UC2). Očekávané sloupce v hlavičce:
+   * cislo, prijmeni, jmeno, kategorie (kód kategorie na této trati),
+   * volitelně rocnik, pohlavi (M/Z), klub. Chybný řádek se přeskočí a
+   * zaznamená se do `chyby` — jeden špatný řádek nezmaří zbytek importu.
+   */
+  async importCsv(trasaId: string, obsahSouboru: Buffer): Promise<ImportEntriesResponseDto> {
+    const kategorie = await this.prisma.kategorie.findMany({ where: { trasaId } });
+    const kategoriePodleKodu = new Map(kategorie.map((k) => [k.kod.toLowerCase(), k.id]));
+
+    let radky: Record<string, string>[];
+    try {
+      radky = parse(obsahSouboru, { columns: true, trim: true, skip_empty_lines: true });
+    } catch {
+      return { importovano: 0, chyby: [{ radek: 0, zprava: "Soubor se nepodařilo přečíst jako CSV" }] };
+    }
+
+    const chyby: { radek: number; zprava: string }[] = [];
+    let importovano = 0;
+
+    for (const [index, radek] of radky.entries()) {
+      const cisloRadku = index + 2; // +1 hlavička, +1 na 1-based řádkování pro uživatele
+
+      const cislo = Number(radek.cislo);
+      const kategorieKod = (radek.kategorie ?? "").toLowerCase();
+      const kategorieId = kategoriePodleKodu.get(kategorieKod);
+
+      if (!radek.cislo || Number.isNaN(cislo)) {
+        chyby.push({ radek: cisloRadku, zprava: "Chybí nebo neplatné startovní číslo" });
+        continue;
+      }
+      if (!radek.prijmeni?.trim() || !radek.jmeno?.trim()) {
+        chyby.push({ radek: cisloRadku, zprava: "Chybí příjmení nebo jméno" });
+        continue;
+      }
+      if (!kategorieId) {
+        chyby.push({ radek: cisloRadku, zprava: `Neznámá kategorie "${radek.kategorie ?? ""}"` });
+        continue;
+      }
+
+      const pohlavi =
+        radek.pohlavi?.toUpperCase() === "M" || radek.pohlavi?.toUpperCase() === "Z"
+          ? (radek.pohlavi.toUpperCase() as Pohlavi)
+          : undefined;
+      const rocnik = radek.rocnik ? Number(radek.rocnik) : undefined;
+
+      try {
+        await this.create(trasaId, {
+          startovniCislo: cislo,
+          prijmeni: radek.prijmeni.trim(),
+          jmeno: radek.jmeno.trim(),
+          kategorieId,
+          klub: radek.klub?.trim() || undefined,
+          pohlavi,
+          rocnik: rocnik && !Number.isNaN(rocnik) ? rocnik : undefined,
+        });
+        importovano += 1;
+      } catch (err) {
+        const zprava = err instanceof ConflictException ? (err.getResponse() as { message: string }).message : "Import řádku selhal";
+        chyby.push({ radek: cisloRadku, zprava });
+      }
+    }
+
+    return { importovano, chyby };
   }
 
   findAllForRoute(trasaId: string, search?: string) {

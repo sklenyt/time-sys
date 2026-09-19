@@ -76,12 +76,28 @@ async function request<T>(path: string, init?: RequestInit, retry = true): Promi
   return (await res.json()) as T;
 }
 
+async function requestForm<T>(path: string, formData: FormData): Promise<T> {
+  const { accessToken } = getTokens();
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new ApiError(res.status, body || res.statusText);
+  }
+  return (await res.json()) as T;
+}
+
 export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body: unknown) =>
     request<T>(path, { method: "POST", body: JSON.stringify(body) }),
   patch: <T>(path: string, body: unknown) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
+  /** Multipart upload — nikdy nenastavuje Content-Type ručně, prohlížeč doplní hranici (boundary). */
+  postForm: <T>(path: string, formData: FormData) => requestForm<T>(path, formData),
 };
 
 /** Perzistentní ID zařízení pro Local Capture / offline sync (viz docs/03-architecture.md §3.9). */
