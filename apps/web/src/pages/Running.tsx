@@ -35,28 +35,30 @@ export function Running() {
         <span>Na trati: {data.bezi.length}</span>
       </div>
 
-      <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
-            <th>Č.</th>
-            <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
-            <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
-            <th>Čas na trati</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.bezi.map((b) => (
-            <tr key={b.prihlaskaId} style={{ borderBottom: "1px solid var(--line)" }}>
-              <td>{b.startovniCislo}</td>
-              <td style={{ fontFamily: "var(--font-ui)" }}>
-                {b.prijmeni} {b.jmeno}
-              </td>
-              <td style={{ fontFamily: "var(--font-ui)" }}>{b.kategorieKod}</td>
-              <td>{b.casOdStartu}</td>
+      <div className="table-scroll">
+        <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
+              <th>Č.</th>
+              <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
+              <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
+              <th>Čas na trati</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.bezi.map((b) => (
+              <tr key={b.prihlaskaId} style={{ borderBottom: "1px solid var(--line)" }}>
+                <td>{b.startovniCislo}</td>
+                <td style={{ fontFamily: "var(--font-ui)" }}>
+                  {b.prijmeni} {b.jmeno}
+                </td>
+                <td style={{ fontFamily: "var(--font-ui)" }}>{b.kategorieKod}</td>
+                <td>{b.casOdStartu}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {data.bezi.length === 0 && <p style={{ color: "var(--text-secondary)" }}>Nikdo aktuálně neběží.</p>}
     </div>
   );

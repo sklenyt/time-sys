@@ -52,16 +52,8 @@ export function Measurement() {
   }, [stiskniKlavesu, zapsat]);
 
   return (
-    <div
-      style={{
-        minHeight: "100%",
-        background: "var(--ink-900)",
-        color: "#fff",
-        display: "grid",
-        gridTemplateColumns: "1fr minmax(280px, 340px)",
-      }}
-    >
-      <div style={{ padding: 32, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24 }}>
+    <div className="measurement-layout" style={{ background: "var(--ink-900)", color: "#fff" }}>
+      <div className="measurement-main">
         <div
           style={{
             background: "var(--navy-800)",
@@ -81,15 +73,13 @@ export function Measurement() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 84px)", gap: 12 }}>
+        <div className="measurement-keypad">
           {KEYS.map((k) => (
             <button
               key={k}
               onClick={() => stiskniKlavesu(k)}
-              className="mono"
+              className="mono measurement-key"
               style={{
-                width: 84,
-                height: 68,
                 borderRadius: 14,
                 border: "none",
                 background: k === "DNF" ? "var(--navy-700)" : "var(--navy-800)",
@@ -126,7 +116,7 @@ export function Measurement() {
         {chyba && <p style={{ color: "var(--color-attention)" }}>{chyba}</p>}
       </div>
 
-      <div style={{ borderLeft: "1px solid var(--navy-700)", padding: 20 }}>
+      <div className="measurement-sidebar">
         <h3 style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: 1, color: "var(--steel-400)" }}>
           Poslední zápisy
         </h3>

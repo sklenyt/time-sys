@@ -156,26 +156,28 @@ export function StartList() {
         </section>
       )}
 
-      <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
-            <th>Č.</th>
-            <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
-            <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
-          </tr>
-        </thead>
-        <tbody>
-          {entries.map((e) => (
-            <tr key={e.id} style={{ borderBottom: "1px solid var(--line)" }}>
-              <td>{e.startovniCislo}</td>
-              <td style={{ fontFamily: "var(--font-ui)" }}>
-                {e.prijmeni} {e.jmeno}
-              </td>
-              <td style={{ fontFamily: "var(--font-ui)" }}>{(e as Prihlaska & { kategorie?: Kategorie }).kategorie?.kod ?? "—"}</td>
+      <div className="table-scroll">
+        <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
+              <th>Č.</th>
+              <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
+              <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {entries.map((e) => (
+              <tr key={e.id} style={{ borderBottom: "1px solid var(--line)" }}>
+                <td>{e.startovniCislo}</td>
+                <td style={{ fontFamily: "var(--font-ui)" }}>
+                  {e.prijmeni} {e.jmeno}
+                </td>
+                <td style={{ fontFamily: "var(--font-ui)" }}>{(e as Prihlaska & { kategorie?: Kategorie }).kategorie?.kod ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

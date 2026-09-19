@@ -64,3 +64,80 @@ time,
 button {
   font-family: inherit;
 }
+
+/* Zabránit vodorovnému scrollu při jakémkoli přetečení na malých displejích. */
+html,
+body {
+  overflow-x: hidden;
+}
+
+/* Tabulky (startovní listina, výsledky, kdo běží) — na telefonu radši
+   vodorovný scroll uvnitř wrapperu než rozbitý layout stránky. */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 480px) {
+  .table-scroll table {
+    min-width: 480px;
+  }
+}
+
+/* Obrazovka Měření — dvousloupcový layout (klávesnice + poslední zápisy)
+   se na telefonu/tabletu na výšku skládá pod sebe, aby se boční panel
+   neořezával mimo viewport (F25). */
+.measurement-layout {
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 340px);
+  min-height: 100%;
+}
+
+@media (max-width: 860px) {
+  .measurement-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.measurement-main {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+@media (max-width: 480px) {
+  .measurement-main {
+    padding: 20px 12px;
+  }
+}
+
+.measurement-sidebar {
+  border-left: 1px solid var(--navy-700);
+  padding: 20px;
+}
+
+@media (max-width: 860px) {
+  .measurement-sidebar {
+    border-left: none;
+    border-top: 1px solid var(--navy-700);
+  }
+}
+
+.measurement-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(64px, 84px));
+  gap: 12px;
+  width: 100%;
+  max-width: 300px;
+  justify-content: center;
+}
+
+.measurement-key {
+  width: 100%;
+  aspect-ratio: 84 / 68;
+  min-height: 56px;
+}
