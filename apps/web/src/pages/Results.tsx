@@ -20,11 +20,16 @@ export function Results() {
 
   return (
     <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
         <h1 style={{ fontWeight: 800 }}>Výsledky</h1>
-        <a href={`${API_BASE}/routes/${routeId}/results/export.xlsx`} className="mono">
-          Stáhnout XLSX
-        </a>
+        <span style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <a href={`${API_BASE}/routes/${routeId}/results/export.xlsx`} className="mono">
+            Stáhnout XLSX
+          </a>
+          <a href={`${API_BASE}/routes/${routeId}/results/export.pdf`} className="mono">
+            Stáhnout PDF
+          </a>
+        </span>
       </div>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 

@@ -23,6 +23,16 @@ export class ResultsController {
     });
     res.send(buffer);
   }
+
+  @Get("export.pdf")
+  async exportPdf(@Param("routeId", ParseUUIDPipe) routeId: string, @Res() res: Response) {
+    const buffer = await this.results.buildResultsPdf(routeId);
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": 'attachment; filename="vysledky.pdf"',
+    });
+    res.send(buffer);
+  }
 }
 
 /** Provozní přehled pro obsluhu, ne veřejná stránka jako výsledky (F10, UC10) — vyžaduje přihlášení. */

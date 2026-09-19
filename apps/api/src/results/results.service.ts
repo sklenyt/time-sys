@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import type { Kategorie, Prihlaska, StartVlna, ZaznamUdalosti } from "@prisma/client";
 import ExcelJS from "exceljs";
+import PDFDocument from "pdfkit";
+import { join } from "path";
 import {
   BezicPolozka,
   RunningResponseDto,
@@ -13,6 +15,13 @@ import { PrismaService } from "../prisma/prisma.service";
 import { formatDuration } from "../common/format-duration";
 
 type PrihlaskaSPrislusenstvim = Prihlaska & { kategorie: Kategorie; startVlna: StartVlna | null };
+
+// Vestavěné fonty PDFKitu (Helvetica) umí jen WinAnsi kódování bez české
+// diakritiky (ř, č, ě, š, ž, ů…) — bez vlastního TTF fontu by výsledky
+// vytiskly zkomolený text. Liberation Sans (SIL OFL, viz assets/fonts/LICENSE-LiberationSans.txt)
+// pokrývá Latin Extended-A.
+const FONT_REGULAR = join(__dirname, "..", "assets", "fonts", "LiberationSans-Regular.ttf");
+const FONT_BOLD = join(__dirname, "..", "assets", "fonts", "LiberationSans-Bold.ttf");
 
 @Injectable()
 export class ResultsService {
@@ -107,6 +116,105 @@ export class ResultsService {
 
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);
+  }
+
+  /** Export výsledků do PDF (F13) — stejná data jako getResults, tisková sestava pro vyvěšení/tisk. */
+  async buildResultsPdf(trasaId: string): Promise<Buffer> {
+    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId } });
+    if (!trasa) {
+      throw new NotFoundException("Trasa nenalezena");
+    }
+    const vysledky = await this.getResults(trasaId);
+
+    const doc = new PDFDocument({ margin: 40, size: "A4" });
+    const chunks: Buffer[] = [];
+    doc.on("data", (chunk: Buffer) => chunks.push(chunk));
+    const done = new Promise<Buffer>((resolve) => doc.on("end", () => resolve(Buffer.concat(chunks))));
+
+    const sloupce = [
+      { label: "Poř.", width: 35 },
+      { label: "Kat.", width: 35 },
+      { label: "Č.", width: 40 },
+      { label: "Jméno", width: 190 },
+      { label: "Kategorie", width: 90 },
+      { label: "Čas", width: 90 },
+    ];
+
+    doc.fontSize(18).font(FONT_BOLD).text(`Výsledky — ${trasa.nazev}`, { align: "left" });
+    doc.moveDown(1);
+
+    const hlavickaRadku = () => {
+      doc.fontSize(10).font(FONT_BOLD);
+      let x = doc.page.margins.left;
+      const y = doc.y;
+      for (const s of sloupce) {
+        doc.text(s.label, x, y, { width: s.width });
+        x += s.width;
+      }
+      doc.moveDown(0.5);
+      doc
+        .moveTo(doc.page.margins.left, doc.y)
+        .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+        .stroke();
+      doc.moveDown(0.3);
+    };
+
+    const novaStrankaPokudTreba = () => {
+      if (doc.y > doc.page.height - doc.page.margins.bottom - 40) {
+        doc.addPage();
+        hlavickaRadku();
+      }
+    };
+
+    hlavickaRadku();
+    doc.font(FONT_REGULAR).fontSize(10);
+    for (const p of vysledky.klasifikovani) {
+      novaStrankaPokudTreba();
+      const y = doc.y;
+      let x = doc.page.margins.left;
+      const hodnoty = [
+        String(p.poradiCelkove ?? ""),
+        String(p.poradiKategorie ?? ""),
+        String(p.startovniCislo),
+        `${p.prijmeni} ${p.jmeno}`,
+        p.kategorieKod,
+        p.casCelkem ?? "",
+      ];
+      hodnoty.forEach((hodnota, i) => {
+        doc.text(hodnota, x, y, { width: sloupce[i].width });
+        x += sloupce[i].width;
+      });
+      doc.moveDown(0.4);
+    }
+
+    if (vysledky.neklasifikovani.length > 0) {
+      doc.moveDown(0.8);
+      novaStrankaPokudTreba();
+      doc.font(FONT_BOLD).fontSize(13).text("Neklasifikovaní");
+      doc.moveDown(0.3);
+      doc.font(FONT_REGULAR).fontSize(10);
+      for (const p of vysledky.neklasifikovani) {
+        novaStrankaPokudTreba();
+        const y = doc.y;
+        let x = doc.page.margins.left;
+        const hodnoty = [
+          "",
+          "",
+          String(p.startovniCislo),
+          `${p.prijmeni} ${p.jmeno}`,
+          p.kategorieKod,
+          p.stavUkonceni ?? "v cíli zatím ne",
+        ];
+        hodnoty.forEach((hodnota, i) => {
+          doc.text(hodnota, x, y, { width: sloupce[i].width });
+          x += sloupce[i].width;
+        });
+        doc.moveDown(0.4);
+      }
+    }
+
+    doc.end();
+    return done;
   }
 
   /**
