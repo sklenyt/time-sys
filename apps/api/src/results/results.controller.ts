@@ -1,4 +1,5 @@
-import { Controller, Get, Param, ParseUUIDPipe } from "@nestjs/common";
+import { Controller, Get, Param, ParseUUIDPipe, Res } from "@nestjs/common";
+import type { Response } from "express";
 import { ResultsService } from "./results.service";
 import { Public } from "../auth/decorators/public.decorator";
 
@@ -11,6 +12,16 @@ export class ResultsController {
   @Get()
   get(@Param("routeId", ParseUUIDPipe) routeId: string) {
     return this.results.getResults(routeId);
+  }
+
+  @Get("export.xlsx")
+  async exportXlsx(@Param("routeId", ParseUUIDPipe) routeId: string, @Res() res: Response) {
+    const buffer = await this.results.buildResultsXlsx(routeId);
+    res.set({
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "Content-Disposition": 'attachment; filename="vysledky.xlsx"',
+    });
+    res.send(buffer);
   }
 }
 

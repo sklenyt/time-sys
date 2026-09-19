@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import type { Kategorie, Prihlaska, StartVlna, ZaznamUdalosti } from "@prisma/client";
+import ExcelJS from "exceljs";
 import {
   BezicPolozka,
   RunningResponseDto,
@@ -62,6 +63,50 @@ export class ResultsService {
     const neklasifikovani = polozky.filter((p) => p.casCelkemMs === null);
 
     return { trasaId, klasifikovani, neklasifikovani };
+  }
+
+  /** Export výsledků do XLSX (F13) — stejná data jako getResults, jiný formát výstupu. */
+  async buildResultsXlsx(trasaId: string): Promise<Buffer> {
+    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId } });
+    if (!trasa) {
+      throw new NotFoundException("Trasa nenalezena");
+    }
+    const vysledky = await this.getResults(trasaId);
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet(trasa.nazev.slice(0, 31));
+
+    sheet.columns = [
+      { header: "Poř. celkem", key: "poradiCelkove", width: 12 },
+      { header: "Poř. kat.", key: "poradiKategorie", width: 10 },
+      { header: "Číslo", key: "startovniCislo", width: 8 },
+      { header: "Příjmení", key: "prijmeni", width: 20 },
+      { header: "Jméno", key: "jmeno", width: 16 },
+      { header: "Kategorie", key: "kategorieKod", width: 10 },
+      { header: "Čas", key: "casCelkem", width: 14 },
+    ];
+    sheet.getRow(1).font = { bold: true };
+
+    for (const p of vysledky.klasifikovani) {
+      sheet.addRow(p);
+    }
+
+    if (vysledky.neklasifikovani.length > 0) {
+      sheet.addRow({});
+      sheet.addRow({ prijmeni: "Neklasifikovaní" }).font = { bold: true };
+      for (const p of vysledky.neklasifikovani) {
+        sheet.addRow({
+          startovniCislo: p.startovniCislo,
+          prijmeni: p.prijmeni,
+          jmeno: p.jmeno,
+          kategorieKod: p.kategorieKod,
+          casCelkem: p.stavUkonceni ?? "v cíli zatím ne",
+        });
+      }
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
   }
 
   /**

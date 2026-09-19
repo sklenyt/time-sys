@@ -35,6 +35,7 @@ Cílem téhle první verze je **ověřit, že celý řetězec funguje end-to-end
 - `POST /routes/:routeId/records` — **jádro systému**: zápis doběhu, idempotentní přes `klientEventId`, ukládá i nerozpoznané číslo (F06, F07). Vyžaduje roli `ADMIN`/`ORGANIZATOR`/`CASOMERIC`/`STANOVISTE` na dané události.
 - `PATCH /routes/:routeId/records/:recordId/correct` — oprava startovního čísla se zachováním původního času (F08), zapisuje do `audit_log` (F09). Stejné role jako zápis.
 - `GET /routes/:routeId/results` — **výpočet výsledků on-the-fly** (F12): pořadí celkové i po kategoriích, časová penalizace, DNS/DNF/DQ a nedoběhnutí v samostatné sekci `neklasifikovani`. Veřejné bez přihlášení (F16).
+- `GET /routes/:routeId/results/export.xlsx` — **export výsledků do XLSX** (F13), stejná data jako `/results`, veřejné stejně jako ono.
 - `POST/DELETE /routes/:routeId/start`, `GET/POST .../start-waves` — zahájení/zrušení startu vlny (UC5). U hromadného startu (`typStartu=HROMADNY`) se výchozí vlna založí automaticky při první přihlášce na trať, takže `POST .../start` funguje bez nutnosti cokoli zvlášť konfigurovat. Stejné role jako zápis měření, kromě `STANOVISTE` (start řídí jen `ADMIN`/`ORGANIZATOR`/`CASOMERIC`).
 - `GET /routes/:routeId/running` — **"Kdo ještě běží / DNF"** (F10): přihlášení bez DNS/DNF/DQ, kteří ještě nemají doběh, s časem na trati od startu. Vyžaduje přihlášení (provozní přehled pro obsluhu, ne veřejná stránka jako výsledky).
 
@@ -45,6 +46,6 @@ Ověřeno end-to-end (viz commit): registrace/přihlášení → založení orga
 - `PATCH /events/:id`, `PATCH /routes/:id` a mazání — správa tratí zatím jen zakládá, needituje ani nemaže.
 - Mezičasy na kontrolních stanovištích (`typUdalosti=MEZICAS`).
 - `/sync/events` offline-first synchronizace ([`docs/03-architecture.md §3.5`](../../docs/03-architecture.md)) — teď je jen jeden přímý zápis přes REST, ne offline fronta.
-- Export výsledků do XLSX (F13).
+- Export výsledků do PDF (F13) — jen XLSX zatím hotové.
 - FTP/SFTP export (F34–F37), RFID (F22).
 - Šifrování `publikacni_cil.heslo_sifrovane` (teď je ve schématu jen sloupec, bez šifrovací vrstvy).

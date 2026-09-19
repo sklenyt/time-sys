@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { VysledkyResponseDto } from "@depo/shared";
-import { api } from "../lib/api";
+import { api, API_BASE } from "../lib/api";
 
 export function Results() {
   const { routeId } = useParams<{ routeId: string }>();
@@ -20,7 +20,12 @@ export function Results() {
 
   return (
     <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
-      <h1 style={{ fontWeight: 800 }}>Výsledky</h1>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <h1 style={{ fontWeight: 800 }}>Výsledky</h1>
+        <a href={`${API_BASE}/routes/${routeId}/results/export.xlsx`} className="mono">
+          Stáhnout XLSX
+        </a>
+      </div>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
       <table className="mono" style={{ width: "100%", borderCollapse: "collapse", marginTop: 16 }}>

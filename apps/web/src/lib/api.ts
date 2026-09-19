@@ -1,4 +1,4 @@
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:3000/api/v1";
+export const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:3000/api/v1";
 
 const ACCESS_TOKEN_KEY = "depo_access_token";
 const REFRESH_TOKEN_KEY = "depo_refresh_token";
