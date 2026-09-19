@@ -63,3 +63,14 @@ Doporučené cesty k reálnému TLS certifikátu:
    - **nginx + certbot** — klasická varianta, `certbot --nginx` pro vydání/obnovu certifikátu, `proxy_pass` na `http://localhost:3000` pro `/api/`, statické soubory `apps/web/dist` pro zbytek.
    - V obou případech proxy posílá `X-Forwarded-Proto: https` a `X-Forwarded-For`, které `trust proxy` výše respektuje.
 3. **Lokální síť na stanovišti bez internetu** (§8.6) — self-signed certifikát je jediná možnost, protože Let's Encrypt vyžaduje veřejně dostupnou doménu; prohlížeč nahlásí varování, které si tým na místě musí vědomě odkliknout (jednorázově, ne při každém požadavku, díky uloženému výjimce v prohlížeči).
+
+## 8.9 Kritický požadavek pro multi-tenant Row-Level Security (F24)
+
+`DATABASE_URL` **nesmí** ukazovat na superuser roli PostgreSQL, jinak je celá izolace mezi organizacemi (§4.6 v [04-data-model.md](04-data-model.md)) tiše neúčinná — **superuser (a role s `BYPASSRLS`) obchází Row-Level Security úplně**, bez ohledu na `FORCE ROW LEVEL SECURITY` u tabulek. Appka o tom nedostane žádnou chybu; prostě jen uvidí data všech organizací, jako by RLS vůbec nebyla nastavená.
+
+To je snadná past hlavně u spravovaných Postgres služeb a u oficiálního Docker image `postgres` — obojí typicky nastaví výchozí/bootstrap uživatele (`POSTGRES_USER`) jako superuser. Toto skutečně způsobilo pád e2e testu multi-tenant izolace v CI (viz [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)): `postgres:16-alpine` service container udělá z `POSTGRES_USER` superusera, takže RLS politika reálně nikdy nezasáhla — test procházel ze špatného důvodu (žádná izolace), dokud se ověřilo `SELECT rolsuper FROM pg_roles` a přidal krok `ALTER ROLE ... NOSUPERUSER`.
+
+**Kontrolní seznam pro produkční nasazení:**
+- Appka se musí připojovat rolí, která **není** superuser a nemá `BYPASSRLS` — ověřit dotazem `SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user;` po připojení stejnými přihlašovacími údaji, jaké má `DATABASE_URL`.
+- U spravovaných platforem (RDS, Cloud SQL, Render Postgres…) je výchozí "admin" účet skoro vždy superuser — je potřeba založit samostatnou aplikační roli bez tohoto příznaku a jí vlastnit/používat schéma.
+- Toto se týká i lokálního vývoje/CI se skutečnou Postgres databází — pokud testy multi-tenant izolace najednou začnou procházet "příliš snadno" (žádný test cizí organizace neselže), první podezření je právě tohle.

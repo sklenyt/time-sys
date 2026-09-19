@@ -56,6 +56,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build --workspace=@depo/shared
+      # Docker's official postgres image makes POSTGRES_USER a SUPERUSER —
+      # superusers bypass Row-Level Security entirely, even with FORCE ROW
+      # LEVEL SECURITY (see docs/08-security.md §8.9). Without this, the
+      # multi-tenant RLS e2e test passes for the wrong reason (or, in
+      # production, doesn't apply at all).
+      - run: PGPASSWORD=depo_test_password psql -h localhost -U depo -d depo_test -c "ALTER ROLE depo NOSUPERUSER;"
       - run: npx prisma generate --schema=apps/api/prisma/schema.prisma
       - run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
       - run: npm run test --workspace=apps/api
