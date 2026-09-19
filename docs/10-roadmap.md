@@ -19,6 +19,7 @@ Cíl: nahradit **nejkritičtější denní use case** — samotné měření na 
 - ✅ **Oprava záznamu se zachováním času** (F08) — `PATCH /routes/:id/records/:recordId/correct`, nový řádek `typ_udalosti=OPRAVA` odkazující na původní přes `nahrazuje_zaznam_id`, čas se nikdy nemění
 - ✅ **Základní auditní log** (F09) — `audit_log` záznam s `puvodni_hodnota`/`nova_hodnota` při každé opravě; samotný zápis měření je již sebe-auditující přes `zaznam_udalosti.uzivatel_id`/`cas`
 - ✅ **Výpočet výsledků** (F12) — `GET /routes/:id/results`, on-the-fly z `zaznam_udalosti` (žádná zvlášť udržovaná tabulka, viz [04-data-model.md §4.5](04-data-model.md)): pořadí celkové i po kategoriích, časová penalizace zohledněna, DNS/DNF/DQ vyřazeni do samostatné sekce. Veřejné čtení bez přihlášení (F16 — základ pro živou stránku). Export XLSX (F13) zatím chybí.
+- ✅ **Zahájení startu** (UC5) — `POST/DELETE /routes/:id/start`, `GET/POST /routes/:id/start-waves`. U hromadného startu se vlna zakládá automaticky při první přihlášce, takže organizátor nemusí nic zvlášť konfigurovat — jen klikne "Start". Vlnový/intervalový start vyžaduje explicitní založení pojmenovaných vln.
 - Modul správy trasy (F01, F02) — [07-ui-mockups.md §7.2](07-ui-mockups.md)
 - Startovní listina — ruční zápis + CSV import (F03, F04) — [§7.8](07-ui-mockups.md)
 - **Modul měření** — číslo + Enter, zachování systémového času (F06, F07) — [§7.3](07-ui-mockups.md), jádro dle [04-data-model.md §4.2](04-data-model.md)

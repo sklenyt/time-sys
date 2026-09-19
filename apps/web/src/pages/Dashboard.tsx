@@ -71,6 +71,14 @@ export function Dashboard() {
     reload();
   }
 
+  async function startRace(routeId: string) {
+    try {
+      await api.post(`/routes/${routeId}/start`, {});
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Start se nezdařil");
+    }
+  }
+
   return (
     <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
       <h1 style={{ fontWeight: 800 }}>Přehled akcí</h1>
@@ -142,7 +150,10 @@ export function Dashboard() {
                 }}
               >
                 <span>{t.nazev}</span>
-                <span style={{ display: "flex", gap: 12 }}>
+                <span style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <button onClick={() => startRace(t.id)} style={{ ...buttonStyle, padding: "4px 10px", fontSize: 12 }}>
+                    Start
+                  </button>
                   <Link to={`/startovni-listina/${t.id}`}>Startovní listina</Link>
                   <Link to={`/mereni/${t.id}`}>Měření</Link>
                   <Link to={`/vysledky/${t.id}`}>Výsledky</Link>

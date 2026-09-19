@@ -12,6 +12,7 @@ import { EntriesModule } from "./entries/entries.module";
 import { RecordsModule } from "./records/records.module";
 import { EventRolesModule } from "./event-roles/event-roles.module";
 import { ResultsModule } from "./results/results.module";
+import { StartVlnyModule } from "./start-vlny/start-vlny.module";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { RolesGuard } from "./auth/guards/roles.guard";
 
@@ -29,6 +30,7 @@ import { RolesGuard } from "./auth/guards/roles.guard";
     RecordsModule,
     EventRolesModule,
     ResultsModule,
+    StartVlnyModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
