@@ -33,16 +33,24 @@ jobs:
     name: API unit + e2e tests
     runs-on: ubuntu-latest
     services:
+      # POSTGRES_USER here is deliberately NOT the role the app connects as:
+      # Docker's official postgres image makes it the cluster's bootstrap
+      # superuser, and Postgres refuses to ever let the bootstrap user shed
+      # its own superuser bit ("The bootstrap user must have the SUPERUSER
+      # attribute") — ALTER ROLE ... NOSUPERUSER on it fails outright. A
+      # superuser bypasses Row-Level Security entirely regardless of FORCE
+      # ROW LEVEL SECURITY (see docs/08-security.md §8.9), so a real,
+      # separate, non-superuser app role is required to test RLS at all.
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: depo
-          POSTGRES_PASSWORD: depo_test_password
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: depo_bootstrap_password
           POSTGRES_DB: depo_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U depo"
+          --health-cmd "pg_isready -U postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -56,12 +64,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build --workspace=@depo/shared
-      # Docker's official postgres image makes POSTGRES_USER a SUPERUSER —
-      # superusers bypass Row-Level Security entirely, even with FORCE ROW
-      # LEVEL SECURITY (see docs/08-security.md §8.9). Without this, the
-      # multi-tenant RLS e2e test passes for the wrong reason (or, in
-      # production, doesn't apply at all).
-      - run: PGPASSWORD=depo_test_password psql -h localhost -U depo -d depo_test -c "ALTER ROLE depo NOSUPERUSER;"
+      - run: |
+          PGPASSWORD=depo_bootstrap_password psql -h localhost -U postgres -d depo_test -c "
+            CREATE ROLE depo LOGIN PASSWORD 'depo_test_password' NOSUPERUSER;
+            GRANT ALL PRIVILEGES ON DATABASE depo_test TO depo;
+            GRANT ALL ON SCHEMA public TO depo;
+          "
       - run: npx prisma generate --schema=apps/api/prisma/schema.prisma
       - run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
       - run: npm run test --workspace=apps/api
