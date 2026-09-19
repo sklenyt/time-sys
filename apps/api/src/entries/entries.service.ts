@@ -28,6 +28,7 @@ export class EntriesService {
           kategorieId: dto.kategorieId,
           startVlnaId,
           nouzovyKontakt: dto.nouzovyKontakt,
+          zdravotniPoznamka: dto.zdravotniPoznamka,
         },
       });
     } catch (err) {

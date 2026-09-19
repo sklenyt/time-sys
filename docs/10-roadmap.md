@@ -20,11 +20,12 @@ Cíl: nahradit **nejkritičtější denní use case** — samotné měření na 
 - ✅ **Základní auditní log** (F09) — `audit_log` záznam s `puvodni_hodnota`/`nova_hodnota` při každé opravě; samotný zápis měření je již sebe-auditující přes `zaznam_udalosti.uzivatel_id`/`cas`
 - ✅ **Výpočet výsledků** (F12) — `GET /routes/:id/results`, on-the-fly z `zaznam_udalosti` (žádná zvlášť udržovaná tabulka, viz [04-data-model.md §4.5](04-data-model.md)): pořadí celkové i po kategoriích, časová penalizace zohledněna, DNS/DNF/DQ vyřazeni do samostatné sekce. Veřejné čtení bez přihlášení (F16 — základ pro živou stránku). Export XLSX (F13) zatím chybí.
 - ✅ **Zahájení startu** (UC5) — `POST/DELETE /routes/:id/start`, `GET/POST /routes/:id/start-waves`. U hromadného startu se vlna zakládá automaticky při první přihlášce, takže organizátor nemusí nic zvlášť konfigurovat — jen klikne "Start". Vlnový/intervalový start vyžaduje explicitní založení pojmenovaných vln.
+- ✅ **"Kdo ještě běží / DNF"** (F10) — `GET /routes/:id/running`, realtime přehled přihlášených bez DNS/DNF/DQ, kteří ještě nemají doběh, s časem na trati od startu. Vyžaduje přihlášení (provozní přehled pro obsluhu, viz [07-ui-mockups.md §7.4](07-ui-mockups.md)).
+- ✅ **Nouzový kontakt a zdravotní poznámka** (F31) — pole `nouzovyKontakt`/`zdravotniPoznamka` na `POST /routes/:id/entries`.
 - Modul správy trasy (F01, F02) — [07-ui-mockups.md §7.2](07-ui-mockups.md)
 - Startovní listina — ruční zápis + CSV import (F03, F04) — [§7.8](07-ui-mockups.md)
 - **Modul měření** — číslo + Enter, zachování systémového času (F06, F07) — [§7.3](07-ui-mockups.md), jádro dle [04-data-model.md §4.2](04-data-model.md)
 - **Responzivní layout pro telefon/tablet/desktop od prvního řádku kódu** (F25, N08) — ne dodatečná úprava; klíčové obrazovky (Měření, Startovní listina, Kdo běží) se navrhují rovnou pro dotyk na iPadu/telefonu, viz [05-tech-stack.md §5.2.1](05-tech-stack.md)
-- Nouzový kontakt a zdravotní poznámka u přihlášky (F31) — nízká náročnost, reálný bezpečnostní přínos, doporučeno zařadit hned do MVP (viz [12-rfid-a-doporuceni.md §12.6](12-rfid-a-doporuceni.md))
 - Export výsledků do XLSX (F13)
 - **Automatický export výsledků na FTP/SFTP jako statická HTML stránka** (F34, F35) — [03-architecture.md §3.10](03-architecture.md#310-export-a-publikace-výsledků-na-ftpsftp-f34f37), mockup [§7.10](07-ui-mockups.md)
 - Backend API pro jedno zařízení/jednu trať bez multi-device synchronizace (zjednodušená verze `/sync/events` — jen lokální perzistence, cloud sync odložen na Fázi 2)

@@ -5,6 +5,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { StartList } from "./pages/StartList";
 import { Measurement } from "./pages/Measurement";
 import { Results } from "./pages/Results";
+import { Running } from "./pages/Running";
 import { isLoggedIn } from "./lib/api";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -41,6 +42,14 @@ export function App() {
         element={
           <RequireAuth>
             <Measurement />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/kdo-bezi/:routeId"
+        element={
+          <RequireAuth>
+            <Running />
           </RequireAuth>
         }
       />

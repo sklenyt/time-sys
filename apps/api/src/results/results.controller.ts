@@ -13,3 +13,14 @@ export class ResultsController {
     return this.results.getResults(routeId);
   }
 }
+
+/** Provozní přehled pro obsluhu, ne veřejná stránka jako výsledky (F10, UC10) — vyžaduje přihlášení. */
+@Controller("routes/:routeId/running")
+export class RunningController {
+  constructor(private readonly results: ResultsService) {}
+
+  @Get()
+  get(@Param("routeId", ParseUUIDPipe) routeId: string) {
+    return this.results.getRunning(routeId);
+  }
+}

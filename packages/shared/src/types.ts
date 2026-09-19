@@ -198,6 +198,24 @@ export interface VysledkyResponseDto {
   neklasifikovani: VysledekPolozka[];
 }
 
+/** GET /routes/:id/running — "Kdo ještě běží / DNF" v reálném čase (F10). */
+export interface BezicPolozka {
+  prihlaskaId: string;
+  startovniCislo: number;
+  prijmeni: string;
+  jmeno: string;
+  kategorieKod: string;
+  casOdStartu: string | null;
+}
+
+export interface RunningResponseDto {
+  trasaId: string;
+  bezi: BezicPolozka[];
+  celkemPrihlasenych: number;
+  dokonceniPocet: number;
+  neukonceniPocet: number;
+}
+
 /** POST /routes/:id/records — jádro workflow "číslo + Enter". */
 export interface CreateRecordDto {
   startovniCislo: number;

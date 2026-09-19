@@ -157,6 +157,7 @@ export function Dashboard() {
                   <Link to={`/startovni-listina/${t.id}`}>Startovní listina</Link>
                   <Link to={`/mereni/${t.id}`}>Měření</Link>
                   <Link to={`/vysledky/${t.id}`}>Výsledky</Link>
+                  <Link to={`/kdo-bezi/${t.id}`}>Kdo běží</Link>
                 </span>
               </li>
             ))}

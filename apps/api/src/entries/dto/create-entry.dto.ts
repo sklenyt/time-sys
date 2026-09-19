@@ -40,4 +40,8 @@ export class CreateEntryDto {
   @IsOptional()
   @IsString()
   nouzovyKontakt?: string;
+
+  @IsOptional()
+  @IsString()
+  zdravotniPoznamka?: string;
 }
