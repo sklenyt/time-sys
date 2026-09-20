@@ -57,8 +57,13 @@ export function Measurement() {
   const stiskniKlavesu = useCallback(
     (k: string) => {
       if (k === "⌫") setCislo((c) => c.slice(0, -1));
-      else if (k === "DNF") return; // TODO: samostatný tok pro DNS/DNF/DQ (F11)
-      else setCislo((c) => (c.length < 4 ? c + k : c));
+      else if (k === "DNF") {
+        // F11 (UC12) je organizátorská akce nad startovní listinou, ne
+        // časoměřičský zápis — tahle klávesa proto jen navádí, kam jít,
+        // místo aby tiše nedělala nic.
+        setChyba("DNS/DNF/DQ se nastavuje ve Startovní listině, ne tady na Měření.");
+        setTimeout(() => setChyba(null), 4000);
+      } else setCislo((c) => (c.length < 4 ? c + k : c));
     },
     []
   );

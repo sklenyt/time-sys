@@ -105,6 +105,15 @@ export function Results() {
                   <Link to={`/vysledky/${routeId}/bezec/${p.prihlaskaId}`}>
                     {p.prijmeni} {p.jmeno}
                   </Link>
+                  {p.clenoveDruzstva && p.clenoveDruzstva.length > 0 && (
+                    <span
+                      style={{ fontSize: 11, color: "var(--text-secondary)" }}
+                      title={p.clenoveDruzstva.map((c) => `${c.prijmeni} ${c.jmeno}`).join(", ")}
+                    >
+                      {" "}
+                      +{p.clenoveDruzstva.length}
+                    </span>
+                  )}
                 </td>
                 <td style={{ fontFamily: "var(--font-ui)" }}>{p.kategorieKod}</td>
                 <td style={{ fontWeight: 700 }}>{p.casCelkem}</td>

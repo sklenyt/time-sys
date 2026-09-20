@@ -59,6 +59,19 @@ export function PersonalResult() {
             Mezičas: {data.mezicas}
           </p>
         )}
+        {data.clenoveDruzstva && data.clenoveDruzstva.length > 0 && (
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--line)" }}>
+            <p style={{ margin: "0 0 6px", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.6, color: "var(--text-secondary)" }}>
+              Družstvo
+            </p>
+            {data.clenoveDruzstva.map((c, i) => (
+              <p key={i} style={{ margin: 0, fontSize: 14 }}>
+                {c.prijmeni} {c.jmeno}
+                {c.klub && <span style={{ color: "var(--text-secondary)" }}> — {c.klub}</span>}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
 
       <img

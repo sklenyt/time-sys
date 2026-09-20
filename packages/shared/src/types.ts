@@ -57,6 +57,14 @@ export interface StartVlna {
   odkladSekund?: number | null;
 }
 
+/** Jeden člen štafety/družstva (`Prihlaska.clenoveDruzstva`) — legacy vzor 4× jméno/ročník/klub. */
+export interface DruzstvoClen {
+  prijmeni: string;
+  jmeno: string;
+  rocnik?: number | null;
+  klub?: string | null;
+}
+
 export interface Prihlaska {
   id: string;
   trasaId: string;
@@ -75,6 +83,13 @@ export interface Prihlaska {
   zdravotniPoznamka?: string | null;
   oznamovaciEmail?: string | null;
   stavUkonceni?: StavUkonceni | null;
+  clenoveDruzstva?: DruzstvoClen[] | null;
+}
+
+/** PATCH /routes/:id/entries/:entryId — ruční stav ukončení (F11) a/nebo členové družstva. */
+export interface UpdateEntryDto {
+  stavUkonceni?: StavUkonceni | null;
+  clenoveDruzstva?: DruzstvoClen[] | null;
 }
 
 /** POST /routes/:id/entries/import — CSV import startovní listiny (F04). */
@@ -213,6 +228,7 @@ export interface VysledekPolozka {
   poradiCelkove: number | null;
   poradiKategorie: number | null;
   stavUkonceni?: StavUkonceni | null;
+  clenoveDruzstva?: DruzstvoClen[] | null;
 }
 
 export interface VysledkyResponseDto {
@@ -417,4 +433,5 @@ export interface PersonalResultDto {
   poradiKategorie: number | null;
   mezicas: string | null;
   stavUkonceni?: StavUkonceni | null;
+  clenoveDruzstva?: DruzstvoClen[] | null;
 }

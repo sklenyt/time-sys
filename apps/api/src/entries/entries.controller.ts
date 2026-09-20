@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UploadedFile,
@@ -17,6 +18,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { Role } from "@depo/shared";
 import { EntriesService } from "./entries.service";
 import { CreateEntryDto } from "./dto/create-entry.dto";
+import { UpdateEntryDto } from "./dto/update-entry.dto";
 import { PublicRegisterDto } from "./dto/public-register.dto";
 import { PairChipDto } from "./dto/pair-chip.dto";
 import { Roles } from "../auth/decorators/roles.decorator";
@@ -53,6 +55,18 @@ export class EntriesController {
   @Get()
   findAll(@Param("routeId", ParseUUIDPipe) routeId: string, @Query("search") search?: string) {
     return this.entries.findAllForRoute(routeId, search);
+  }
+
+  /** F11 — ruční DNS/DNF/DQ (UC12) a/nebo úprava soupisky družstva; organizátorská akce nad startovní listinou. */
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Patch(":entryId")
+  update(
+    @Param("routeId", ParseUUIDPipe) routeId: string,
+    @Param("entryId", ParseUUIDPipe) entryId: string,
+    @Body() dto: UpdateEntryDto,
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+    return this.entries.update(routeId, entryId, dto, user.id);
   }
 
   /**
