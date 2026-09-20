@@ -95,6 +95,7 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
                 key={item.key}
                 to={item.href(routeId, eventId)}
                 className={`app-nav-link${active === item.key ? " active" : ""}`}
+                aria-current={active === item.key ? "page" : undefined}
               >
                 {item.label}
               </Link>

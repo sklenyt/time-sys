@@ -17,6 +17,11 @@
 
   /* Sémantika stavů */
   --color-live: #0e9f6e;
+  /* Tmavší varianta pro plnou výplň s bílým textem (odznak ŽIVĚ, tlačítko
+     mezičasu) — samotné --color-live proti bílé dává jen 3.4:1, pod WCAG AA
+     4.5:1 pro běžně velký text; --color-live-700 dává ~5:1. Stejný vzor
+     jako --tape-500/--tape-700 pro oranžovou. */
+  --color-live-700: #0b7f58;
   --color-attention: #e9a21b;
   --color-danger: #d92d20;
 
@@ -63,6 +68,20 @@ time,
 
 button {
   font-family: inherit;
+}
+
+/* Standardní "visually hidden" vzor — obsah zůstává dostupný čtečkám
+   obrazovky (na rozdíl od display:none), jen se vizuálně nezobrazuje. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Zabránit vodorovnému scrollu při jakémkoli přetečení na malých displejích. */

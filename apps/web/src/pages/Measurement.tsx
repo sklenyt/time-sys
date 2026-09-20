@@ -124,6 +124,9 @@ export function Measurement() {
           </div>
           <div
             className="mono"
+            role="status"
+            aria-live="polite"
+            aria-label={cislo ? `Zadané startovní číslo ${cislo}` : "Zatím nezadáno žádné startovní číslo"}
             style={{
               fontSize: 76,
               fontWeight: 700,
@@ -135,12 +138,13 @@ export function Measurement() {
           </div>
         </div>
 
-        <div className="measurement-keypad">
+        <div className="measurement-keypad" role="group" aria-label="Klávesnice pro zadání startovního čísla">
           {KEYS.map((k) => (
             <button
               key={k}
               onClick={() => stiskniKlavesu(k)}
               className="mono measurement-key"
+              aria-label={k === "⌫" ? "Smazat poslední číslici" : undefined}
               style={{
                 borderRadius: 14,
                 border: "none",
@@ -165,7 +169,7 @@ export function Measurement() {
             padding: "18px",
             borderRadius: 14,
             border: "none",
-            background: jeMezicas ? "var(--color-live)" : "var(--tape-500)",
+            background: jeMezicas ? "var(--color-live-700)" : "var(--tape-700)",
             color: "#fff",
             fontSize: 18,
             fontWeight: 800,
@@ -175,7 +179,11 @@ export function Measurement() {
         >
           ZAPSAT ↵
         </button>
-        {chyba && <p style={{ color: "var(--color-attention)" }}>{chyba}</p>}
+        {chyba && (
+          <p role="alert" style={{ color: "var(--color-attention)" }}>
+            {chyba}
+          </p>
+        )}
       </div>
 
       <div className="measurement-sidebar">

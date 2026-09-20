@@ -9,6 +9,10 @@ export function Results() {
   const [vysledky, setVysledky] = useState<VysledkyResponseDto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [zive, setZive] = useState(false);
+  // Počítadlo aktualizací pro skrytou aria-live oblast níž — čtečka
+  // obrazovky tak dostane krátké oznámení "výsledky aktualizovány" místo
+  // toho, aby se jí při každé SSE zprávě přečetla znovu celá tabulka.
+  const [pocetAktualizaci, setPocetAktualizaci] = useState(0);
 
   // Živé výsledky přes Server-Sent Events (F16, 03-architecture.md §3.6) —
   // realtime vrstva je doplněk, ne závislost: pokud SSE selže dřív, než
@@ -24,6 +28,7 @@ export function Results() {
       setError(null);
       try {
         setVysledky(JSON.parse(e.data));
+        setPocetAktualizaci((n) => n + 1);
       } catch {
         // poškozený rámec — počkáme na další
       }
@@ -55,6 +60,15 @@ export function Results() {
     <div style={{ minHeight: "100%", background: "var(--surface)", padding: "24px 16px" }}>
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
       <PublicHeader />
+      {zive && pocetAktualizaci > 0 && (
+        // Text musí obsahovat pocetAktualizaci, jinak React při stejném
+        // obsahu DOM text-node vůbec nezmění a živé oznámení pro čtečku
+        // obrazovky se nikdy nespustí (aria-live reaguje na změnu obsahu,
+        // ne na samotný re-render).
+        <span className="sr-only" role="status" aria-live="polite">
+          Výsledky aktualizovány (změna č. {pocetAktualizaci})
+        </span>
+      )}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
         <h1 style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 800, fontSize: 24, letterSpacing: "-0.02em" }}>
           Výsledky
@@ -65,7 +79,7 @@ export function Results() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
-                background: "var(--color-live)",
+                background: "var(--color-live-700)",
                 color: "#fff",
                 borderRadius: 6,
                 padding: "2px 8px",

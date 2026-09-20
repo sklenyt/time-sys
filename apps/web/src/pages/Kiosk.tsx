@@ -80,7 +80,7 @@ export function Kiosk() {
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <span
             className="mono"
-            style={{ background: "var(--color-live)", padding: "6px 16px", borderRadius: 8, fontSize: 18, fontWeight: 700 }}
+            style={{ background: "var(--color-live-700)", padding: "6px 16px", borderRadius: 8, fontSize: 18, fontWeight: 700 }}
           >
             ● ŽIVĚ
           </span>

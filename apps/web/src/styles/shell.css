@@ -503,9 +503,11 @@
 }
 
 .btn-pill.accent {
-  background: var(--tape-500);
+  /* --tape-500 proti bílému textu dává jen 3.4:1 (pod WCAG AA 4.5:1 pro
+     tohle malé 12.5px písmo) — --tape-700 je stejná barva o odstín tmavší. */
+  background: var(--tape-700);
   color: #fff;
-  border-color: var(--tape-500);
+  border-color: var(--tape-700);
 }
 
 .btn-pill.danger {
