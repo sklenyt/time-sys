@@ -72,11 +72,27 @@ body {
 }
 
 /* Tabulky (startovní listina, výsledky, kdo běží) — na telefonu radši
-   vodorovný scroll uvnitř wrapperu než rozbitý layout stránky. */
+   vodorovný scroll uvnitř wrapperu než rozbitý layout stránky. Stínování
+   po stranách naznačuje, že je čím dál scrollovat (mizí u okraje, kam
+   už je dojeto) — jinak na dotykovém displeji bez viditelného scrollbaru
+   nic nenapoví, že tabulka pokračuje mimo obrazovku. */
 .table-scroll {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  background:
+    linear-gradient(to right, var(--surface) 30%, transparent) left,
+    linear-gradient(to left, var(--surface) 30%, transparent) right,
+    radial-gradient(farthest-side at 0 50%, rgba(15, 23, 42, 0.22), transparent) left,
+    radial-gradient(farthest-side at 100% 50%, rgba(15, 23, 42, 0.22), transparent) right;
+  background-repeat: no-repeat;
+  background-color: var(--surface);
+  background-size:
+    32px 100%,
+    32px 100%,
+    14px 100%,
+    14px 100%;
+  background-attachment: local, local, scroll, scroll;
 }
 
 @media (max-width: 480px) {

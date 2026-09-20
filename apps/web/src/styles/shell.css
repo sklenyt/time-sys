@@ -127,6 +127,22 @@
     gap: 4px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    /* Stejné stínování jako u .table-scroll (tokens.css) — bez toho
+       na dotykovém displeji nic nenapoví, že navigace pokračuje
+       vpravo mimo obrazovku. */
+    background:
+      linear-gradient(to right, var(--navy-800) 20%, transparent) left,
+      linear-gradient(to left, var(--navy-800) 20%, transparent) right,
+      radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.5), transparent) left,
+      radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.5), transparent) right;
+    background-repeat: no-repeat;
+    background-color: var(--navy-800);
+    background-size:
+      20px 100%,
+      20px 100%,
+      12px 100%,
+      12px 100%;
+    background-attachment: local, local, scroll, scroll;
   }
   .app-sidebar-brand {
     padding: 0 10px 0 0;
