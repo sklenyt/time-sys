@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import type { ImportEntriesResponseDto, Kategorie, Prihlaska, Trasa } from "@depo/shared";
 import { Pohlavi } from "@depo/shared";
 import { api } from "../lib/api";
+import { AppShell } from "../components/AppShell";
 
 export function StartList() {
   const { routeId } = useParams<{ routeId: string }>();
@@ -87,11 +88,18 @@ export function StartList() {
     }
   }
 
-  if (!trasa) return <div style={{ padding: 24 }}>{error ?? "Načítám…"}</div>;
+  if (!trasa) {
+    return (
+      <AppShell active="listina" routeId={routeId}>
+        {error ?? "Načítám…"}
+      </AppShell>
+    );
+  }
 
   return (
-    <div style={{ padding: 24, maxWidth: 640, margin: "0 auto" }}>
-      <h1>Startovní listina — {trasa.nazev}</h1>
+    <AppShell active="listina" routeId={routeId} eventId={trasa.udalostId}>
+      <div style={{ maxWidth: 720 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 800 }}>Startovní listina — {trasa.nazev}</h1>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
       {trasa.kategorie.length === 0 && (
@@ -104,7 +112,7 @@ export function StartList() {
               <option value={Pohlavi.M}>M</option>
               <option value={Pohlavi.Z}>Z</option>
             </select>
-            <button onClick={createCategory} style={buttonStyle}>
+            <button onClick={createCategory} className="btn-pill primary">
               Přidat kategorii
             </button>
           </div>
@@ -126,7 +134,7 @@ export function StartList() {
                 </option>
               ))}
             </select>
-            <button onClick={createEntry} style={buttonStyle}>
+            <button onClick={createEntry} className="btn-pill primary">
               Přidat do listiny
             </button>
           </div>
@@ -178,7 +186,8 @@ export function StartList() {
           </tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
@@ -189,12 +198,3 @@ const inputStyle: React.CSSProperties = {
   fontSize: 14,
 };
 
-const buttonStyle: React.CSSProperties = {
-  background: "var(--navy-800)",
-  color: "#fff",
-  border: "none",
-  borderRadius: 8,
-  padding: "8px 16px",
-  fontWeight: 600,
-  cursor: "pointer",
-};
