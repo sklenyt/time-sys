@@ -92,8 +92,12 @@ function Diff({ puvodni, novy }: { puvodni: Record<string, unknown> | null; novy
             <span style={{ color: "var(--text-secondary)" }}>{klic}: </span>
             {zmeneno ? (
               <>
-                <span style={{ textDecoration: "line-through", color: "var(--color-danger)" }}>{String(stara ?? "—")}</span>{" "}
-                → <span style={{ color: "var(--color-success, green)" }}>{String(nova ?? "—")}</span>
+                <span style={{ textDecoration: "line-through", color: "var(--color-danger)", background: "#fdf1f0", borderRadius: 4, padding: "1px 4px" }}>
+                  {String(stara ?? "—")}
+                </span>{" "}
+                <span style={{ color: "var(--color-live)", background: "#e6f7f0", borderRadius: 4, padding: "1px 4px", marginLeft: 4 }}>
+                  {String(nova ?? "—")}
+                </span>
               </>
             ) : (
               <span>{String(nova ?? stara ?? "—")}</span>

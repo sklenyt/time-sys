@@ -91,7 +91,7 @@ export function StartList() {
 
   async function createEntry() {
     if (!routeId || !cislo || !prijmeni.trim() || !jmeno.trim() || !kategorieId) {
-      setError("Startovní číslo, jméno, příjmení a kategorie jsou povinné (F03).");
+      setError("Startovní číslo, jméno, příjmení a kategorie jsou povinné.");
       return;
     }
     const platniClenove = druzstvo

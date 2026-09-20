@@ -80,9 +80,9 @@ export function Conflicts() {
       <div style={{ maxWidth: 720 }}>
       <h1 style={{ fontWeight: 800, fontSize: 22 }}>Kolize stanovišť</h1>
       <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-        Dvě zařízení nezávisle zaznamenala doběh stejného startovního čísla ve velmi blízkém čase (F15,
-        03-architecture.md §3.5). Nic se nezahodilo — oba záznamy zůstávají v historii, jen je potřeba
-        potvrdit, že jde o legitimní situaci (např. druhé kolo z jiného stanoviště), ne omyl.
+        Dvě zařízení nezávisle zaznamenala doběh stejného startovního čísla ve velmi blízkém čase. Nic se
+        nezahodilo — oba záznamy zůstávají v historii, jen je potřeba potvrdit, že jde o legitimní situaci
+        (např. druhé kolo z jiného stanoviště), ne omyl.
       </p>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
@@ -121,7 +121,7 @@ export function Conflicts() {
             </button>
 
             <label className="btn-pill" style={{ cursor: "pointer" }}>
-              {k.maFotodukaz ? "Nahradit fotodůkaz" : "Přidat fotodůkaz (F41)"}
+              {k.maFotodukaz ? "Nahradit fotodůkaz" : "Přidat fotodůkaz"}
               <input
                 type="file"
                 accept="image/*"

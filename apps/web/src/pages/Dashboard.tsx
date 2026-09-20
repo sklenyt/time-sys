@@ -222,11 +222,11 @@ export function Dashboard() {
 
   function ukazatEmbedKod(routeId: string) {
     const kod = `<iframe src="${window.location.origin}/embed/vysledky/${routeId}" width="360" height="480" style="border:0"></iframe>`;
-    window.prompt("Zkopírujte kód pro vložení živých výsledků na web (F38):", kod);
+    window.prompt("Zkopírujte kód pro vložení živých výsledků na web:", kod);
   }
 
   function ukazatRegistracniOdkaz(routeId: string) {
-    window.prompt("Odkaz na veřejný registrační formulář (F23):", `${window.location.origin}/registrace/${routeId}`);
+    window.prompt("Odkaz na veřejný registrační formulář:", `${window.location.origin}/registrace/${routeId}`);
   }
 
   async function toggleRegistrace(routeId: string, registraceUzavrena: boolean) {

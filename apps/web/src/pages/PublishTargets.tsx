@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { PublikacniCil, PublishExportResponseDto, PublishTestResponseDto, Trasa } from "@depo/shared";
-import { ProtokolPublikace } from "@depo/shared";
+import { ProtokolPublikace, StavExportu } from "@depo/shared";
 import { api } from "../lib/api";
 import { AppShell } from "../components/AppShell";
 
@@ -115,9 +115,23 @@ export function PublishTargets() {
           <p className="mono" style={{ margin: "0 0 4px", fontWeight: 700 }}>
             {c.protokol}://{c.uzivatel}@{c.server}:{c.port}{c.cesta}
           </p>
-          <p style={{ margin: "0 0 8px", fontSize: 13, color: "var(--text-secondary)" }}>
-            Interval {c.intervalMinut} min · poslední export:{" "}
-            {c.posledniExportAt ? `${new Date(c.posledniExportAt).toLocaleString("cs-CZ")} (${c.posledniExportStav})` : "zatím žádný"}
+          <p style={{ margin: "0 0 8px", fontSize: 13, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span>
+              Interval {c.intervalMinut} min · poslední export:{" "}
+              {c.posledniExportAt ? new Date(c.posledniExportAt).toLocaleString("cs-CZ") : "zatím žádný"}
+            </span>
+            {c.posledniExportStav && (
+              <span
+                className="route-state-pill"
+                style={
+                  c.posledniExportStav === StavExportu.OK
+                    ? { background: "#e6f7f0", color: "#0a7a54" }
+                    : { background: "#fdf1f0", color: "var(--color-danger)" }
+                }
+              >
+                {c.posledniExportStav === StavExportu.OK ? "OK" : "chyba"}
+              </span>
+            )}
           </p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button onClick={() => testCil(c.id)} className="btn-pill">

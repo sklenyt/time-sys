@@ -155,7 +155,10 @@ export class EntriesService {
     }
 
     const zmeny: Prisma.PrihlaskaUpdateInput = {};
-    const puvodniHodnota: Record<string, unknown> = {};
+    // trasaId v puvodniHodnota je nutný, aby AuditLogService.listForRoute
+    // (entita="prihlaska" nemá vlastní sloupec trasa_id) tenhle záznam
+    // vůbec dohledal — stejná konvence jako GdprService.anonymizovatPrihlasku.
+    const puvodniHodnota: Record<string, unknown> = { trasaId };
     const novaHodnota: Record<string, unknown> = {};
 
     if (dto.stavUkonceni !== undefined && dto.stavUkonceni !== prihlaska.stavUkonceni) {

@@ -66,7 +66,7 @@ describe("EntriesService", () => {
           uzivatelId: "user-1",
           entita: "prihlaska",
           entitaId: "p1",
-          puvodniHodnota: { stavUkonceni: null },
+          puvodniHodnota: { trasaId: "trasa-1", stavUkonceni: null },
           novaHodnota: { stavUkonceni: StavUkonceni.DNF },
         },
       });
@@ -79,6 +79,16 @@ describe("EntriesService", () => {
       await service.update("trasa-1", "p1", { stavUkonceni: null }, "user-1");
 
       expect(prisma.prihlaska.update).toHaveBeenCalledWith({ where: { id: "p1" }, data: { stavUkonceni: null } });
+    });
+
+    it("always includes trasaId in the audit log's puvodniHodnota, so AuditLogService can find it (entita=prihlaska has no trasa_id column)", async () => {
+      prisma.prihlaska.findFirst.mockResolvedValue({ id: "p1", stavUkonceni: null, clenoveDruzstva: null });
+      prisma.$transaction.mockResolvedValue([{ id: "p1" }, {}]);
+
+      await service.update("trasa-42", "p1", { stavUkonceni: StavUkonceni.DQ }, "user-1");
+
+      const [{ data }] = prisma.auditLog.create.mock.calls[0];
+      expect(data.puvodniHodnota).toMatchObject({ trasaId: "trasa-42" });
     });
 
     it("is a no-op (no transaction) when nothing actually changes", async () => {

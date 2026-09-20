@@ -43,7 +43,7 @@ export function Reports() {
   return (
     <AppShell active="reporty">
       <div style={{ maxWidth: 720 }}>
-      <h1 style={{ fontWeight: 800, fontSize: 22 }}>Reporty (F26)</h1>
+      <h1 style={{ fontWeight: 800, fontSize: 22 }}>Reporty</h1>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
       <section className="dash-card" style={{ marginBottom: 24 }}>

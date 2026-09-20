@@ -76,7 +76,7 @@ export function Kiosk() {
   return (
     <div style={{ height: "100vh", background: "var(--ink-900)", color: "#fff", display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 40px", borderBottom: "2px solid var(--navy-600)" }}>
-        <h1 style={{ margin: 0, fontSize: 40, fontWeight: 800 }}>Výsledky</h1>
+        <h1 style={{ margin: 0, fontSize: 40, fontWeight: 800, letterSpacing: "-0.03em" }}>Výsledky</h1>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <span
             className="mono"

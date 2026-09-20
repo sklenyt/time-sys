@@ -91,7 +91,7 @@ export function Running() {
 
       {anomalie && anomalie.polozky.length > 0 && (
         <section style={{ marginTop: 32 }}>
-          <h2 style={{ color: "var(--color-danger)" }}>Podezřelé časy (F33)</h2>
+          <h2 style={{ color: "var(--color-danger)" }}>Podezřelé časy</h2>
           <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
             Výrazná odchylka od mediánu ostatních běžců ve stejné kategorii — možná chyba záznamu, zkrácení trati
             nebo nouzová situace na trati.
