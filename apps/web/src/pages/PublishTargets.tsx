@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { PublikacniCil, PublishExportResponseDto, PublishTestResponseDto } from "@depo/shared";
+import type { PublikacniCil, PublishExportResponseDto, PublishTestResponseDto, Trasa } from "@depo/shared";
 import { ProtokolPublikace } from "@depo/shared";
 import { api } from "../lib/api";
 import { AppShell } from "../components/AppShell";
@@ -8,6 +8,7 @@ import { AppShell } from "../components/AppShell";
 export function PublishTargets() {
   const { eventId } = useParams<{ eventId: string }>();
   const [cile, setCile] = useState<PublikacniCil[]>([]);
+  const [trasy, setTrasy] = useState<Trasa[]>([]);
   const [protokol, setProtokol] = useState<ProtokolPublikace>(ProtokolPublikace.SFTP);
   const [server, setServer] = useState("");
   const [port, setPort] = useState("22");
@@ -23,6 +24,8 @@ export function PublishTargets() {
     try {
       const data = await api.get<PublikacniCil[]>(`/events/${eventId}/publish-targets`);
       setCile(data);
+      const routes = await api.get<Trasa[]>(`/events/${eventId}/routes`);
+      setTrasy(routes);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Chyba načítání");
     }
@@ -79,8 +82,10 @@ export function PublishTargets() {
     }
   }
 
+  const prvniTrasa = trasy.find((t) => !t.dokoncena) ?? trasy[0];
+
   return (
-    <AppShell active="publikace" eventId={eventId}>
+    <AppShell active="publikace" routeId={prvniTrasa?.id} eventId={eventId}>
       <div style={{ maxWidth: 680 }}>
       <h1 style={{ fontWeight: 800, fontSize: 22 }}>Publikace výsledků (FTP/SFTP)</h1>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
