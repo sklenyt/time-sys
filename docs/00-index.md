@@ -17,6 +17,7 @@
 | 9 | [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md) | Detailní návrh RFID čipů (hardware, párování, edge cases) + obecná doporučení pro další rozvoj |
 | 10 | [13-konkurencni-analyza.md](13-konkurencni-analyza.md) | Celkový přehled trhu — profily podobných systémů (MYLAPS, RACE RESULT, ChronoTrack, SportIdent/Copérnico, RunSignup, PikaTimer, fsTimer, OpenRaceTiming, Webscorer, RaceJoy, české nástroje a služby) a co z nich zvážit |
 | 11 | [14-graficka-identita.md](14-graficka-identita.md) | Grafická identita Depo — logo, barevný systém, typografie, brand guideline |
+| 12 | [15-produkcni-nasazeni.md](15-produkcni-nasazeni.md) | Produkční nasazení databáze a API — managed Postgres, pooling, počet instancí, SSE za proxy, multi-device use case |
 
 ## Shrnutí v jedné větě
 
