@@ -25,4 +25,4 @@
 
 ## Stav projektu
 
-Fáze: **Fáze 1 — základní kostra aplikace** (monorepo, API a webová PWA scaffold hotové a ověřené end-to-end, viz [10-roadmap.md](10-roadmap.md)). Další krok: autentizace/RBAC, offline synchronizace a doplnění zbývajících funkčních modulů podle roadmapy.
+**Fáze 0–4 hotové** (viz [10-roadmap.md](10-roadmap.md)) — offline-first zápis a sync, živé výsledky a publikace, bezpečnost/GDPR/multi-tenant RLS, RFID a rozšířené reporty. Nad rámec roadmapy dále doplněno: srovnání s legacy programem Časomíra a dorovnání tří nalezených mezer (DNS/DNF/DQ, auto-kategorizace, štafety), grafická identita napříč appkou, hloubková mobilní responzivita, accessibility audit (WCAG kontrast, aria-live), CI s automatizovanými unit/e2e testy, a [produkční nasazovací plán](15-produkcni-nasazeni.md). Další krok: ostrý test na reálném závodě podle §10.5 v roadmapě.

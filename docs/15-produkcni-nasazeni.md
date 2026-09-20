@@ -46,7 +46,7 @@ Minimum pro ostrý provoz: denní automatický snapshot + možnost point-in-time
 Živé výsledky (F16, SSE) běží přes in-process `Subject` (`apps/api/src/results/results-events.service.ts`), ne přes Redis pub/sub — to je vědomé zjednodušení pro MVP, zdokumentované přímo v kódu. Důsledek: **při více než jedné běžící instanci API za load balancerem by SSE klienti připojení na instanci A nikdy neuviděli změnu, kterou zapsala instance B** — živé výsledky by se pro část diváků tiše přestaly aktualizovat (fungoval by jen `GET /results` fallback, tj. nutnost ručně obnovit stránku).
 
 - **Pro komunitní závod (řádově desítky až stovky souběžných diváků) jedna instance stačí** — NestJS/Node zvládne tohle zatížení bez problémů, žádná akce není potřeba.
-- Pokud by v budoucnu bylo potřeba škálovat na víc instancí (velká akce, hodně souběžných diváků), `ResultsEventsService` musí nahradit skutečný pub/sub (Redis — proto ho `docker-compose.yml` už má připravený, i když ho appka zatím nepoužívá). Do té doby je `redis` služba v `docker-compose.yml` čistě rezerva pro budoucí škálování, appka na ni dnes nijak nesahá.
+- Pokud by v budoucnu bylo potřeba škálovat na víc instancí (velká akce, hodně souběžných diváků), `ResultsEventsService` musí nahradit skutečný pub/sub (Redis) — `docker-compose.yml` proto Redis záměrně **ne**obsahuje dopředu (nepoužívaná služba navíc), přidat ji zpátky až v okamžiku skutečné potřeby škálovat.
 - Toto omezení se **netýká** databáze/migrací/autentizace — jen realtime SSE vrstvy. Víc instancí by jinak fungovalo správně (stateless JWT auth, sdílená Postgres jako zdroj pravdy).
 
 ## 15.5 Reverzní proxy a SSE (opraveno)
@@ -84,3 +84,14 @@ Co je potřeba, aby tohle fungovalo i mimo jednu Wi-Fi síť (různé mobilní s
 3. Realtime omezení z §15.4 (jedna instance API) tady nevadí — přepnutí zařízení nezávisí na SSE, jen na tom, že obě zařízení čtou/píšou do stejné sdílené Postgres.
 
 Jinými slovy: multi-device provoz je vedlejší efekt toho, že appka je od základu server-authoritative SaaS (ne desktopová appka s lokálním souborem) — jediné, co dnes chybí, je samotné nasazení mimo `localhost` podle bodů §15.1–§15.6 výše.
+
+## 15.9 Hotové nasazovací artefakty (vlastní VPS/Docker varianta)
+
+Pro §8.8 variantu 2 (vlastní VPS + Docker) jsou v repozitáři konkrétní, spustitelné soubory — ne jen popis:
+
+- `apps/api/Dockerfile`, `apps/web/Dockerfile` — vícestupňový build, zrcadlí přesně sekvenci z `.github/workflows/ci.yml` (`npm ci` → build `@depo/shared` → `prisma generate` → build). `apps/web/Dockerfile` bere `VITE_API_URL` jako build-time `ARG` (Vite ho zapéká do statických souborů, nejde měnit za běhu kontejneru).
+- `apps/web/nginx.conf` — SPA fallback (`try_files … /index.html`), jinak by reload na `/mereni/:id` apod. spadl na 404.
+- `docker-compose.prod.yml` + `Caddyfile` — Postgres (jen pro tuhle variantu, u managed Postgre se ten blok smaže) + obě appky + Caddy s automatickým Let's Encrypt TLS (§8.8). Obsahuje pojmenovaný volume pro `apps/api/uploads` (fotodůkaz sporných doběhů, F41) — bez něj by fotky zmizely při každém redeploy, protože kontejnerový filesystem je jinak efemérní.
+- `.env.prod.example` — kopírovat na `.env.prod` (je v `.gitignore`, nikdy necommitovat se skutečnými hodnotami) a doplnit produkční secrety podle §15.7.
+
+**Neověřeno reálným `docker build`/`docker compose up`** — psáno a kontrolováno v sandboxovaném vývojovém prostředí bez přístupu k Docker daemonu. Než se použije naostro, projít aspoň jednou na vlastním VPS krok za krokem (komentář v hlavičce `docker-compose.prod.yml`) a případné drobnosti (verze base image, oprávnění na volume) doladit tam.
