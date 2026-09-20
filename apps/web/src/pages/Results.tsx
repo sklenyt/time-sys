@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { VysledkyResponseDto } from "@depo/shared";
 import { api, API_BASE } from "../lib/api";
+import { PublicHeader } from "../components/PublicHeader";
 
 export function Results() {
   const { routeId } = useParams<{ routeId: string }>();
@@ -39,12 +40,23 @@ export function Results() {
     return () => es.close();
   }, [routeId]);
 
-  if (!vysledky) return <div style={{ padding: 24 }}>{error ?? "Načítám…"}</div>;
+  if (!vysledky) {
+    return (
+      <div style={{ minHeight: "100%", background: "var(--surface)", padding: "24px 16px" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+          <PublicHeader />
+          {error ?? "Načítám…"}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
+    <div style={{ minHeight: "100%", background: "var(--surface)", padding: "24px 16px" }}>
+    <div style={{ maxWidth: 720, margin: "0 auto" }}>
+      <PublicHeader />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-        <h1 style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 800 }}>
+        <h1 style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 800, fontSize: 24, letterSpacing: "-0.02em" }}>
           Výsledky
           {zive && (
             <span
@@ -144,6 +156,7 @@ export function Results() {
           </div>
         </>
       )}
+    </div>
     </div>
   );
 }

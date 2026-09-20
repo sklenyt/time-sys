@@ -5,7 +5,7 @@ export function Landing() {
     <div className="landing">
       <header className="landing-nav">
         <div className="brand">
-          <img src="/favicon.svg" alt="" width={26} height={26} />
+          <img src="/depo-mark.svg" alt="" width={26} height={26} />
           Depo
         </div>
         <nav className="landing-nav-links">

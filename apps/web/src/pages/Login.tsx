@@ -31,46 +31,60 @@ export function Login() {
   }
 
   return (
-    <div style={{ maxWidth: 360, margin: "80px auto", padding: 24 }}>
-      <h1 style={{ fontWeight: 800, marginBottom: 24 }}>Depo</h1>
-      <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {mode === "register" && (
+    <div
+      style={{
+        minHeight: "100%",
+        background: "var(--surface)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+      }}
+    >
+      <div className="dash-card" style={{ width: "100%", maxWidth: 360 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
+          <img src="/depo-mark.svg" alt="" width={30} height={30} />
+          <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.02em" }}>Depo</span>
+        </div>
+        <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {mode === "register" && (
+            <input
+              value={jmeno}
+              onChange={(e) => setJmeno(e.target.value)}
+              placeholder="Jméno"
+              required
+              style={inputStyle}
+            />
+          )}
           <input
-            value={jmeno}
-            onChange={(e) => setJmeno(e.target.value)}
-            placeholder="Jméno"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="E-mail"
             required
             style={inputStyle}
           />
-        )}
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="E-mail"
-          required
-          style={inputStyle}
-        />
-        <input
-          type="password"
-          value={heslo}
-          onChange={(e) => setHeslo(e.target.value)}
-          placeholder="Heslo (min. 8 znaků)"
-          minLength={8}
-          required
-          style={inputStyle}
-        />
-        {error && <p style={{ color: "var(--color-danger)", margin: 0 }}>{error}</p>}
-        <button type="submit" disabled={loading} style={buttonStyle}>
-          {mode === "login" ? "Přihlásit se" : "Registrovat"}
+          <input
+            type="password"
+            value={heslo}
+            onChange={(e) => setHeslo(e.target.value)}
+            placeholder="Heslo (min. 8 znaků)"
+            minLength={8}
+            required
+            style={inputStyle}
+          />
+          {error && <p style={{ color: "var(--color-danger)", margin: 0, fontSize: 13.5 }}>{error}</p>}
+          <button type="submit" disabled={loading} className="btn-pill primary" style={{ padding: "10px 16px", justifyContent: "center" }}>
+            {mode === "login" ? "Přihlásit se" : "Registrovat"}
+          </button>
+        </form>
+        <button
+          onClick={() => setMode(mode === "login" ? "register" : "login")}
+          style={{ marginTop: 16, background: "none", border: "none", color: "var(--tape-700)", cursor: "pointer", fontSize: 13.5, padding: 0 }}
+        >
+          {mode === "login" ? "Nemáte účet? Registrovat se" : "Už máte účet? Přihlásit se"}
         </button>
-      </form>
-      <button
-        onClick={() => setMode(mode === "login" ? "register" : "login")}
-        style={{ marginTop: 16, background: "none", border: "none", color: "var(--navy-800)", cursor: "pointer" }}
-      >
-        {mode === "login" ? "Nemáte účet? Registrovat se" : "Už máte účet? Přihlásit se"}
-      </button>
+      </div>
     </div>
   );
 }
@@ -80,14 +94,4 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 8,
   border: "1px solid var(--line)",
   fontSize: 14,
-};
-
-const buttonStyle: React.CSSProperties = {
-  background: "var(--navy-800)",
-  color: "#fff",
-  border: "none",
-  borderRadius: 8,
-  padding: "10px 16px",
-  fontWeight: 600,
-  cursor: "pointer",
 };

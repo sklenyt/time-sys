@@ -199,11 +199,11 @@
 }
 
 .stat-tile .l {
-  font-size: 11px;
-  letter-spacing: 1px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-secondary);
-  font-weight: 700;
 }
 
 .stat-tile .n {
@@ -415,7 +415,8 @@
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
-  letter-spacing: 1px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--steel-400);
   margin-bottom: 10px;

@@ -77,7 +77,7 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
     <div className="app-shell">
       <aside className="app-sidebar">
         <div className="app-sidebar-brand">
-          <img src="/favicon.svg" alt="" width={26} height={26} />
+          <img src="/depo-mark.svg" alt="" width={26} height={26} />
           <span className="app-sidebar-brand-name">Depo</span>
         </div>
         <nav className="app-sidebar-nav">

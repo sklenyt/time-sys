@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import type { RegistrationInfoDto, RegistrationResponseDto } from "@depo/shared";
 import { Pohlavi } from "@depo/shared";
 import { api } from "../lib/api";
+import { PublicHeader } from "../components/PublicHeader";
 
 /**
  * Vlastní veřejný registrační formulář (F23, Fáze 4) — bez přihlášení,
@@ -66,36 +67,53 @@ export function Register() {
     }
   }
 
-  if (!info) return <div style={{ padding: 24 }}>{error ?? "Načítám…"}</div>;
+  if (!info) {
+    return (
+      <div style={pageStyle}>
+        <div style={{ maxWidth: 480, margin: "0 auto" }}>
+          <PublicHeader />
+          {error ?? "Načítám…"}
+        </div>
+      </div>
+    );
+  }
 
   if (hotovo) {
     return (
-      <div style={{ padding: 24, maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
-        <h1 style={{ fontWeight: 800 }}>Registrace dokončena</h1>
-        <p>
-          {hotovo.jmeno} {hotovo.prijmeni}, vaše startovní číslo je:
-        </p>
-        <p className="mono" style={{ fontSize: 64, fontWeight: 800, color: "var(--tape-500)" }}>
-          {hotovo.startovniCislo}
-        </p>
+      <div style={pageStyle}>
+        <div className="dash-card" style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
+          <PublicHeader />
+          <h1 style={{ fontWeight: 800, fontSize: 22 }}>Registrace dokončena</h1>
+          <p>
+            {hotovo.jmeno} {hotovo.prijmeni}, vaše startovní číslo je:
+          </p>
+          <p className="mono" style={{ fontSize: 64, fontWeight: 800, color: "var(--tape-500)", margin: "8px 0 0" }}>
+            {hotovo.startovniCislo}
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!info.otevrena) {
     return (
-      <div style={{ padding: 24, maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
-        <h1 style={{ fontWeight: 800 }}>{info.udalostNazev}</h1>
-        <p style={{ color: "var(--text-secondary)" }}>Registrace na trasu „{info.trasaNazev}" je bohužel uzavřená.</p>
+      <div style={pageStyle}>
+        <div className="dash-card" style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
+          <PublicHeader />
+          <h1 style={{ fontWeight: 800, fontSize: 22 }}>{info.udalostNazev}</h1>
+          <p style={{ color: "var(--text-secondary)" }}>Registrace na trasu „{info.trasaNazev}" je bohužel uzavřená.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 480, margin: "0 auto" }}>
-      <h1 style={{ fontWeight: 800 }}>{info.udalostNazev}</h1>
-      <p style={{ color: "var(--text-secondary)", marginTop: -8 }}>Registrace na trasu „{info.trasaNazev}"</p>
-      {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
+    <div style={pageStyle}>
+      <div className="dash-card" style={{ maxWidth: 480, margin: "0 auto" }}>
+        <PublicHeader />
+        <h1 style={{ fontWeight: 800, fontSize: 22 }}>{info.udalostNazev}</h1>
+        <p style={{ color: "var(--text-secondary)", marginTop: -8 }}>Registrace na trasu „{info.trasaNazev}"</p>
+        {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
       <form onSubmit={odeslat} style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -143,13 +161,20 @@ export function Register() {
           onChange={(e) => setOznamovaciEmail(e.target.value)}
           style={inputStyle}
         />
-        <button type="submit" disabled={odesilam} style={buttonStyle}>
+        <button type="submit" disabled={odesilam} className="btn-pill primary" style={{ padding: "12px 16px", fontSize: 15, justifyContent: "center" }}>
           {odesilam ? "Odesílám…" : "Registrovat se"}
         </button>
       </form>
+      </div>
     </div>
   );
 }
+
+const pageStyle: React.CSSProperties = {
+  minHeight: "100%",
+  background: "var(--surface)",
+  padding: "40px 16px",
+};
 
 const inputStyle: React.CSSProperties = {
   padding: "10px 12px",
@@ -157,15 +182,4 @@ const inputStyle: React.CSSProperties = {
   border: "1px solid var(--line)",
   fontSize: 14,
   width: "100%",
-};
-
-const buttonStyle: React.CSSProperties = {
-  background: "var(--navy-800)",
-  color: "#fff",
-  border: "none",
-  borderRadius: 8,
-  padding: "12px 16px",
-  fontWeight: 700,
-  fontSize: 15,
-  cursor: "pointer",
 };

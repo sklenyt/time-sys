@@ -73,11 +73,11 @@
 }
 
 .landing-eyebrow {
-  font-size: 11px;
-  letter-spacing: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--tape-400);
-  font-weight: 800;
   margin-bottom: 14px;
 }
 
@@ -85,6 +85,7 @@
   font-size: clamp(30px, 4.6vw, 50px);
   font-weight: 800;
   line-height: 1.08;
+  letter-spacing: -0.03em;
   margin: 0 0 18px;
   text-wrap: balance;
 }
@@ -137,8 +138,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 11px;
-  letter-spacing: 1.5px;
+  font-size: 12px;
+  letter-spacing: 2px;
   color: var(--steel-400);
   text-transform: uppercase;
 }
