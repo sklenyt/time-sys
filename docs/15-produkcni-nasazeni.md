@@ -95,3 +95,32 @@ Pro §8.8 variantu 2 (vlastní VPS + Docker) jsou v repozitáři konkrétní, sp
 - `.env.prod.example` — kopírovat na `.env.prod` (je v `.gitignore`, nikdy necommitovat se skutečnými hodnotami) a doplnit produkční secrety podle §15.7.
 
 **Neověřeno reálným `docker build`/`docker compose up`** — psáno a kontrolováno v sandboxovaném vývojovém prostředí bez přístupu k Docker daemonu. Než se použije naostro, projít aspoň jednou na vlastním VPS krok za krokem (komentář v hlavičce `docker-compose.prod.yml`) a případné drobnosti (verze base image, oprávnění na volume) doladit tam.
+
+## 15.10 Zvolený hosting: Supabase (DB) + Fly.io (API/web)
+
+Rozhodnuto pro provoz, kde appku sdílí víc organizátorů zároveň (multi-tenant, F24) — Supabase má proti Neon výhodu, že výchozí `postgres` role **není** superuser (žádný extra krok s vytvářením role navíc), a s víc organizátory na různých kalendářích závodů odpadá i riziko Supabase free-tier pauzy po 7 dnech nečinnosti (viz diskuze v chatu). Fly.io zůstává pro běh API + web, protože Supabase samo o sobě nehostuje libovolný Node.js proces — jen Postgres (+ volitelně Auth/Storage/Edge Functions, které appka nepoužívá).
+
+### 15.10.1 Založení Supabase projektu (ruční krok — jen vlastník repozitáře)
+
+1. Registrace na [supabase.com](https://supabase.com), **New project** — zvolit region blízko cílové skupiny (Frankfurt pro ČR/SK), nastavit silné DB heslo a **uložit ho stranou** (zobrazí se jen jednou).
+2. Počkat na provision (pár minut), pak **Project Settings → Database → Connection string**. Appka běží jako jeden dlouhožijící proces na Fly.io (ne serverless funkce), takže na rozdíl od §15.2.1 **není potřeba** pooled (`:6543`/PgBouncer) connection string ani `directUrl` — stačí přímý connection string na portu `5432` pro `DATABASE_URL` i pro migrace.
+3. **Ověřit, že role skutečně není superuser** (§8.9 kontrolní seznam, netýká se jen Neon) — připojit se `psql` na ten connection string a spustit:
+   ```sql
+   SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user;
+   ```
+   Obě hodnoty musí být `false`. Supabase to má takhle nastavené v základu, ale ověřit vlastním dotazem je levnější než to jen předpokládat.
+4. Spustit migrace proti tomuto `DATABASE_URL` jednorázově z libovolného stroje s repem:
+   ```
+   npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
+   ```
+
+### 15.10.2 Nasazení API + web na Fly.io (ruční krok — jen vlastník repozitáře)
+
+Appka už má hotový `apps/api/Dockerfile` a `apps/web/Dockerfile` (§15.9) — Fly.io je umí použít přímo, žádný nový Dockerfile navíc.
+
+1. Nainstalovat `flyctl` (`curl -L https://fly.io/install.sh | sh`), `fly auth login`.
+2. Pro API: `fly launch --dockerfile apps/api/Dockerfile --no-deploy` v rootu repa, zvolit jméno appky a region. `fly secrets set DATABASE_URL=... JWT_ACCESS_SECRET=... JWT_REFRESH_SECRET=... PUBLISH_TARGET_ENC_KEY=... WEB_APP_URL=...` (hodnoty podle §15.7, `DATABASE_URL` ze Supabase výše), pak `fly deploy`.
+3. Pro web: `fly launch --dockerfile apps/web/Dockerfile --no-deploy` v samostatné appce, `fly deploy --build-arg VITE_API_URL=https://<jméno-api-appky>.fly.dev/api/v1`.
+4. Bez vlastní domény appky běží na přidělených `*.fly.dev` adresách (TLS řeší Fly.io automaticky) — vlastní doménu (§15.7 `WEB_APP_URL`) lze napojit později přes `fly certs add`, beze změny appky.
+
+**Neověřeno reálným Fly.io/Supabase účtem** — kroky vychází z aktuální (2026) dokumentace obou platforem, ale založení účtu a spuštění vyžaduje přístup, který tahle session nemá. Při prvním průchodu počítat s drobným laděním (přesné názvy `flyctl` příkazů se čas od času mění).
