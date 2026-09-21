@@ -130,6 +130,8 @@ Appka už má hotový `apps/api/Dockerfile` a `apps/web/Dockerfile` (§15.9) —
 3. Pro web: `fly launch --dockerfile apps/web/Dockerfile --no-deploy` v samostatné appce, `fly deploy --build-arg VITE_API_URL=https://<jméno-api-appky>.fly.dev/api/v1`.
 4. Bez vlastní domény appky běží na přidělených `*.fly.dev` adresách (TLS řeší Fly.io automaticky) — vlastní doménu (§15.7 `WEB_APP_URL`) lze napojit později přes `fly certs add`, beze změny appky.
 
+**Web se reálně nasazuje jinak** — appka má statický frontend (Vite build, žádný Node.js proces za běhu), takže místo Fly.io appky navíc se použil **Cloudflare Pages** (zdarma, žádný běžící stroj) — viz §15.10.4.
+
 **Ověřeno reálným Fly.io/Supabase účtem** — postup výše byl reálně projitý (Supabase projekt, `depo_app` role, `prisma migrate deploy`, `fly launch`/`fly deploy`). Při prvním nasazení appka spadla do crash-loopu (`fly logs` → `Error loading shared library libssl.so.1.1`, `machine has reached its max restart count of 10`) — Prisma engine na holém `node:22-alpine` bez OpenSSL. Oprava (už promítnutá do `apps/api/Dockerfile` a `apps/api/prisma/schema.prisma` v tomhle repu): `RUN apk add --no-cache openssl` v obou stage a `binaryTargets = ["native", "linux-musl-openssl-3.0.x"]` v generátoru. Kdo appku nasazuje ze staršího clonu, musí si `git pull` tuhle opravu natáhnout před `fly deploy`.
 
 ### 15.10.3 Automatizace nasazení API přes GitHub Actions
@@ -152,3 +154,34 @@ Appka už má hotový `apps/api/Dockerfile` a `apps/web/Dockerfile` (§15.9) —
 3. V GitHubu → Settings → Secrets and variables → Actions přidat `FLY_API_TOKEN` (token z kroku 2). `PROD_DATABASE_URL` už není potřeba — CI k Supabase vůbec nepřistupuje.
 
 Od té chvíle `deploy-api` job (běží jen po zeleném `main`, po `build` a `api-tests`) sám spustí `flyctl deploy`, který nejdřív provede `release_command` (migrace) a teprve pak nahradí běžící stroje — bez ručního zásahu z terminálu. Web na Cloudflare Pages se nasazuje automaticky už teď (vlastní integrace Cloudflare ↔ GitHub, mimo tenhle workflow).
+
+### 15.10.4 Nasazení webu na Cloudflare Pages (ruční krok — jen vlastník repozitáře)
+
+1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** → repo `sklenyt/time-sys`, branch `main`.
+2. Framework preset **None** (je to monorepo, žádný preset ho neuhodne správně).
+3. **Build command**:
+   ```
+   npm ci && npm run build --workspace=@depo/shared && npm run build --workspace=@depo/web
+   ```
+   Bez `@depo/shared` buildu předem `@depo/web` selže na `Cannot find module '@depo/shared'` — appka na frontendu importuje sdílené typy z tohohle balíčku (stejný pořadí kroků jako v `.github/workflows/ci.yml`).
+4. **Build output directory**: `apps/web/dist`.
+5. **Root directory**: nech `/`.
+6. **Environment variables**: `VITE_API_URL = https://depo-time.fly.dev/api/v1`.
+7. **Production branch**: `main`.
+
+**Reálně ověřeno (2026-09)** — Cloudflare v roce 2026 nasazuje Git-propojené Pages projekty přes `wrangler`, který v monorepu bez explicitní konfigurace neumí poznat, který balíček nasadit (`Error: The Cloudflare application detection logic has been run in the root of a workspace...`). Oprava: `wrangler.jsonc` v **rootu repa** (`Root directory` výše zůstává `/`, takže odtud wrangler startuje):
+
+```jsonc
+{
+  "name": "depo-web", // musí přesně odpovídat jménu Pages projektu v Cloudflare
+  "compatibility_date": "2026-09-21",
+  "assets": {
+    "directory": "./apps/web/dist",
+    "not_found_handling": "single-page-application" // React Router — bez tohohle 404 na přímý vstup/refresh mimo "/"
+  }
+}
+```
+
+Po přidání tohohle souboru a novém deployi Cloudflare nasadí statické soubory přímo, bez dalšího wrangler auto-detection kroku.
+
+**Vlastní domény** — v nastavení Pages projektu → **Custom domains** přidat `depotime.cz`, `app.depotime.cz`, `vysledky.depotime.cz` (DNS záznamy si Cloudflare vytvoří sám, žádný ruční zásah v DNS).

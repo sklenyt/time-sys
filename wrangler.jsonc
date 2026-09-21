@@ -1,0 +1,15 @@
+{
+  // Cloudflare Pages (Git integration) v roce 2026 nasazuje přes wrangler,
+  // který si v monorepu bez tohohle souboru neumí sám poznat, který balíček
+  // nasadit ("application detection logic has been run in the root of a
+  // workspace") — tenhle soubor mu to řekne explicitně.
+  //
+  // "name" musí přesně odpovídat jménu Pages projektu v Cloudflare
+  // dashboardu (viz docs/15-produkcni-nasazeni.md) — pokud se liší, uprav ho.
+  "name": "depo-web",
+  "compatibility_date": "2026-09-21",
+  "assets": {
+    "directory": "./apps/web/dist",
+    "not_found_handling": "single-page-application"
+  }
+}
