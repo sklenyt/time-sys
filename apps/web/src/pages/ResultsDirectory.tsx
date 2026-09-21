@@ -69,7 +69,7 @@ export function ResultsDirectory() {
     <div className="landing">
       <header className="landing-nav">
         <div className="brand">
-          <img src="/depo-mark.svg" alt="" width={26} height={26} />
+          <img src="/depo-mark.svg" alt="" width={40} height={40} />
           Depo výsledky
         </div>
       </header>

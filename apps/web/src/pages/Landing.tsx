@@ -5,7 +5,7 @@ export function Landing() {
     <div className="landing">
       <header className="landing-nav">
         <div className="brand">
-          <img src="/depo-mark.svg" alt="" width={26} height={26} />
+          <img src="/depo-mark.svg" alt="" width={40} height={40} />
           Depo
         </div>
         <nav className="landing-nav-links">
@@ -38,10 +38,6 @@ export function Landing() {
               Depo měří na telefonu i iPadu, funguje bez signálu a výsledky posílá na váš klubový web hned po
               doběhu — bez ruční synchronizace mezi stanovišti.
             </p>
-            <p className="landing-sports">
-              Běh · Cyklistika · Triatlon a duatlon · Orientační běh · Běžky · Inline brusle — cokoliv se
-              startovními čísly, ručně nebo přes RFID čip.
-            </p>
             <div className="landing-hero-actions">
               <Link to="/dashboard" className="btn-pill accent" style={{ padding: "12px 22px", fontSize: 14 }}>
                 Založit první závod
@@ -70,23 +66,13 @@ export function Landing() {
             </div>
           </div>
 
-          {/* Statická ukázka obrazovky Měření — dekorativní, nereaguje na klik. */}
-          <div className="landing-device" aria-hidden="true">
-            <div className="landing-device-label">
-              Cíl · 10 km
+          {/* Skutečný snímek obrazovky Měření (ne mockup) — viz F06, workflow číslo + Enter. */}
+          <div className="landing-device">
+            <img src="/screenshots/mereni.png" alt="Obrazovka Měření v aplikaci Depo se zadaným startovním číslem 147" />
+            <div className="landing-device-caption">
               <span className="landing-device-chip">offline</span>
+              Zápis čísla + Enter — přesně tahle obrazovka, žádný mockup
             </div>
-            <div className="landing-device-number">147</div>
-            <div className="landing-device-meta">
-              <span>Marek Douša</span>
-              <span className="mono">00:41:58,3</span>
-            </div>
-            <div className="landing-device-keys">
-              <div className="landing-device-key">1</div>
-              <div className="landing-device-key">4</div>
-              <div className="landing-device-key">7</div>
-            </div>
-            <div className="landing-device-submit">ZAPSAT ↵</div>
           </div>
         </div>
       </section>
@@ -98,19 +84,36 @@ export function Landing() {
         </div>
         <div className="landing-cards">
           <div className="landing-card">
+            <img className="landing-card-shot" src="/screenshots/startovni-listina.png" alt="Startovní listina se zapsanými závodníky a kategoriemi" />
             <div className="num">01</div>
-            <h3>Měření jedním prstem</h3>
-            <p>Velký numpad, čas ze systémových hodin zařízení, žádné ruční přepisování. Kolize čísel řešíte přímo v přehledu.</p>
+            <h3>Startovní listina za pár minut</h3>
+            <p>Ruční zápis na místě nebo import z CSV. Kategorie se navrhne sama podle ročníku a pohlaví, jen ji potvrdíte.</p>
           </div>
           <div className="landing-card">
+            <img className="landing-card-shot" src="/screenshots/dashboard.png" alt="Přehled akce se stavem v cíli, na trati a průběhem tratě v reálném čase" />
             <div className="num">02</div>
-            <h3>Offline je normální stav</h3>
-            <p>V lese bez signálu měříte dál. Depo drží frontu zápisů lokálně a odešle je, jakmile se objeví síť.</p>
+            <h3>Přehled akce v reálném čase</h3>
+            <p>Kdo je v cíli, kdo ještě běží a co vyžaduje pozornost — vidíte živě z jednoho zázemí, i když měříte na víc stanovištích.</p>
           </div>
           <div className="landing-card">
+            <img className="landing-card-shot" src="/screenshots/vysledky.png" alt="Veřejná stránka výsledků s pořadím a časy závodníků" />
             <div className="num">03</div>
             <h3>Výsledky hned na webu</h3>
             <p>Živá veřejná stránka bez přihlášení a automatický export přes FTP/SFTP na váš vlastní klubový web.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-sports-strip">
+        <div className="landing-sports-strip-inner">
+          <span className="landing-sports-label">Podporované sporty</span>
+          <div className="landing-sports-tags">
+            {["Běh", "Cyklistika", "Triatlon a duatlon", "Orientační běh", "Běžky", "Inline brusle"].map((sport) => (
+              <span key={sport} className="landing-sports-tag">
+                {sport}
+              </span>
+            ))}
+            <span className="landing-sports-tag accent">+ cokoliv se startovními čísly, ručně nebo přes RFID čip</span>
           </div>
         </div>
       </section>
