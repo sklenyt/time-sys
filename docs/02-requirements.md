@@ -59,6 +59,7 @@ Prioritizace metodou **MoSCoW** (Must / Should / Could / Won't — pro první ve
 | F41 | Krátký video záznam u cíle vázaný na konkrétní `zaznam_udalosti`, pro řešení sporných doběhů |
 | F42 | "Kioskový" režim veřejné live stránky — zjednodušené zobrazení optimalizované pro promítání na velké obrazovce v cíli (bez interakce) |
 | F43 | Export výsledků ve formátu pro národní svaz/žebříček (např. CSV pro Atletiku ČR) — nápad z návrhu obrazovky Publikace výsledků, viz [07-ui-mockups.md §7.12](07-ui-mockups.md) |
+| F44 | Veřejný adresář závodů na `vysledky.depotime.cz` — jméno a datum akce vidí kdokoliv (organizátor chce návštěvnost), ale přístup ke jménům a časům závodníků jde volitelně zamknout heslem, které organizátor nastaví a sdílí se závodníky (`Udalost.verejnyVypis`, `Udalost.hesloVysledkuHash`) |
 
 ### Won't have (v první verzi vědomě vynecháno)
 

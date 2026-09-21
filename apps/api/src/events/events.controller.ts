@@ -3,8 +3,10 @@ import { Role } from "@depo/shared";
 import { EventsService } from "./events.service";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { UpdateEventDto } from "./dto/update-event.dto";
+import { VerifyEventPasswordDto } from "./dto/verify-event-password.dto";
 import { CurrentUser, AuthenticatedUser } from "../auth/decorators/current-user.decorator";
 import { Roles } from "../auth/decorators/roles.decorator";
+import { Public } from "../auth/decorators/public.decorator";
 
 @Controller("events")
 export class EventsController {
@@ -20,9 +22,27 @@ export class EventsController {
     return this.events.findAllForOrganizace(user.organizaceId);
   }
 
+  /**
+   * Veřejný adresář pro vysledky.depotime.cz — musí být před ":id", jinak
+   * by ho NestJS routoval jako `findOne("verejne")`.
+   */
+  @Public()
+  @Get("verejne")
+  findVerejne() {
+    return this.events.najitVerejneUdalosti();
+  }
+
   @Get(":id")
   findOne(@Param("id", ParseUUIDPipe) id: string) {
     return this.events.findOne(id);
+  }
+
+  /** Ověření hesla k veřejnému výpisu výsledků (vysledky.depotime.cz) — bez přihlášení. */
+  @Public()
+  @Post(":id/pristup")
+  @HttpCode(HttpStatus.OK)
+  overitPristup(@Param("id", ParseUUIDPipe) id: string, @Body() dto: VerifyEventPasswordDto) {
+    return this.events.overitHesloUdalosti(id, dto.heslo);
   }
 
   @Roles(Role.ADMIN, Role.ORGANIZATOR)

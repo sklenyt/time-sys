@@ -211,6 +211,28 @@ export function Dashboard() {
     }
   }
 
+  /**
+   * Akce je na vysledky.depotime.cz veřejně vypsaná vždy (organizátor chce
+   * návštěvnost) — tohle nastaví jen heslo, které pak musí sdílet se
+   * závodníky, ať se ke jménům a časům nedostane kdokoliv.
+   */
+  async function nastavitHesloVysledku(eventId: string) {
+    const heslo = window.prompt(
+      "Heslo pro přístup k výsledkům na vysledky.depotime.cz (min. 4 znaky, sdílejte ho se závodníky). Nechte prázdné pro zrušení hesla."
+    );
+    if (heslo === null) return;
+    if (heslo.trim() && heslo.trim().length < 4) {
+      setError("Heslo musí mít aspoň 4 znaky");
+      return;
+    }
+    try {
+      await api.patch(`/events/${eventId}`, heslo.trim() ? { heslo: heslo.trim() } : { odebratHesloVysledku: true });
+      window.alert(heslo.trim() ? "Heslo nastaveno." : "Heslo zrušeno — výsledky jsou teď bez hesla.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Nastavení hesla se nezdařilo");
+    }
+  }
+
   async function toggleDokoncena(routeId: string, dokoncena: boolean) {
     try {
       await api.patch(`/routes/${routeId}`, { dokoncena });
@@ -516,6 +538,9 @@ export function Dashboard() {
               <h3 style={{ margin: 0 }}>{u.nazev}</h3>
               <button onClick={() => renameEvent(u.id, u.nazev)} className="btn-pill">
                 Přejmenovat
+              </button>
+              <button onClick={() => nastavitHesloVysledku(u.id)} className="btn-pill">
+                Heslo výsledků
               </button>
               <button onClick={() => deleteEvent(u.id, u.nazev)} className="btn-pill danger">
                 Smazat akci

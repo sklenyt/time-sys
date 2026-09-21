@@ -1,4 +1,4 @@
-import { IsDateString, IsOptional, IsString, IsUrl, MinLength } from "class-validator";
+import { IsBoolean, IsDateString, IsOptional, IsString, IsUrl, MinLength } from "class-validator";
 
 /** organizaceId zde záměrně chybí — přesun události mezi organizacemi není podporovaná operace. */
 export class UpdateEventDto {
@@ -18,4 +18,19 @@ export class UpdateEventDto {
   @IsOptional()
   @IsUrl()
   logoUrl?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  verejnyVypis?: boolean;
+
+  /** Plain text heslo pro veřejný adresář (vysledky.depotime.cz) — appka ho rovnou zahashuje, nikdy neukládá v čitelné podobě. */
+  @IsOptional()
+  @IsString()
+  @MinLength(4)
+  heslo?: string;
+
+  /** Zruší existující heslo (výsledky pak jde otevřít bez hesla) — ignorováno, pokud je zároveň poslané `heslo`. */
+  @IsOptional()
+  @IsBoolean()
+  odebratHesloVysledku?: boolean;
 }

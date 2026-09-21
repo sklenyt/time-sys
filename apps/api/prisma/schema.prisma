@@ -117,6 +117,11 @@ model Udalost {
   datum          DateTime @db.Date
   htmlHlavicka   String?  @map("html_hlavicka")
   logoUrl        String?  @map("logo_url")
+  // Veřejný adresář na vysledky.depotime.cz (organizátor chce návštěvnost),
+  // ale jména závodníků samotná zůstávají za heslem, které si organizátor
+  // zvolí a sdílí se závodníky — hash, nikdy plain text.
+  verejnyVypis      Boolean @default(true) @map("verejny_vypis")
+  hesloVysledkuHash String? @map("heslo_vysledku_hash")
 
   organizace       Organizace       @relation(fields: [organizaceId], references: [id], onDelete: Restrict)
   trasy            Trasa[]

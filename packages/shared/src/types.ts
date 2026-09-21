@@ -435,3 +435,17 @@ export interface PersonalResultDto {
   stavUkonceni?: StavUkonceni | null;
   clenoveDruzstva?: DruzstvoClen[] | null;
 }
+
+/** GET /events/verejne — veřejný adresář na vysledky.depotime.cz. */
+export interface VerejnaUdalostDto {
+  id: string;
+  nazev: string;
+  datum: string;
+  vyzadujeHeslo: boolean;
+  trasy: { id: string; nazev: string }[];
+}
+
+/** POST /events/:id/pristup — ověření hesla k veřejnému výpisu výsledků. */
+export interface OveritPristupResponseDto {
+  trasy: { id: string; nazev: string }[];
+}

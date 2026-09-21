@@ -124,6 +124,7 @@ export class RecordsService {
           .findUnique({ where: { id: trasaId } })
           .then((trasa) => {
             if (!trasa) return;
+            const webUrl = process.env.WEB_APP_URL ?? "http://localhost:5173";
             return this.email.posliOznameniODobehu({
               komu: prihlaska.oznamovaciEmail!,
               prijmeni: prihlaska.prijmeni,
@@ -131,6 +132,7 @@ export class RecordsService {
               startovniCislo: prihlaska.startovniCislo,
               trasaNazev: trasa.nazev,
               casCelkem,
+              odkazNaVysledky: `${webUrl}/vysledky/${trasaId}/bezec/${prihlaska.id}`,
             });
           })
           .catch(() => {});
