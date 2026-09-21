@@ -10,6 +10,7 @@ import { Running } from "./pages/Running";
 import { PublishTargets } from "./pages/PublishTargets";
 import { Conflicts } from "./pages/Conflicts";
 import { EmbedResults } from "./pages/EmbedResults";
+import { EmbedRegister } from "./pages/EmbedRegister";
 import { Kiosk } from "./pages/Kiosk";
 import { AuditLog } from "./pages/AuditLog";
 import { Register } from "./pages/Register";
@@ -32,6 +33,7 @@ export function App() {
       <Route path="/vysledky/:routeId/bezec/:prihlaskaId" element={<PersonalResult />} />
       <Route path="/embed/vysledky/:routeId" element={<EmbedResults />} />
       <Route path="/registrace/:routeId" element={<Register />} />
+      <Route path="/embed/registrace/:routeId" element={<EmbedRegister />} />
       <Route path="/kiosk/:routeId" element={<Kiosk />} />
       <Route
         path="/audit/:routeId"

@@ -45,7 +45,7 @@ Prioritizace metodou **MoSCoW** (Must / Should / Could / Won't — pro první ve
 | ID | Požadavek |
 |---|---|
 | F22 | Podpora RFID čipů — čtečky/decodéry na startu, cíli i kontrolních stanovištích jako plnohodnotná alternativa k ručnímu zápisu čísla, viz [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md) |
-| F23 | Vlastní online registrační formulář napojený přímo do systému |
+| F23 | Vlastní online registrační formulář napojený přímo do systému — i jako vložitelný widget (`/embed/registrace/:routeId`) pro cizí web, s viditelným označením "Depo" (na rozdíl od F38 tady branding zůstává, jde o důvěryhodnost registrace, ne jen data) |
 | F24 | Multi-tenant provoz pro více organizátorů současně |
 | F26 | Pokročilé reporty a statistiky (historie výkonů, rekordy tratě) |
 | F29 | Párování RFID čipu se startovním číslem při výdeji startovních čísel (registrace/expo) | 

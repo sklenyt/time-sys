@@ -229,6 +229,11 @@ export function Dashboard() {
     window.prompt("Odkaz na veřejný registrační formulář:", `${window.location.origin}/registrace/${routeId}`);
   }
 
+  function ukazatEmbedRegistrace(routeId: string) {
+    const kod = `<iframe src="${window.location.origin}/embed/registrace/${routeId}" width="360" height="640" style="border:0"></iframe>`;
+    window.prompt("Zkopírujte kód pro vložení registrace na váš web:", kod);
+  }
+
   async function toggleRegistrace(routeId: string, registraceUzavrena: boolean) {
     try {
       await api.patch(`/routes/${routeId}`, { registraceUzavrena });
@@ -554,8 +559,11 @@ export function Dashboard() {
                     <button onClick={() => toggleRegistrace(t.id, !t.registraceUzavrena)} className="btn-pill">
                       {t.registraceUzavrena ? "Otevřít registraci" : "Uzavřít registraci"}
                     </button>
+                    <button onClick={() => ukazatEmbedRegistrace(t.id)} className="btn-pill">
+                      Embed registrace
+                    </button>
                     <button onClick={() => ukazatEmbedKod(t.id)} className="btn-pill">
-                      Embed
+                      Embed výsledků
                     </button>
                     <button onClick={() => deleteRoute(t.id, t.nazev)} className="btn-pill danger">
                       Smazat

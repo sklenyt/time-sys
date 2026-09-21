@@ -270,6 +270,132 @@
   line-height: 1.5;
 }
 
+/* ---------- Comparison section (Proč Depo) ---------- */
+.landing-compare {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (max-width: 980px) {
+  .landing-compare {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .landing-compare {
+    grid-template-columns: 1fr;
+  }
+}
+
+.landing-compare-card {
+  position: relative;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.landing-compare-card.featured {
+  background: var(--navy-800);
+  border-color: var(--tape-500);
+  color: #fff;
+}
+
+.landing-compare-badge {
+  position: absolute;
+  top: -11px;
+  left: 22px;
+  background: var(--tape-500);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.landing-compare-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.landing-compare-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.landing-compare-price {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.landing-compare-card.featured .landing-compare-price {
+  color: var(--steel-400);
+}
+
+.landing-compare-price.accent {
+  color: var(--tape-400);
+}
+
+.landing-compare-sub {
+  margin: -8px 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.landing-compare-card.featured .landing-compare-sub {
+  color: var(--steel-400);
+}
+
+.landing-compare-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.landing-compare-card li {
+  font-size: 13px;
+  line-height: 1.4;
+  padding-left: 22px;
+  position: relative;
+}
+
+.landing-compare-card li.yes::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--color-live);
+  font-weight: 800;
+}
+
+.landing-compare-card li.no::before {
+  content: "×";
+  position: absolute;
+  left: 0;
+  color: var(--text-secondary);
+  font-weight: 800;
+}
+
+.landing-compare-card.featured li.no::before {
+  color: var(--steel-400);
+}
+
 /* ---------- Closing CTA ---------- */
 .landing-cta {
   background: var(--navy-800);
