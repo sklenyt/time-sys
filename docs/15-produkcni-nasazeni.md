@@ -136,12 +136,19 @@ Appka už má hotový `apps/api/Dockerfile` a `apps/web/Dockerfile` (§15.9) —
 
 `fly launch` vygeneruje `fly.toml` jen lokálně — nikdy se necommitne automaticky, takže CI o něm neví, dokud ho vlastník repozitáře sám nepřidá. Bez něj `deploy-api` job v `.github/workflows/ci.yml` nemá co nasadit.
 
+**Migrace neběží z GitHub Actions** — GitHub-hosted runnery nemají IPv6 egress a Supabase "Direct connection" (`db.<ref>.supabase.co`) je bez placeného IPv4 add-onu dostupná jen přes IPv6, takže `prisma migrate deploy` odtud padá na `P1001: Can't reach database server`. Zkoušet to obejít přes Supabase "Session pooler" (IPv4-kompatibilní) narazilo na další vrstvu problémů — Supavisor hlásil `Tenant or user not found` i se správně sestaveným `<role>.<project-ref>` uživatelským jménem a ověřeným hostname ze Supabase dashboardu; neopravovali jsme to dál, protože existuje jednodušší a spolehlivější cesta.
+
+**Řešení:** migrace spouští `fly.toml` `[deploy].release_command` — příkaz, který Fly.io spustí uvnitř svojí sítě před každým nasazením nových strojů, se stejnými `fly secrets` jako běžící appka. Fly.io appka se k Supabase Direct connection prokazatelně připojuje (viz §15.10.1, `db: connected`), takže tohle IPv6 omezení GitHub Actions vůbec neřeší.
+
+```toml
+[deploy]
+  release_command = 'npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma'
+```
+
 **Jednorázové kroky, který musí udělat vlastník repozitáře (ne appka sama):**
 
 1. Zkontrolovat, že `fly.toml` v rootu repa neobsahuje žádné tajemství (jen jméno appky, region, porty — hodnoty jako `DATABASE_URL` jdou přes `fly secrets set`, ne do `fly.toml`), pak ho commitnout a pushnout.
 2. Vygenerovat deploy token: `fly tokens create deploy -x 999999h --app depo-time` (dlouhá platnost, jen pro CI).
-3. V GitHubu → Settings → Secrets and variables → Actions přidat:
-   - `FLY_API_TOKEN` — token z kroku 2.
-   - `PROD_DATABASE_URL` — stejná hodnota jako `DATABASE_URL` v `fly secrets` (connection string s rolí `depo_app`, ne superuser/bootstrap role Supabase).
+3. V GitHubu → Settings → Secrets and variables → Actions přidat `FLY_API_TOKEN` (token z kroku 2). `PROD_DATABASE_URL` už není potřeba — CI k Supabase vůbec nepřistupuje.
 
-Od té chvíle `deploy-api` job (běží jen po zeleném `main`, po `build` a `api-tests`) sám spustí `prisma migrate deploy` proti Supabase a pak `flyctl deploy` — bez ručního zásahu z terminálu. Web na Cloudflare Pages se nasazuje automaticky už teď (vlastní integrace Cloudflare ↔ GitHub, mimo tenhle workflow).
+Od té chvíle `deploy-api` job (běží jen po zeleném `main`, po `build` a `api-tests`) sám spustí `flyctl deploy`, který nejdřív provede `release_command` (migrace) a teprve pak nahradí běžící stroje — bez ručního zásahu z terminálu. Web na Cloudflare Pages se nasazuje automaticky už teď (vlastní integrace Cloudflare ↔ GitHub, mimo tenhle workflow).
