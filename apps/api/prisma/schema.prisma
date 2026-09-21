@@ -1,5 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native" samo o sobě na Alpine (musl) selhává detekcí verze OpenSSL za
+  // běhu (viz Dockerfile — produkční pád "Error loading shared library
+  // libssl.so.1.1: No such file or directory") — explicitní cíl obchází
+  // tenhle nedeterministický fallback.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {

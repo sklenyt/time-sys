@@ -104,15 +104,22 @@ Rozhodnuto pro provoz, kde appku sdílí víc organizátorů zároveň (multi-te
 
 1. Registrace na [supabase.com](https://supabase.com), **New project** — zvolit region blízko cílové skupiny (Frankfurt pro ČR/SK), nastavit silné DB heslo a **uložit ho stranou** (zobrazí se jen jednou).
 2. Počkat na provision (pár minut), pak **Project Settings → Database → Connection string**. Appka běží jako jeden dlouhožijící proces na Fly.io (ne serverless funkce), takže na rozdíl od §15.2.1 **není potřeba** pooled (`:6543`/PgBouncer) connection string ani `directUrl` — stačí přímý connection string na portu `5432` pro `DATABASE_URL` i pro migrace.
-3. **Ověřit, že role skutečně není superuser** (§8.9 kontrolní seznam, netýká se jen Neon) — připojit se `psql` na ten connection string a spustit:
+3. **Ověřit, že role skutečně není superuser** (§8.9 kontrolní seznam, netýká se jen Neon) — připojit se `psql` (nebo Supabase **SQL Editor**) na ten connection string a spustit:
    ```sql
    SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user;
    ```
-   Obě hodnoty musí být `false`. Supabase to má takhle nastavené v základu, ale ověřit vlastním dotazem je levnější než to jen předpokládat.
-4. Spustit migrace proti tomuto `DATABASE_URL` jednorázově z libovolného stroje s repem:
+   **Reálně ověřeno (2026-09): `rolsuper = false`, ale `rolbypassrls = true`** — na rozdíl od původního předpokladu výše Supabase výchozí `postgres` roli `BYPASSRLS` **dává**. Je to samostatný příznak od `SUPERUSER` a stejně nebezpečný pro multi-tenant izolaci (§8.9) — appka na výchozí roli tiše obchází RLS mezi organizacemi. Řešení, stejné jako u Neonu (§15.2.1), potvrzené funkční:
+   ```sql
+   CREATE ROLE depo_app LOGIN PASSWORD '...' NOSUPERUSER NOBYPASSRLS;
+   GRANT ALL PRIVILEGES ON DATABASE postgres TO depo_app;
+   GRANT ALL ON SCHEMA public TO depo_app;
    ```
-   npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
+   Ověřit znovu tím samým dotazem pro `depo_app` — obě hodnoty musí být `false`. Teprve tuhle roli použít v `DATABASE_URL`, nikdy výchozí `postgres`.
+4. Spustit migrace proti `DATABASE_URL` s rolí `depo_app` jednorázově z libovolného stroje s repem (potřeba `npm install` v rootu repa předem, aby `prisma` CLI existovalo lokálně):
+   ```bash
+   DATABASE_URL='postgresql://depo_app:HESLO@db.xxxxxxxxxxxx.supabase.co:5432/postgres' ./node_modules/.bin/prisma migrate deploy --schema=apps/api/prisma/schema.prisma
    ```
+   Heslo v connection stringu drž na **jen písmena a číslice** — speciální znaky (`@`, `/`, `#`, `%`) je potřeba URL-kódovat, jinak parsing connection stringu tiše selže na chybnou autentizaci (P1000).
 
 ### 15.10.2 Nasazení API + web na Fly.io (ruční krok — jen vlastník repozitáře)
 
@@ -123,4 +130,4 @@ Appka už má hotový `apps/api/Dockerfile` a `apps/web/Dockerfile` (§15.9) —
 3. Pro web: `fly launch --dockerfile apps/web/Dockerfile --no-deploy` v samostatné appce, `fly deploy --build-arg VITE_API_URL=https://<jméno-api-appky>.fly.dev/api/v1`.
 4. Bez vlastní domény appky běží na přidělených `*.fly.dev` adresách (TLS řeší Fly.io automaticky) — vlastní doménu (§15.7 `WEB_APP_URL`) lze napojit později přes `fly certs add`, beze změny appky.
 
-**Neověřeno reálným Fly.io/Supabase účtem** — kroky vychází z aktuální (2026) dokumentace obou platforem, ale založení účtu a spuštění vyžaduje přístup, který tahle session nemá. Při prvním průchodu počítat s drobným laděním (přesné názvy `flyctl` příkazů se čas od času mění).
+**Ověřeno reálným Fly.io/Supabase účtem** — postup výše byl reálně projitý (Supabase projekt, `depo_app` role, `prisma migrate deploy`, `fly launch`/`fly deploy`). Při prvním nasazení appka spadla do crash-loopu (`fly logs` → `Error loading shared library libssl.so.1.1`, `machine has reached its max restart count of 10`) — Prisma engine na holém `node:22-alpine` bez OpenSSL. Oprava (už promítnutá do `apps/api/Dockerfile` a `apps/api/prisma/schema.prisma` v tomhle repu): `RUN apk add --no-cache openssl` v obou stage a `binaryTargets = ["native", "linux-musl-openssl-3.0.x"]` v generátoru. Kdo appku nasazuje ze staršího clonu, musí si `git pull` tuhle opravu natáhnout před `fly deploy`.

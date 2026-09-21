@@ -8,6 +8,10 @@
 
 FROM node:22-alpine AS deps
 WORKDIR /repo
+# Prisma engine potřebuje OpenSSL za běhu i při `prisma generate` (bez ní
+# padá "Error loading shared library libssl.so.1.1: No such file or
+# directory") — Alpine ho ve výchozím stavu nemá.
+RUN apk add --no-cache openssl
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
@@ -26,6 +30,9 @@ RUN npm prune --omit=dev
 
 FROM node:22-alpine AS runtime
 WORKDIR /repo
+# Stejný důvod jako v deps stage výše — tohle je samostatný FROM, nic
+# odsud nezdědí, takže OpenSSL musí být nainstalovaná znovu i tady.
+RUN apk add --no-cache openssl
 ENV NODE_ENV=production
 COPY --from=build /repo/node_modules ./node_modules
 COPY --from=build /repo/package.json ./package.json
