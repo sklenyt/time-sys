@@ -10,6 +10,7 @@ export function Landing() {
         </div>
         <nav className="landing-nav-links">
           <a href="#jak-to-funguje">Jak to funguje</a>
+          <a href="#proc-depo">Proč Depo</a>
         </nav>
         <div className="landing-nav-cta">
           <Link to="/login" className="btn-pill outline-light">
@@ -101,6 +102,63 @@ export function Landing() {
             <div className="num">03</div>
             <h3>Výsledky hned na webu</h3>
             <p>Živá veřejná stránka bez přihlášení a automatický export přes FTP/SFTP na váš vlastní klubový web.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-section" id="proc-depo">
+        <div className="landing-section-head">
+          <h2>Proč ne excelová tabulka nebo drahý systém</h2>
+          <p>Mezi papírem a stopkami a profesionální časomírou za statisíce je prázdné místo — tam patří Depo.</p>
+        </div>
+        <div className="landing-compare">
+          <div className="landing-compare-card">
+            <div className="landing-compare-head">
+              <h3>Papír a Excel</h3>
+              <span className="landing-compare-price">zdarma</span>
+            </div>
+            <ul>
+              <li className="no">Ruční přepis časů = chybovost</li>
+              <li className="no">Žádná synchronizace mezi stanovišti</li>
+              <li className="no">Výsledky až hodiny po doběhu posledního</li>
+            </ul>
+          </div>
+          <div className="landing-compare-card">
+            <div className="landing-compare-head">
+              <h3>Free desktop nástroje</h3>
+              <span className="landing-compare-price">zdarma</span>
+            </div>
+            <p className="landing-compare-sub">např. PikaTimer, fsTimer</p>
+            <ul>
+              <li className="yes">Export výsledků, traťové rekordy</li>
+              <li className="no">Jeden počítač, jedna obsluha</li>
+              <li className="no">Víc lidí na trati spolu nesynchronizují</li>
+            </ul>
+          </div>
+          <div className="landing-compare-card">
+            <div className="landing-compare-head">
+              <h3>Profesionální systémy</h3>
+              <span className="landing-compare-price">statisíce Kč</span>
+            </div>
+            <p className="landing-compare-sub">RFID transpondéry, licence, podpora</p>
+            <ul>
+              <li className="yes">RFID přesnost, škálovatelnost</li>
+              <li className="no">Cena mimo rozpočet klubového závodu</li>
+              <li className="no">Nutný nákup/pronájem hardwaru předem</li>
+            </ul>
+          </div>
+          <div className="landing-compare-card featured">
+            <div className="landing-compare-badge">Depo</div>
+            <div className="landing-compare-head">
+              <h3>Depo</h3>
+              <span className="landing-compare-price accent">zdarma</span>
+            </div>
+            <p className="landing-compare-sub">Open-source, běží ve vašem prohlížeči</p>
+            <ul>
+              <li className="yes">Víc zařízení, víc stanovišť, i offline</li>
+              <li className="yes">Živé výsledky + FTP/SFTP export na váš web</li>
+              <li className="yes">Žádný nákup hardwaru — jen telefony, co máte</li>
+            </ul>
           </div>
         </div>
       </section>
