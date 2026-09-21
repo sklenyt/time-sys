@@ -87,3 +87,28 @@ jobs:
       - run: npm ci
       - run: npm run build --workspace=@depo/shared
       - run: npm run test --workspace=apps/web
+
+  deploy-api:
+    name: Deploy API na Fly.io
+    # Jen po zeleném main, nikdy na PR — a jen když je fly.toml v repu
+    # (viz docs/15-produkcni-nasazeni.md §15.10.2), jinak flyctl neví, co nasadit.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [build, api-tests]
+    runs-on: ubuntu-latest
+    concurrency: deploy-api-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Migrace před novým kódem, ne po něm — appka po redeployi nesmí narazit
+      # na schéma, které ještě neexistuje.
+      - run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only --app depo-time
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
