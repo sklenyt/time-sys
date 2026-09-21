@@ -35,6 +35,7 @@ export class EmailService {
     startovniCislo: number;
     trasaNazev: string;
     casCelkem: string;
+    odkazNaVysledky: string;
   }): Promise<void> {
     const transporter = this.getTransporter();
     if (!transporter) {
@@ -47,7 +48,7 @@ export class EmailService {
         from: process.env.SMTP_FROM ?? "vysledky@depo.app",
         to: params.komu,
         subject: `${params.prijmeni} ${params.jmeno} doběhl/a do cíle — ${params.trasaNazev}`,
-        text: `${params.prijmeni} ${params.jmeno} (startovní číslo ${params.startovniCislo}) právě doběhl/a do cíle na trati "${params.trasaNazev}" s časem ${params.casCelkem}.`,
+        text: `${params.prijmeni} ${params.jmeno} (startovní číslo ${params.startovniCislo}) právě doběhl/a do cíle na trati "${params.trasaNazev}" s časem ${params.casCelkem}.\n\nVýsledek: ${params.odkazNaVysledky}`,
       });
     } catch (err) {
       // Nedoručený e-mail nesmí shodit zápis doběhu (F06 je kritická cesta) — jen se zaloguje.

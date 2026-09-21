@@ -15,6 +15,7 @@ import { Kiosk } from "./pages/Kiosk";
 import { AuditLog } from "./pages/AuditLog";
 import { Register } from "./pages/Register";
 import { Reports } from "./pages/Reports";
+import { ResultsDirectory } from "./pages/ResultsDirectory";
 import { isLoggedIn } from "./lib/api";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -24,10 +25,22 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * Cloudflare Pages servíruje stejný build na tři domény (hlavní, app.,
+ * vysledky.) — "/" proto musí podle hostname rozhodnout, co ukázat, appka
+ * nemá pro každou doménu samostatný deploy.
+ */
+function Home() {
+  if (window.location.hostname.startsWith("vysledky.")) {
+    return <ResultsDirectory />;
+  }
+  return <Landing />;
+}
+
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/vysledky/:routeId" element={<Results />} />
       <Route path="/vysledky/:routeId/bezec/:prihlaskaId" element={<PersonalResult />} />
