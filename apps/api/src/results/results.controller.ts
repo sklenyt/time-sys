@@ -1,4 +1,4 @@
-import { Controller, Get, MessageEvent, Param, ParseUUIDPipe, Res, Sse } from "@nestjs/common";
+import { Controller, Get, Header, MessageEvent, Param, ParseUUIDPipe, Res, Sse } from "@nestjs/common";
 import type { Response } from "express";
 import { Observable, from, merge, of } from "rxjs";
 import { debounceTime, map, switchMap } from "rxjs/operators";
@@ -26,6 +26,16 @@ export class ResultsController {
    * (nový doběh/oprava) — realtime vrstva je doplněk, klient bez SSE
    * dostane stejná data přes GET výše.
    */
+  /**
+   * X-Accel-Buffering: no — Nginx (a řada managed platforem za ním) SSE
+   * odpovědi ve výchozím stavu bufferuje a klient by živé updaty dostal
+   * až po zaplnění bufferu / uzavření spojení, ne průběžně. Bez tohohle
+   * hlavičkového pravidla by "živé výsledky" v produkci za reverzní
+   * proxy tiše nefungovaly, přestože lokálně (bez proxy) je vidět
+   * všechno v pořádku.
+   */
+  @Header("X-Accel-Buffering", "no")
+  @Header("Cache-Control", "no-cache")
   @Sse("live")
   live(@Param("routeId", ParseUUIDPipe) routeId: string): Observable<MessageEvent> {
     return merge(of(null), this.events.sledovatZmeny(routeId).pipe(debounceTime(300))).pipe(

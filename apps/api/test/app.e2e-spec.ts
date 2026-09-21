@@ -235,6 +235,101 @@ describe("Depo API (e2e)", () => {
         expect(bezec).toBeDefined();
         expect(bezec.casCelkemMs).toBe(40 * 60_000);
       });
+
+      /**
+       * Tři nálezy ze srovnání se starým Access programem Časomíra (F11
+       * DNS/DNF/DQ, F03 auto-kategorizace, štafety) — pokrývá celý HTTP tok
+       * napříč moduly (entries + categories + results), ne jen jednotlivé
+       * service metody izolovaně jako unit testy.
+       */
+      describe("srovnání s legacy Časomíra: DNS/DNF/DQ, auto-kategorie, štafety", () => {
+        it("F03 — navrhne kategorii podle ročníku a pohlaví bez uložení", async () => {
+          const navrh = await api()
+            .get(`/api/v1/routes/${routeId}/categories/suggest`)
+            .set("Authorization", `Bearer ${accessToken}`)
+            .query({ rocnik: 1990, pohlavi: Pohlavi.M })
+            .expect(200);
+
+          expect(navrh.body.id).toBe(kategorieId);
+          expect(navrh.body.kod).toBe("MUZ");
+        });
+
+        it("F11 — nastaví DQ na přihlášce a projeví se v auditním logu i výsledcích", async () => {
+          const entry = await api()
+            .post(`/api/v1/routes/${routeId}/entries`)
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({ startovniCislo: 90, prijmeni: "Diskvalifikovaný", jmeno: "Karel", kategorieId })
+            .expect(201);
+
+          const aktualizovana = await api()
+            .patch(`/api/v1/routes/${routeId}/entries/${entry.body.id}`)
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({ stavUkonceni: "DQ" })
+            .expect(200);
+          expect(aktualizovana.body.stavUkonceni).toBe("DQ");
+
+          const vysledky = await api().get(`/api/v1/routes/${routeId}/results`).expect(200);
+          const neklasifikovany = vysledky.body.neklasifikovani.find(
+            (p: { startovniCislo: number }) => p.startovniCislo === 90
+          );
+          expect(neklasifikovany).toBeDefined();
+          expect(neklasifikovany.stavUkonceni).toBe("DQ");
+          expect(vysledky.body.klasifikovani.some((p: { startovniCislo: number }) => p.startovniCislo === 90)).toBe(
+            false
+          );
+
+          // Regrese: puvodniHodnota.trasaId je jen interní klíč pro dohledání
+          // příslušnosti k trati (viz AuditLogService.bezTrasaId) — v odpovědi
+          // klientovi nesmí uniknout, přesto záznam musí být pro tuto trať vidět.
+          const audit = await api()
+            .get(`/api/v1/routes/${routeId}/audit-log`)
+            .set("Authorization", `Bearer ${accessToken}`)
+            .expect(200);
+          const zaznam = audit.body.find((a: { entitaId: string }) => a.entitaId === entry.body.id);
+          expect(zaznam).toBeDefined();
+          expect(zaznam.novaHodnota).toEqual({ stavUkonceni: "DQ" });
+          expect(zaznam.puvodniHodnota.trasaId).toBeUndefined();
+        });
+
+        it("štafety — uloží soupisku družstva při založení a zobrazí ji ve výsledcích", async () => {
+          const clenoveDruzstva = [
+            { prijmeni: "Dvořáková", jmeno: "Anna", rocnik: 1995, klub: null },
+            { prijmeni: "Novotný", jmeno: "Petr" },
+          ];
+
+          const entry = await api()
+            .post(`/api/v1/routes/${routeId}/entries`)
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({ startovniCislo: 91, prijmeni: "Štafeta", jmeno: "Testovací", kategorieId, clenoveDruzstva })
+            .expect(201);
+          expect(entry.body.clenoveDruzstva).toHaveLength(2);
+
+          await api()
+            .post(`/api/v1/routes/${routeId}/records`)
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({
+              startovniCislo: 91,
+              zarizeniId: randomUUID(),
+              klientCas: new Date(startCas.getTime() + 50 * 60_000).toISOString(),
+              klientEventId: randomUUID(),
+            })
+            .expect(201);
+
+          const vysledky = await api().get(`/api/v1/routes/${routeId}/results`).expect(200);
+          const bezec = vysledky.body.klasifikovani.find((p: { startovniCislo: number }) => p.startovniCislo === 91);
+          expect(bezec.clenoveDruzstva).toEqual(
+            expect.arrayContaining([expect.objectContaining({ prijmeni: "Dvořáková", jmeno: "Anna" })])
+          );
+
+          // Odebrání celé soupisky (Prisma.DbNull, ne JsonNull) musí jít nastavit zpátky na "bez družstva".
+          const vynulovana = await api()
+            .patch(`/api/v1/routes/${routeId}/entries/${entry.body.id}`)
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({ clenoveDruzstva: [] })
+            .expect(200);
+          expect(vynulovana.body.clenoveDruzstva).toBeNull();
+        });
+      });
     });
 
     it("blokuje přístup k cizí události přes multi-tenant RLS (404, ne data)", async () => {

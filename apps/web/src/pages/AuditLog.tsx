@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { AuditLogPolozka } from "@depo/shared";
 import { api } from "../lib/api";
+import { AppShell } from "../components/AppShell";
 
 export function AuditLog() {
   const { routeId } = useParams<{ routeId: string }>();
@@ -32,8 +33,9 @@ export function AuditLog() {
     : polozky;
 
   return (
-    <div style={{ padding: 24, maxWidth: 820, margin: "0 auto" }}>
-      <h1 style={{ fontWeight: 800 }}>Auditní log</h1>
+    <AppShell active="audit" routeId={routeId}>
+      <div style={{ maxWidth: 820 }}>
+      <h1 style={{ fontWeight: 800, fontSize: 22 }}>Auditní log</h1>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
@@ -71,7 +73,8 @@ export function AuditLog() {
           </tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
@@ -89,8 +92,12 @@ function Diff({ puvodni, novy }: { puvodni: Record<string, unknown> | null; novy
             <span style={{ color: "var(--text-secondary)" }}>{klic}: </span>
             {zmeneno ? (
               <>
-                <span style={{ textDecoration: "line-through", color: "var(--color-danger)" }}>{String(stara ?? "—")}</span>{" "}
-                → <span style={{ color: "var(--color-success, green)" }}>{String(nova ?? "—")}</span>
+                <span style={{ textDecoration: "line-through", color: "var(--color-danger)", background: "#fdf1f0", borderRadius: 4, padding: "1px 4px" }}>
+                  {String(stara ?? "—")}
+                </span>{" "}
+                <span style={{ color: "var(--color-live)", background: "#e6f7f0", borderRadius: 4, padding: "1px 4px", marginLeft: 4 }}>
+                  {String(nova ?? "—")}
+                </span>
               </>
             ) : (
               <span>{String(nova ?? stara ?? "—")}</span>

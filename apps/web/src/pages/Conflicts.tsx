@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { ConflictItemDto } from "@depo/shared";
 import { api, API_BASE, getTokens } from "../lib/api";
+import { AppShell } from "../components/AppShell";
 
 export function Conflicts() {
   const { routeId } = useParams<{ routeId: string }>();
@@ -75,12 +76,13 @@ export function Conflicts() {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
-      <h1 style={{ fontWeight: 800 }}>Kolize stanovišť</h1>
+    <AppShell active="kolize" routeId={routeId}>
+      <div style={{ maxWidth: 720 }}>
+      <h1 style={{ fontWeight: 800, fontSize: 22 }}>Kolize stanovišť</h1>
       <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-        Dvě zařízení nezávisle zaznamenala doběh stejného startovního čísla ve velmi blízkém čase (F15,
-        03-architecture.md §3.5). Nic se nezahodilo — oba záznamy zůstávají v historii, jen je potřeba
-        potvrdit, že jde o legitimní situaci (např. druhé kolo z jiného stanoviště), ne omyl.
+        Dvě zařízení nezávisle zaznamenala doběh stejného startovního čísla ve velmi blízkém čase. Nic se
+        nezahodilo — oba záznamy zůstávají v historii, jen je potřeba potvrdit, že jde o legitimní situaci
+        (např. druhé kolo z jiného stanoviště), ne omyl.
       </p>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
@@ -90,11 +92,11 @@ export function Conflicts() {
         <article
           key={k.id}
           style={{
-            border: "1px solid var(--color-attention)",
+            border: "1px solid #f1dcb0",
             borderRadius: "var(--radius-lg)",
             padding: 16,
             marginBottom: 12,
-            background: "var(--surface)",
+            background: "#fffaf1",
           }}
         >
           <p className="mono" style={{ margin: "0 0 4px", fontWeight: 700 }}>
@@ -114,32 +116,12 @@ export function Conflicts() {
           )}
 
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <button
-              onClick={() => potvrdit(k.id)}
-              style={{
-                background: "var(--navy-800)",
-                color: "#fff",
-                border: "none",
-                borderRadius: 8,
-                padding: "8px 16px",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
+            <button onClick={() => potvrdit(k.id)} className="btn-pill primary">
               Potvrdit — vyřešeno
             </button>
 
-            <label
-              style={{
-                background: "none",
-                border: "1px solid var(--line)",
-                borderRadius: 8,
-                padding: "8px 16px",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              {k.maFotodukaz ? "Nahradit fotodůkaz" : "Přidat fotodůkaz (F41)"}
+            <label className="btn-pill" style={{ cursor: "pointer" }}>
+              {k.maFotodukaz ? "Nahradit fotodůkaz" : "Přidat fotodůkaz"}
               <input
                 type="file"
                 accept="image/*"
@@ -155,6 +137,7 @@ export function Conflicts() {
           </div>
         </article>
       ))}
-    </div>
+      </div>
+    </AppShell>
   );
 }

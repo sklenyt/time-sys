@@ -1,0 +1,11 @@
+# Nahradit oběma řádky skutečnou doménou/subdoménami — Caddy si Let's
+# Encrypt certifikát vyřídí automaticky, žádná ruční konfigurace TLS
+# (docs/08-security.md §8.8, varianta "Caddy je nejjednodušší").
+
+tvuj-domenu.cz {
+	reverse_proxy web:8080
+}
+
+api.tvuj-domenu.cz {
+	reverse_proxy api:3000
+}

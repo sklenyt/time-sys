@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { CourseRecordsResponseDto, RunnerHistoryResponseDto } from "@depo/shared";
 import { api, ApiError } from "../lib/api";
+import { AppShell } from "../components/AppShell";
 
 /** F26 (Fáze 4) — reporty rekordů tratě a historie výkonů běžce. */
 export function Reports() {
@@ -40,12 +41,13 @@ export function Reports() {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
-      <h1 style={{ fontWeight: 800 }}>Reporty (F26)</h1>
+    <AppShell active="reporty">
+      <div style={{ maxWidth: 720 }}>
+      <h1 style={{ fontWeight: 800, fontSize: 22 }}>Reporty</h1>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
-      <section style={{ marginBottom: 32 }}>
-        <h2>Rekordy tratě</h2>
+      <section className="dash-card" style={{ marginBottom: 24 }}>
+        <h2 style={{ marginTop: 0, fontSize: 15 }}>Rekordy tratě</h2>
         <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
           Zadejte přesný název trasy (spojuje se napříč ročníky stejného názvu ve vaší organizaci).
         </p>
@@ -56,7 +58,7 @@ export function Reports() {
             placeholder="Např. 10 km"
             style={inputStyle}
           />
-          <button onClick={hledatRekordy} style={buttonStyle}>
+          <button onClick={hledatRekordy} className="btn-pill primary">
             Hledat
           </button>
         </div>
@@ -106,12 +108,12 @@ export function Reports() {
         )}
       </section>
 
-      <section>
-        <h2>Historie výkonů běžce</h2>
+      <section className="dash-card">
+        <h2 style={{ marginTop: 0, fontSize: 15 }}>Historie výkonů běžce</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
           <input value={prijmeni} onChange={(e) => setPrijmeni(e.target.value)} placeholder="Příjmení" style={inputStyle} />
           <input value={jmeno} onChange={(e) => setJmeno(e.target.value)} placeholder="Jméno" style={inputStyle} />
-          <button onClick={hledatHistorii} style={buttonStyle}>
+          <button onClick={hledatHistorii} className="btn-pill primary">
             Hledat
           </button>
         </div>
@@ -154,7 +156,8 @@ export function Reports() {
           </table>
         )}
       </section>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
@@ -163,16 +166,6 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 8,
   border: "1px solid var(--line)",
   fontSize: 14,
-};
-
-const buttonStyle: React.CSSProperties = {
-  background: "var(--navy-800)",
-  color: "#fff",
-  border: "none",
-  borderRadius: 8,
-  padding: "8px 16px",
-  fontWeight: 600,
-  cursor: "pointer",
 };
 
 const thStyle: React.CSSProperties = {

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import type { AnomaliesResponseDto, RunningResponseDto } from "@depo/shared";
 import { TypAnomalie } from "@depo/shared";
 import { api } from "../lib/api";
+import { AppShell } from "../components/AppShell";
 
 export function Running() {
   const { routeId } = useParams<{ routeId: string }>();
@@ -29,18 +30,37 @@ export function Running() {
     return () => clearInterval(interval);
   }, [routeId]);
 
-  if (!data) return <div style={{ padding: 24 }}>{error ?? "Načítám…"}</div>;
+  if (!data) {
+    return (
+      <AppShell active="bezi" routeId={routeId}>
+        {error ?? "Načítám…"}
+      </AppShell>
+    );
+  }
 
   return (
-    <div style={{ padding: 24, maxWidth: 640, margin: "0 auto" }}>
-      <h1 style={{ fontWeight: 800 }}>Kdo ještě běží</h1>
+    <AppShell active="bezi" routeId={routeId}>
+      <div style={{ maxWidth: 720 }}>
+      <h1 style={{ fontWeight: 800, fontSize: 22 }}>Kdo ještě běží</h1>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
-      <div style={{ display: "flex", gap: 16, margin: "16px 0", fontFamily: "var(--font-mono, monospace)" }}>
-        <span>Přihlášeno: {data.celkemPrihlasenych}</span>
-        <span style={{ color: "var(--color-success, green)" }}>V cíli: {data.dokonceniPocet}</span>
-        <span style={{ color: "var(--color-danger)" }}>DNS/DNF/DQ: {data.neukonceniPocet}</span>
-        <span>Na trati: {data.bezi.length}</span>
+      <div className="stat-tile-row">
+        <div className="stat-tile">
+          <div className="l">Přihlášeno</div>
+          <div className="n">{data.celkemPrihlasenych}</div>
+        </div>
+        <div className="stat-tile">
+          <div className="l">V cíli</div>
+          <div className="n live">{data.dokonceniPocet}</div>
+        </div>
+        <div className="stat-tile">
+          <div className="l">Na trati</div>
+          <div className="n">{data.bezi.length}</div>
+        </div>
+        <div className="stat-tile">
+          <div className="l">DNS/DNF/DQ</div>
+          <div className={`n${data.neukonceniPocet > 0 ? " attention" : ""}`}>{data.neukonceniPocet}</div>
+        </div>
       </div>
 
       <div className="table-scroll">
@@ -71,7 +91,7 @@ export function Running() {
 
       {anomalie && anomalie.polozky.length > 0 && (
         <section style={{ marginTop: 32 }}>
-          <h2 style={{ color: "var(--color-danger)" }}>Podezřelé časy (F33)</h2>
+          <h2 style={{ color: "var(--color-danger)" }}>Podezřelé časy</h2>
           <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
             Výrazná odchylka od mediánu ostatních běžců ve stejné kategorii — možná chyba záznamu, zkrácení trati
             nebo nouzová situace na trati.
@@ -97,6 +117,7 @@ export function Running() {
           </ul>
         </section>
       )}
-    </div>
+      </div>
+    </AppShell>
   );
 }

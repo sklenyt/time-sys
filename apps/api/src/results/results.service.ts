@@ -424,6 +424,7 @@ export class ResultsService {
       poradiKategorie: polozka.poradiKategorie,
       mezicas,
       stavUkonceni: polozka.stavUkonceni,
+      clenoveDruzstva: prihlaska.clenoveDruzstva as PersonalResultDto["clenoveDruzstva"],
     };
   }
 
@@ -477,6 +478,7 @@ export class ResultsService {
       kategorieKod: prihlaska.kategorie.kod,
       kategorieNazev: prihlaska.kategorie.nazev,
       stavUkonceni: prihlaska.stavUkonceni as StavUkonceni | null,
+      clenoveDruzstva: prihlaska.clenoveDruzstva as VysledekPolozka["clenoveDruzstva"],
     };
 
     if (prihlaska.stavUkonceni || !zaznam || !prihlaska.startVlna?.casStartu) {

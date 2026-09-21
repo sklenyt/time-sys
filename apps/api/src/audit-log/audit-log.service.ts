@@ -62,8 +62,19 @@ export class AuditLogService {
         uzivatelEmail: p.uzivatel?.email ?? null,
         entita: p.entita,
         entitaId: p.entitaId,
-        puvodniHodnota: p.puvodniHodnota as Record<string, unknown> | null,
-        novaHodnota: p.novaHodnota as Record<string, unknown> | null,
+        puvodniHodnota: bezTrasaId(p.puvodniHodnota as Record<string, unknown> | null),
+        novaHodnota: bezTrasaId(p.novaHodnota as Record<string, unknown> | null),
       }));
   }
+}
+
+/**
+ * `trasaId` v `puvodniHodnota`/`novaHodnota` je jen interní klíč, přes
+ * který se pro `entita="prihlaska"` dohledává příslušnost k trati (nemá
+ * vlastní sloupec) — nikdy se nemění, takže do zobrazeného diffu nepatří.
+ */
+function bezTrasaId(hodnota: Record<string, unknown> | null): Record<string, unknown> | null {
+  if (!hodnota || !("trasaId" in hodnota)) return hodnota;
+  const { trasaId: _trasaId, ...zbytek } = hodnota;
+  return zbytek;
 }

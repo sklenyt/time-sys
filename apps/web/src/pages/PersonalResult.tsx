@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { PersonalResultDto } from "@depo/shared";
 import { api, ApiError, API_BASE } from "../lib/api";
+import { PublicHeader } from "../components/PublicHeader";
 
 /**
  * Osobní výsledek — cíl QR kódu na startovním čísle (F33/QR, viz
@@ -20,15 +21,37 @@ export function PersonalResult() {
       .catch((e) => setError(e instanceof ApiError ? e.message : "Chyba načítání"));
   }, [routeId, prihlaskaId]);
 
-  if (error) return <div style={{ padding: 24 }}>{error}</div>;
-  if (!data) return <div style={{ padding: 24 }}>Načítám…</div>;
+  if (error) {
+    return (
+      <div style={pageStyle}>
+        <div style={{ maxWidth: 420, margin: "0 auto" }}>
+          <PublicHeader />
+          {error}
+        </div>
+      </div>
+    );
+  }
+  if (!data) {
+    return (
+      <div style={pageStyle}>
+        <div style={{ maxWidth: 420, margin: "0 auto" }}>
+          <PublicHeader />
+          Načítám…
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: 24, maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
+    <div style={pageStyle}>
+    <div style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
+      <div style={{ textAlign: "left" }}>
+        <PublicHeader />
+      </div>
       <p className="mono" style={{ fontSize: 14, color: "var(--text-secondary)" }}>
         Startovní číslo {data.startovniCislo}
       </p>
-      <h1 style={{ fontWeight: 800, margin: "0 0 4px" }}>
+      <h1 style={{ fontWeight: 800, fontSize: 28, letterSpacing: "-0.02em", margin: "0 0 4px" }}>
         {data.prijmeni} {data.jmeno}
       </h1>
       <p style={{ color: "var(--text-secondary)", marginTop: 0 }}>{data.kategorieNazev}</p>
@@ -59,6 +82,19 @@ export function PersonalResult() {
             Mezičas: {data.mezicas}
           </p>
         )}
+        {data.clenoveDruzstva && data.clenoveDruzstva.length > 0 && (
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--line)" }}>
+            <p style={{ margin: "0 0 6px", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.6, color: "var(--text-secondary)" }}>
+              Družstvo
+            </p>
+            {data.clenoveDruzstva.map((c, i) => (
+              <p key={i} style={{ margin: 0, fontSize: 14 }}>
+                {c.prijmeni} {c.jmeno}
+                {c.klub && <span style={{ color: "var(--text-secondary)" }}> — {c.klub}</span>}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
 
       <img
@@ -74,5 +110,12 @@ export function PersonalResult() {
         <Link to={`/vysledky/${routeId}`}>Zpět na celkové výsledky</Link>
       </p>
     </div>
+    </div>
   );
 }
+
+const pageStyle: React.CSSProperties = {
+  minHeight: "100%",
+  background: "var(--surface)",
+  padding: "40px 16px",
+};

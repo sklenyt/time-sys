@@ -1,5 +1,7 @@
-import { IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
+import { Type } from "class-transformer";
+import { ArrayMaxSize, IsArray, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from "class-validator";
 import { Pohlavi } from "@depo/shared";
+import { TeamMemberDto } from "./team-member.dto";
 
 /**
  * Trasa je dána cestou (POST /routes/:routeId/entries), kategorie je zde
@@ -57,4 +59,12 @@ export class CreateEntryDto {
   @IsOptional()
   @IsEmail()
   oznamovaciEmail?: string;
+
+  /** Štafeta/družstvo (max 4 členové, legacy vzor viz TeamMemberDto) — nepovinné. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(4)
+  @ValidateNested({ each: true })
+  @Type(() => TeamMemberDto)
+  clenoveDruzstva?: TeamMemberDto[];
 }

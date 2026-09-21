@@ -75,6 +75,8 @@ Cíl: plná terénní spolehlivost a síťová spolupráce mezi stanovišti.
 
 ## 10.5 Doporučený bezprostřední další krok
 
-1. Projít tuto dokumentaci s organizátorem — potvrdit, že mockupy v [07-ui-mockups.md](07-ui-mockups.md) odpovídají očekávání, a upřesnit priority mezi Fázemi 2–4.
-2. Pokračovat ve Fázi 1: autentizace/RBAC, offline synchronizace (`/sync/events`), `vysledky_view`/`kdo_bezi_view`, FTP export.
-3. Otestovat na reálném závodě s reálnými přihláškami jako akceptačním datasetem.
+Fáze 0–4 jsou hotové (viz výše), včetně CI s automatizovanými testy, srovnání s legacy programem Časomíra (a dorovnání nalezených mezer), grafické identity, mobilní responzivity a accessibility auditu.
+
+1. **Nasadit do produkce** podle [15-produkcni-nasazeni.md](15-produkcni-nasazeni.md) — managed PostgreSQL, jedna instance API, HTTPS.
+2. **Otestovat na reálném závodě** s reálnými přihláškami jako akceptačním datasetem — teprve ostrý provoz ověří, jestli offline sync a workflow "číslo + Enter" reálně obstojí v terénu.
+3. Případné škálování na víc instancí API (Redis pub/sub místo in-process `Subject`, viz [15-produkcni-nasazeni.md §15.4](15-produkcni-nasazeni.md#154-kolik-instancí-api-přesně-jedna)) až podle skutečné potřeby, ne preventivně.

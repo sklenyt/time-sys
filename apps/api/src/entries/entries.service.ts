@@ -4,8 +4,10 @@ import { parse } from "csv-parse/sync";
 import { ImportEntriesResponseDto, Pohlavi, RegistrationInfoDto, RegistrationResponseDto, TypStartu } from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateEntryDto } from "./dto/create-entry.dto";
+import { UpdateEntryDto } from "./dto/update-entry.dto";
 import { PublicRegisterDto } from "./dto/public-register.dto";
 import { StartVlnyService } from "../start-vlny/start-vlny.service";
+import { CategoriesService } from "../categories/categories.service";
 import { decryptSecret, encryptSecret } from "../common/secret-crypto";
 
 const MAX_POKUSU_O_CISLO = 5;
@@ -14,7 +16,8 @@ const MAX_POKUSU_O_CISLO = 5;
 export class EntriesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly startVlny: StartVlnyService
+    private readonly startVlny: StartVlnyService,
+    private readonly categories: CategoriesService
   ) {}
 
   async create(trasaId: string, dto: CreateEntryDto) {
@@ -38,6 +41,9 @@ export class EntriesService {
           // Citlivé osobní údaje (F31) — nikdy plain-text ve sloupci (§8.4).
           nouzovyKontakt: dto.nouzovyKontakt ? encryptSecret(dto.nouzovyKontakt) : undefined,
           zdravotniPoznamka: dto.zdravotniPoznamka ? encryptSecret(dto.zdravotniPoznamka) : undefined,
+          clenoveDruzstva: dto.clenoveDruzstva?.length
+            ? (dto.clenoveDruzstva.map((c) => ({ prijmeni: c.prijmeni, jmeno: c.jmeno, rocnik: c.rocnik ?? null, klub: c.klub ?? null })) as Prisma.InputJsonValue)
+            : undefined,
         },
       });
       return odsifrovatPrihlasku(prihlaska);
@@ -54,8 +60,14 @@ export class EntriesService {
   /**
    * Import startovní listiny z CSV (F04, UC2). Očekávané sloupce v hlavičce:
    * cislo, prijmeni, jmeno, kategorie (kód kategorie na této trati),
-   * volitelně rocnik, pohlavi (M/Z), klub. Chybný řádek se přeskočí a
-   * zaznamená se do `chyby` — jeden špatný řádek nezmaří zbytek importu.
+   * volitelně rocnik, pohlavi (M/Z), klub. Když sloupec kategorie chybí
+   * nebo je prázdný, ale řádek má ročník i pohlaví, kategorie se dopočítá
+   * automaticky (F03, `CategoriesService.navrhniKategorii`) — stejný
+   * princip, jaký měla legacy Časomíra (viz git historie 01-analysis.md
+   * §1.2). Nepovinné sloupce `clen1_prijmeni`/`clen1_jmeno`/`clen1_rocnik`/
+   * `clen1_klub` … `clen4_*` zakládají štafetu/družstvo (max 4 členové,
+   * legacy vzor). Chybný řádek se přeskočí a zaznamená do `chyby` — jeden
+   * špatný řádek nezmaří zbytek importu.
    */
   async importCsv(trasaId: string, obsahSouboru: Buffer): Promise<ImportEntriesResponseDto> {
     const kategorie = await this.prisma.kategorie.findMany({ where: { trasaId } });
@@ -75,8 +87,6 @@ export class EntriesService {
       const cisloRadku = index + 2; // +1 hlavička, +1 na 1-based řádkování pro uživatele
 
       const cislo = Number(radek.cislo);
-      const kategorieKod = (radek.kategorie ?? "").toLowerCase();
-      const kategorieId = kategoriePodleKodu.get(kategorieKod);
 
       if (!radek.cislo || Number.isNaN(cislo)) {
         chyby.push({ radek: cisloRadku, zprava: "Chybí nebo neplatné startovní číslo" });
@@ -86,16 +96,29 @@ export class EntriesService {
         chyby.push({ radek: cisloRadku, zprava: "Chybí příjmení nebo jméno" });
         continue;
       }
-      if (!kategorieId) {
-        chyby.push({ radek: cisloRadku, zprava: `Neznámá kategorie "${radek.kategorie ?? ""}"` });
-        continue;
-      }
 
       const pohlavi =
         radek.pohlavi?.toUpperCase() === "M" || radek.pohlavi?.toUpperCase() === "Z"
           ? (radek.pohlavi.toUpperCase() as Pohlavi)
           : undefined;
       const rocnik = radek.rocnik ? Number(radek.rocnik) : undefined;
+      const platnyRocnik = rocnik && !Number.isNaN(rocnik) ? rocnik : undefined;
+
+      const kategorieKod = (radek.kategorie ?? "").toLowerCase();
+      let kategorieId = kategoriePodleKodu.get(kategorieKod);
+      if (!kategorieId && !radek.kategorie?.trim() && platnyRocnik && pohlavi) {
+        const navrh = await this.categories.navrhniKategorii(trasaId, platnyRocnik, pohlavi);
+        kategorieId = navrh?.id;
+      }
+      if (!kategorieId) {
+        chyby.push({
+          radek: cisloRadku,
+          zprava: radek.kategorie?.trim()
+            ? `Neznámá kategorie "${radek.kategorie}"`
+            : "Chybí kategorie a nešlo ji dopočítat z ročníku/pohlaví",
+        });
+        continue;
+      }
 
       try {
         await this.create(trasaId, {
@@ -105,7 +128,8 @@ export class EntriesService {
           kategorieId,
           klub: radek.klub?.trim() || undefined,
           pohlavi,
-          rocnik: rocnik && !Number.isNaN(rocnik) ? rocnik : undefined,
+          rocnik: platnyRocnik,
+          clenoveDruzstva: parseClenoveDruzstvaZRadku(radek),
         });
         importovano += 1;
       } catch (err) {
@@ -115,6 +139,58 @@ export class EntriesService {
     }
 
     return { importovano, chyby };
+  }
+
+  /**
+   * F11 (UC12 v git historii 01-analysis.md) — ruční nastavení stavu
+   * ukončení (DNS/DNF/DQ, nebo `null` pro návrat do běžného stavu) a/nebo
+   * úprava soupisky družstva. Obojí je organizátorská akce nad startovní
+   * listinou, ne časoměřičský zápis — proto samostatný endpoint od
+   * `POST /records`.
+   */
+  async update(trasaId: string, entryId: string, dto: UpdateEntryDto, uzivatelId: string | null) {
+    const prihlaska = await this.prisma.prihlaska.findFirst({ where: { id: entryId, trasaId } });
+    if (!prihlaska) {
+      throw new NotFoundException("Přihláška nenalezena na této trati");
+    }
+
+    const zmeny: Prisma.PrihlaskaUpdateInput = {};
+    // trasaId v puvodniHodnota je nutný, aby AuditLogService.listForRoute
+    // (entita="prihlaska" nemá vlastní sloupec trasa_id) tenhle záznam
+    // vůbec dohledal — stejná konvence jako GdprService.anonymizovatPrihlasku.
+    const puvodniHodnota: Record<string, unknown> = { trasaId };
+    const novaHodnota: Record<string, unknown> = {};
+
+    if (dto.stavUkonceni !== undefined && dto.stavUkonceni !== prihlaska.stavUkonceni) {
+      zmeny.stavUkonceni = dto.stavUkonceni;
+      puvodniHodnota.stavUkonceni = prihlaska.stavUkonceni;
+      novaHodnota.stavUkonceni = dto.stavUkonceni;
+    }
+    if (dto.clenoveDruzstva !== undefined) {
+      zmeny.clenoveDruzstva = dto.clenoveDruzstva?.length
+        ? (dto.clenoveDruzstva.map((c) => ({ prijmeni: c.prijmeni, jmeno: c.jmeno, rocnik: c.rocnik ?? null, klub: c.klub ?? null })) as Prisma.InputJsonValue)
+        : Prisma.DbNull;
+      puvodniHodnota.clenoveDruzstva = prihlaska.clenoveDruzstva;
+      novaHodnota.clenoveDruzstva = dto.clenoveDruzstva ?? null;
+    }
+
+    if (Object.keys(zmeny).length === 0) {
+      return odsifrovatPrihlasku(prihlaska);
+    }
+
+    const [aktualizovana] = await this.prisma.$transaction([
+      this.prisma.prihlaska.update({ where: { id: entryId }, data: zmeny }),
+      this.prisma.auditLog.create({
+        data: {
+          uzivatelId,
+          entita: "prihlaska",
+          entitaId: entryId,
+          puvodniHodnota: puvodniHodnota as Prisma.InputJsonObject,
+          novaHodnota: novaHodnota as Prisma.InputJsonObject,
+        },
+      }),
+    ]);
+    return odsifrovatPrihlasku(aktualizovana);
   }
 
   async findAllForRoute(trasaId: string, search?: string) {
@@ -237,6 +313,30 @@ export class EntriesService {
     const vlna = await this.startVlny.findOrCreateDefault(trasaId);
     return vlna.id;
   }
+}
+
+/**
+ * Nepovinné CSV sloupce `clen1_prijmeni`/`clen1_jmeno`/`clen1_rocnik`/
+ * `clen1_klub` … `clen4_*` — legacy vzor pro štafety/družstva (viz git
+ * historie 11-legacy-schema-reference.md §11.2, sloupce prijmeniN/jmenoN/
+ * rocnikN/klubN na `tblStartovniListina`). Člen se do pole zařadí, jen
+ * když má vyplněné aspoň příjmení i jméno.
+ */
+function parseClenoveDruzstvaZRadku(radek: Record<string, string>): { prijmeni: string; jmeno: string; rocnik?: number; klub?: string }[] | undefined {
+  const clenove: { prijmeni: string; jmeno: string; rocnik?: number; klub?: string }[] = [];
+  for (let i = 1; i <= 4; i += 1) {
+    const prijmeni = radek[`clen${i}_prijmeni`]?.trim();
+    const jmeno = radek[`clen${i}_jmeno`]?.trim();
+    if (!prijmeni || !jmeno) continue;
+    const rocnik = radek[`clen${i}_rocnik`] ? Number(radek[`clen${i}_rocnik`]) : undefined;
+    clenove.push({
+      prijmeni,
+      jmeno,
+      rocnik: rocnik && !Number.isNaN(rocnik) ? rocnik : undefined,
+      klub: radek[`clen${i}_klub`]?.trim() || undefined,
+    });
+  }
+  return clenove.length > 0 ? clenove : undefined;
 }
 
 /** Rozšifruje citlivé osobní údaje (F31) před vrácením z API — v DB zůstávají jen šifrované. */

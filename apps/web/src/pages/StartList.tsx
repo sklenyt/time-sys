@@ -1,20 +1,34 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { ImportEntriesResponseDto, Kategorie, Prihlaska, Trasa } from "@depo/shared";
-import { Pohlavi } from "@depo/shared";
+import type { DruzstvoClen, ImportEntriesResponseDto, Kategorie, Prihlaska, Trasa } from "@depo/shared";
+import { Pohlavi, StavUkonceni } from "@depo/shared";
 import { api } from "../lib/api";
+import { AppShell } from "../components/AppShell";
+
+const STAV_LABEL: Record<StavUkonceni, string> = {
+  [StavUkonceni.DNS]: "DNS",
+  [StavUkonceni.DNF]: "DNF",
+  [StavUkonceni.DQ]: "DQ",
+};
+
+const PRAZDNY_CLEN: DruzstvoClen = { prijmeni: "", jmeno: "", rocnik: undefined, klub: undefined };
 
 export function StartList() {
   const { routeId } = useParams<{ routeId: string }>();
   const [trasa, setTrasa] = useState<(Trasa & { kategorie: Kategorie[] }) | null>(null);
-  const [entries, setEntries] = useState<Prihlaska[]>([]);
+  const [entries, setEntries] = useState<(Prihlaska & { kategorie?: Kategorie })[]>([]);
   const [catKod, setCatKod] = useState("");
   const [catNazev, setCatNazev] = useState("");
   const [catPohlavi, setCatPohlavi] = useState<Pohlavi>(Pohlavi.M);
   const [cislo, setCislo] = useState("");
   const [prijmeni, setPrijmeni] = useState("");
   const [jmeno, setJmeno] = useState("");
+  const [rocnik, setRocnik] = useState("");
+  const [pohlavi, setPohlavi] = useState<Pohlavi | "">("");
   const [kategorieId, setKategorieId] = useState("");
+  const [navrzenaKategorieId, setNavrzenaKategorieId] = useState<string | null>(null);
+  const [druzstvo, setDruzstvo] = useState(false);
+  const [clenove, setClenove] = useState<DruzstvoClen[]>([{ ...PRAZDNY_CLEN }]);
   const [error, setError] = useState<string | null>(null);
   const [importVysledek, setImportVysledek] = useState<ImportEntriesResponseDto | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,7 +39,7 @@ export function StartList() {
     try {
       const t = await api.get<Trasa & { kategorie: Kategorie[] }>(`/routes/${routeId}`);
       setTrasa(t);
-      const e = await api.get<Prihlaska[]>(`/routes/${routeId}/entries`);
+      const e = await api.get<(Prihlaska & { kategorie?: Kategorie })[]>(`/routes/${routeId}/entries`);
       setEntries(e);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Chyba načítání");
@@ -36,6 +50,32 @@ export function StartList() {
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeId]);
+
+  // F03 — automatický návrh kategorie podle ročníku/pohlaví. Jen našeptává:
+  // kategorii přednastaví, ale pole zůstává editovatelné a organizátor musí
+  // zápis vždy sám odeslat, nic se neuloží potichu.
+  useEffect(() => {
+    if (!routeId || !rocnik || !pohlavi) {
+      setNavrzenaKategorieId(null);
+      return;
+    }
+    const rocnikCislo = Number(rocnik);
+    if (Number.isNaN(rocnikCislo)) return;
+    let zruseno = false;
+    api
+      .get<Kategorie | null>(`/routes/${routeId}/categories/suggest?rocnik=${rocnikCislo}&pohlavi=${pohlavi}`)
+      .then((navrh) => {
+        if (zruseno || !navrh) return;
+        setNavrzenaKategorieId(navrh.id);
+        setKategorieId((aktualni) => aktualni || navrh.id);
+      })
+      .catch(() => {
+        // Návrh je jen doplněk — chyba nesmí bránit ručnímu výběru kategorie.
+      });
+    return () => {
+      zruseno = true;
+    };
+  }, [routeId, rocnik, pohlavi]);
 
   async function createCategory() {
     if (!routeId || !catKod.trim() || !catNazev.trim()) return;
@@ -51,22 +91,44 @@ export function StartList() {
 
   async function createEntry() {
     if (!routeId || !cislo || !prijmeni.trim() || !jmeno.trim() || !kategorieId) {
-      setError("Startovní číslo, jméno, příjmení a kategorie jsou povinné (F03).");
+      setError("Startovní číslo, jméno, příjmení a kategorie jsou povinné.");
       return;
     }
+    const platniClenove = druzstvo
+      ? clenove.filter((c) => c.prijmeni.trim() && c.jmeno.trim()).map((c) => ({ ...c, prijmeni: c.prijmeni.trim(), jmeno: c.jmeno.trim() }))
+      : undefined;
     try {
       await api.post(`/routes/${routeId}/entries`, {
         startovniCislo: Number(cislo),
         prijmeni,
         jmeno,
         kategorieId,
+        rocnik: rocnik ? Number(rocnik) : undefined,
+        pohlavi: pohlavi || undefined,
+        clenoveDruzstva: platniClenove?.length ? platniClenove : undefined,
       });
       setCislo("");
       setPrijmeni("");
       setJmeno("");
+      setRocnik("");
+      setPohlavi("");
+      setKategorieId("");
+      setNavrzenaKategorieId(null);
+      setDruzstvo(false);
+      setClenove([{ ...PRAZDNY_CLEN }]);
       reload();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Chyba zápisu");
+    }
+  }
+
+  async function nastavitStav(entryId: string, stav: StavUkonceni | null) {
+    if (!routeId) return;
+    try {
+      await api.patch(`/routes/${routeId}/entries/${entryId}`, { stavUkonceni: stav });
+      reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Nastavení stavu se nezdařilo");
     }
   }
 
@@ -87,11 +149,22 @@ export function StartList() {
     }
   }
 
-  if (!trasa) return <div style={{ padding: 24 }}>{error ?? "Načítám…"}</div>;
+  function upravitClena(index: number, zmena: Partial<DruzstvoClen>) {
+    setClenove((c) => c.map((clen, i) => (i === index ? { ...clen, ...zmena } : clen)));
+  }
+
+  if (!trasa) {
+    return (
+      <AppShell active="listina" routeId={routeId}>
+        {error ?? "Načítám…"}
+      </AppShell>
+    );
+  }
 
   return (
-    <div style={{ padding: 24, maxWidth: 640, margin: "0 auto" }}>
-      <h1>Startovní listina — {trasa.nazev}</h1>
+    <AppShell active="listina" routeId={routeId} eventId={trasa.udalostId}>
+      <div style={{ maxWidth: 760 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 800 }}>Startovní listina — {trasa.nazev}</h1>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
       {trasa.kategorie.length === 0 && (
@@ -104,7 +177,7 @@ export function StartList() {
               <option value={Pohlavi.M}>M</option>
               <option value={Pohlavi.Z}>Z</option>
             </select>
-            <button onClick={createCategory} style={buttonStyle}>
+            <button onClick={createCategory} className="btn-pill primary">
               Přidat kategorii
             </button>
           </div>
@@ -112,13 +185,28 @@ export function StartList() {
       )}
 
       {trasa.kategorie.length > 0 && (
-        <section style={{ marginBottom: 24 }}>
-          <h2>Zápis na místě</h2>
+        <section className="dash-card" style={{ marginBottom: 24 }}>
+          <h2 style={{ marginTop: 0, fontSize: 15 }}>Zápis na místě</h2>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <input placeholder="Číslo" value={cislo} onChange={(e) => setCislo(e.target.value)} style={{ ...inputStyle, width: 80 }} />
             <input placeholder="Příjmení" value={prijmeni} onChange={(e) => setPrijmeni(e.target.value)} style={inputStyle} />
             <input placeholder="Jméno" value={jmeno} onChange={(e) => setJmeno(e.target.value)} style={inputStyle} />
-            <select value={kategorieId} onChange={(e) => setKategorieId(e.target.value)} style={{ ...inputStyle, borderColor: kategorieId ? "var(--line)" : "var(--color-danger)" }}>
+            <input
+              placeholder="Ročník"
+              value={rocnik}
+              onChange={(e) => setRocnik(e.target.value)}
+              style={{ ...inputStyle, width: 90 }}
+            />
+            <select value={pohlavi} onChange={(e) => setPohlavi(e.target.value as Pohlavi | "")} style={inputStyle}>
+              <option value="">Pohlaví</option>
+              <option value={Pohlavi.M}>M</option>
+              <option value={Pohlavi.Z}>Z</option>
+            </select>
+            <select
+              value={kategorieId}
+              onChange={(e) => setKategorieId(e.target.value)}
+              style={{ ...inputStyle, borderColor: kategorieId ? "var(--line)" : "var(--color-danger)" }}
+            >
               <option value="">Kategorie (povinné)</option>
               {trasa.kategorie.map((k) => (
                 <option key={k.id} value={k.id}>
@@ -126,14 +214,69 @@ export function StartList() {
                 </option>
               ))}
             </select>
-            <button onClick={createEntry} style={buttonStyle}>
+            <button onClick={createEntry} className="btn-pill primary">
               Přidat do listiny
             </button>
           </div>
+          {navrzenaKategorieId && kategorieId === navrzenaKategorieId && (
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "6px 0 0" }}>
+              Kategorie navržena automaticky podle ročníku a pohlaví — klidně ji přepiš, pokud nesedí.
+            </p>
+          )}
 
-          <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ marginTop: 14 }}>
+            <label style={{ fontSize: 13, display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+              <input type="checkbox" checked={druzstvo} onChange={(e) => setDruzstvo(e.target.checked)} />
+              Štafeta / družstvo (max 4 další členové pod tímto startovním číslem)
+            </label>
+            {druzstvo && (
+              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+                {clenove.map((clen, i) => (
+                  <div key={i} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <input
+                      placeholder={`Člen ${i + 1} — příjmení`}
+                      value={clen.prijmeni}
+                      onChange={(e) => upravitClena(i, { prijmeni: e.target.value })}
+                      style={inputStyle}
+                    />
+                    <input
+                      placeholder="Jméno"
+                      value={clen.jmeno}
+                      onChange={(e) => upravitClena(i, { jmeno: e.target.value })}
+                      style={inputStyle}
+                    />
+                    <input
+                      placeholder="Ročník"
+                      value={clen.rocnik ?? ""}
+                      onChange={(e) => upravitClena(i, { rocnik: e.target.value ? Number(e.target.value) : undefined })}
+                      style={{ ...inputStyle, width: 90 }}
+                    />
+                    <input
+                      placeholder="Klub"
+                      value={clen.klub ?? ""}
+                      onChange={(e) => upravitClena(i, { klub: e.target.value || undefined })}
+                      style={inputStyle}
+                    />
+                  </div>
+                ))}
+                {clenove.length < 4 && (
+                  <button
+                    type="button"
+                    className="btn-pill"
+                    style={{ alignSelf: "flex-start" }}
+                    onClick={() => setClenove((c) => [...c, { ...PRAZDNY_CLEN }])}
+                  >
+                    + Další člen
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <label className="mono" style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-              Import z CSV (sloupce: cislo, prijmeni, jmeno, kategorie, volitelně rocnik, pohlavi, klub)
+              Import z CSV (cislo, prijmeni, jmeno, kategorie — nepovinné rocnik, pohlavi, klub; bez kategorie se
+              dopočítá z ročníku/pohlaví; clen1_prijmeni…clen4_klub pro štafety)
             </label>
             <input
               ref={fileInputRef}
@@ -163,6 +306,8 @@ export function StartList() {
               <th>Č.</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
+              <th style={{ fontFamily: "var(--font-ui)" }}>Družstvo</th>
+              <th style={{ fontFamily: "var(--font-ui)" }}>Stav</th>
             </tr>
           </thead>
           <tbody>
@@ -172,13 +317,39 @@ export function StartList() {
                 <td style={{ fontFamily: "var(--font-ui)" }}>
                   {e.prijmeni} {e.jmeno}
                 </td>
-                <td style={{ fontFamily: "var(--font-ui)" }}>{(e as Prihlaska & { kategorie?: Kategorie }).kategorie?.kod ?? "—"}</td>
+                <td style={{ fontFamily: "var(--font-ui)" }}>{e.kategorie?.kod ?? "—"}</td>
+                <td style={{ fontFamily: "var(--font-ui)", fontSize: 12.5, color: "var(--text-secondary)" }}>
+                  {e.clenoveDruzstva?.length
+                    ? e.clenoveDruzstva.map((c) => `${c.prijmeni} ${c.jmeno}`).join(", ")
+                    : "—"}
+                </td>
+                <td>
+                  <select
+                    value={e.stavUkonceni ?? ""}
+                    onChange={(ev) => nastavitStav(e.id, (ev.target.value as StavUkonceni) || null)}
+                    style={{
+                      ...inputStyle,
+                      padding: "4px 8px",
+                      fontSize: 12.5,
+                      color: e.stavUkonceni ? "var(--color-danger)" : "var(--text-secondary)",
+                      borderColor: e.stavUkonceni ? "var(--color-danger)" : "var(--line)",
+                    }}
+                  >
+                    <option value="">v pořádku</option>
+                    {Object.values(StavUkonceni).map((s) => (
+                      <option key={s} value={s}>
+                        {STAV_LABEL[s]}
+                      </option>
+                    ))}
+                  </select>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
@@ -187,14 +358,4 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 8,
   border: "1px solid var(--line)",
   fontSize: 14,
-};
-
-const buttonStyle: React.CSSProperties = {
-  background: "var(--navy-800)",
-  color: "#fff",
-  border: "none",
-  borderRadius: 8,
-  padding: "8px 16px",
-  fontWeight: 600,
-  cursor: "pointer",
 };

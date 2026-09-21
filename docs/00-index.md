@@ -17,6 +17,7 @@
 | 9 | [12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md) | Detailní návrh RFID čipů (hardware, párování, edge cases) + obecná doporučení pro další rozvoj |
 | 10 | [13-konkurencni-analyza.md](13-konkurencni-analyza.md) | Celkový přehled trhu — profily podobných systémů (MYLAPS, RACE RESULT, ChronoTrack, SportIdent/Copérnico, RunSignup, PikaTimer, fsTimer, OpenRaceTiming, Webscorer, RaceJoy, české nástroje a služby) a co z nich zvážit |
 | 11 | [14-graficka-identita.md](14-graficka-identita.md) | Grafická identita Depo — logo, barevný systém, typografie, brand guideline |
+| 12 | [15-produkcni-nasazeni.md](15-produkcni-nasazeni.md) | Produkční nasazení databáze a API — managed Postgres, pooling, počet instancí, SSE za proxy, multi-device use case |
 
 ## Shrnutí v jedné větě
 
@@ -24,4 +25,4 @@
 
 ## Stav projektu
 
-Fáze: **Fáze 1 — základní kostra aplikace** (monorepo, API a webová PWA scaffold hotové a ověřené end-to-end, viz [10-roadmap.md](10-roadmap.md)). Další krok: autentizace/RBAC, offline synchronizace a doplnění zbývajících funkčních modulů podle roadmapy.
+**Fáze 0–4 hotové** (viz [10-roadmap.md](10-roadmap.md)) — offline-first zápis a sync, živé výsledky a publikace, bezpečnost/GDPR/multi-tenant RLS, RFID a rozšířené reporty. Nad rámec roadmapy dále doplněno: srovnání s legacy programem Časomíra a dorovnání tří nalezených mezer (DNS/DNF/DQ, auto-kategorizace, štafety), grafická identita napříč appkou, hloubková mobilní responzivita, accessibility audit (WCAG kontrast, aria-live), CI s automatizovanými unit/e2e testy, a [produkční nasazovací plán](15-produkcni-nasazeni.md). Další krok: ostrý test na reálném závodě podle §10.5 v roadmapě.

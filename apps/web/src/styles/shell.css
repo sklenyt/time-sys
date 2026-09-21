@@ -1,0 +1,516 @@
+/**
+ * Sdílený layout organizátorských obrazovek (Dashboard, Startovní listina,
+ * Kdo běží, Kolize, Audit, Publikace, Reporty) — tmavý postranní nav podle
+ * docs/07-ui-mockups.md §7.12 (docs/images/depo-app-02-dashboard.png).
+ * Měření a Kiosek mají záměrně vlastní shell bez téhle navigace (§7.3).
+ */
+.app-shell {
+  display: flex;
+  min-height: 100%;
+}
+
+.app-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--navy-800);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.app-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 10px 22px;
+}
+
+.app-sidebar-brand-name {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.app-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.app-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  color: var(--steel-400);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  border-left: 3px solid transparent;
+  background: none;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.app-nav-link:hover {
+  color: #fff;
+}
+
+.app-nav-link.active {
+  background: var(--navy-700);
+  color: #fff;
+  border-left-color: var(--tape-500);
+}
+
+.app-nav-link.disabled {
+  color: var(--navy-700);
+  cursor: not-allowed;
+}
+
+.app-sidebar-footer {
+  border-top: 1px solid var(--navy-700);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.app-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 4px;
+  font-size: 12.5px;
+  color: var(--steel-400);
+}
+
+.app-user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--navy-600);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 32px 60px;
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    flex-direction: column;
+  }
+  .app-sidebar {
+    width: 100%;
+    height: auto;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Stejné stínování jako u .table-scroll (tokens.css) — bez toho
+       na dotykovém displeji nic nenapoví, že navigace pokračuje
+       vpravo mimo obrazovku. */
+    background:
+      linear-gradient(to right, var(--navy-800) 20%, transparent) left,
+      linear-gradient(to left, var(--navy-800) 20%, transparent) right,
+      radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.5), transparent) left,
+      radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.5), transparent) right;
+    background-repeat: no-repeat;
+    background-color: var(--navy-800);
+    background-size:
+      20px 100%,
+      20px 100%,
+      12px 100%,
+      12px 100%;
+    background-attachment: local, local, scroll, scroll;
+  }
+  .app-sidebar-brand {
+    padding: 0 10px 0 0;
+    flex-shrink: 0;
+  }
+  .app-sidebar-nav {
+    flex-direction: row;
+    flex: none;
+  }
+  .app-nav-link {
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    padding: 8px 10px;
+  }
+  .app-nav-link.active {
+    border-left-color: transparent;
+    border-bottom-color: var(--tape-500);
+  }
+  .app-sidebar-footer {
+    display: none;
+  }
+  .app-main {
+    padding: 20px 16px 48px;
+  }
+}
+
+/* ---------- Page header ---------- */
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.dash-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 2px 0 2px;
+}
+
+.dash-header .meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.dash-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Stat tiles ---------- */
+.stat-tile-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 20px 0 24px;
+}
+
+.stat-tile {
+  flex: 1;
+  min-width: 150px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+}
+
+.stat-tile .l {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.stat-tile .n {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 800;
+  margin-top: 4px;
+  line-height: 1.1;
+}
+
+.stat-tile .n.attention {
+  color: var(--color-danger);
+}
+
+.stat-tile .n.live {
+  color: var(--color-live);
+}
+
+.stat-tile .d {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ---------- Dashboard grid ---------- */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .dash-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.dash-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.dash-card-head h2 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.dash-card-head .meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ---------- Route rows with progress ---------- */
+.route-row {
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.route-row:first-child {
+  border-top: none;
+  padding-top: 8px;
+}
+
+.route-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.route-row-head .name {
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.route-row-head .meta {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.route-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  overflow: hidden;
+  display: flex;
+}
+
+.route-progress-fill {
+  height: 100%;
+  background: var(--navy-800);
+}
+
+.route-progress-fill.attention {
+  background: var(--color-attention);
+}
+
+.route-row-foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.route-row-foot .win {
+  color: var(--navy-800);
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.route-state-pill {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.route-state-pill.running {
+  background: #e6f7f0;
+  color: #0a7a54;
+}
+
+.route-state-pill.before {
+  background: var(--surface);
+  color: var(--text-secondary);
+}
+
+.route-state-pill.done {
+  background: #eef1f5;
+  color: var(--text-secondary);
+}
+
+/* ---------- Attention panel ---------- */
+.attention-panel {
+  background: #fff7ec;
+  border: 1px solid #f1dcb0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.attention-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px 12px;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--tape-700);
+}
+
+.attention-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-top: 1px solid #f1dcb0;
+}
+
+.attention-item .t {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.attention-item .d {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.attention-empty {
+  padding: 16px 18px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ---------- Live feed ---------- */
+.live-feed {
+  background: var(--ink-900);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  margin-top: 20px;
+}
+
+.live-feed-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--steel-400);
+  margin-bottom: 10px;
+}
+
+.live-feed-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--navy-700);
+  font-size: 13.5px;
+}
+
+.live-feed-row:first-child {
+  border-top: none;
+}
+
+.live-feed-row .bib {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: var(--tape-500);
+  width: 34px;
+  flex-shrink: 0;
+}
+
+.live-feed-row .time {
+  font-family: var(--font-mono);
+  flex: 1;
+}
+
+.live-feed-row .route {
+  color: var(--steel-400);
+  font-size: 12px;
+}
+
+.live-feed-empty {
+  color: var(--steel-400);
+  font-size: 13px;
+  padding: 4px 0;
+}
+
+/* ---------- Small pill buttons reused across organizer pages ---------- */
+.btn-pill {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--navy-800);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-pill:hover {
+  border-color: var(--navy-800);
+}
+
+.btn-pill.primary {
+  background: var(--navy-800);
+  color: #fff;
+  border-color: var(--navy-800);
+}
+
+.btn-pill.accent {
+  /* --tape-500 proti bílému textu dává jen 3.4:1 (pod WCAG AA 4.5:1 pro
+     tohle malé 12.5px písmo) — --tape-700 je stejná barva o odstín tmavší. */
+  background: var(--tape-700);
+  color: #fff;
+  border-color: var(--tape-700);
+}
+
+.btn-pill.danger {
+  color: var(--color-danger);
+  border-color: #f3c9c4;
+}

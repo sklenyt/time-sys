@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { PublikacniCil, PublishExportResponseDto, PublishTestResponseDto } from "@depo/shared";
-import { ProtokolPublikace } from "@depo/shared";
+import type { PublikacniCil, PublishExportResponseDto, PublishTestResponseDto, Trasa } from "@depo/shared";
+import { ProtokolPublikace, StavExportu } from "@depo/shared";
 import { api } from "../lib/api";
+import { AppShell } from "../components/AppShell";
 
 export function PublishTargets() {
   const { eventId } = useParams<{ eventId: string }>();
   const [cile, setCile] = useState<PublikacniCil[]>([]);
+  const [trasy, setTrasy] = useState<Trasa[]>([]);
   const [protokol, setProtokol] = useState<ProtokolPublikace>(ProtokolPublikace.SFTP);
   const [server, setServer] = useState("");
   const [port, setPort] = useState("22");
@@ -22,6 +24,8 @@ export function PublishTargets() {
     try {
       const data = await api.get<PublikacniCil[]>(`/events/${eventId}/publish-targets`);
       setCile(data);
+      const routes = await api.get<Trasa[]>(`/events/${eventId}/routes`);
+      setTrasy(routes);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Chyba načítání");
     }
@@ -78,13 +82,16 @@ export function PublishTargets() {
     }
   }
 
+  const prvniTrasa = trasy.find((t) => !t.dokoncena) ?? trasy[0];
+
   return (
-    <div style={{ padding: 24, maxWidth: 640, margin: "0 auto" }}>
-      <h1 style={{ fontWeight: 800 }}>Publikace výsledků (FTP/SFTP)</h1>
+    <AppShell active="publikace" routeId={prvniTrasa?.id} eventId={eventId}>
+      <div style={{ maxWidth: 680 }}>
+      <h1 style={{ fontWeight: 800, fontSize: 22 }}>Publikace výsledků (FTP/SFTP)</h1>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
-      <section style={{ marginBottom: 24 }}>
-        <h2>Nový publikační cíl</h2>
+      <section className="dash-card" style={{ marginBottom: 24 }}>
+        <h2 style={{ marginTop: 0, fontSize: 15 }}>Nový publikační cíl</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <select value={protokol} onChange={(e) => setProtokol(e.target.value as ProtokolPublikace)} style={inputStyle}>
             <option value={ProtokolPublikace.SFTP}>SFTP</option>
@@ -97,39 +104,51 @@ export function PublishTargets() {
           <input placeholder="Uživatel" value={uzivatel} onChange={(e) => setUzivatel(e.target.value)} style={inputStyle} />
           <input placeholder="Heslo" type="password" value={heslo} onChange={(e) => setHeslo(e.target.value)} style={inputStyle} />
           <input placeholder="Interval (min)" value={intervalMinut} onChange={(e) => setIntervalMinut(e.target.value)} style={{ ...inputStyle, width: 110 }} />
-          <button onClick={createCil} style={buttonStyle}>
+          <button onClick={createCil} className="btn-pill primary">
             Přidat cíl
           </button>
         </div>
       </section>
 
       {cile.map((c) => (
-        <article key={c.id} style={{ border: "1px solid var(--line)", borderRadius: "var(--radius-lg)", padding: 16, marginBottom: 12 }}>
+        <article key={c.id} className="dash-card" style={{ marginBottom: 12 }}>
           <p className="mono" style={{ margin: "0 0 4px", fontWeight: 700 }}>
             {c.protokol}://{c.uzivatel}@{c.server}:{c.port}{c.cesta}
           </p>
-          <p style={{ margin: "0 0 8px", fontSize: 13, color: "var(--text-secondary)" }}>
-            Interval {c.intervalMinut} min · poslední export:{" "}
-            {c.posledniExportAt ? `${new Date(c.posledniExportAt).toLocaleString("cs-CZ")} (${c.posledniExportStav})` : "zatím žádný"}
+          <p style={{ margin: "0 0 8px", fontSize: 13, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span>
+              Interval {c.intervalMinut} min · poslední export:{" "}
+              {c.posledniExportAt ? new Date(c.posledniExportAt).toLocaleString("cs-CZ") : "zatím žádný"}
+            </span>
+            {c.posledniExportStav && (
+              <span
+                className="route-state-pill"
+                style={
+                  c.posledniExportStav === StavExportu.OK
+                    ? { background: "#e6f7f0", color: "#0a7a54" }
+                    : { background: "#fdf1f0", color: "var(--color-danger)" }
+                }
+              >
+                {c.posledniExportStav === StavExportu.OK ? "OK" : "chyba"}
+              </span>
+            )}
           </p>
-          <div style={{ display: "flex", gap: 12 }}>
-            <button onClick={() => testCil(c.id)} style={{ ...buttonStyle, padding: "4px 10px", fontSize: 12 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={() => testCil(c.id)} className="btn-pill">
               Otestovat připojení
             </button>
-            <button onClick={() => exportNyni(c.id)} style={{ ...buttonStyle, padding: "4px 10px", fontSize: 12 }}>
+            <button onClick={() => exportNyni(c.id)} className="btn-pill">
               Exportovat teď
             </button>
-            <button
-              onClick={() => smazatCil(c.id)}
-              style={{ ...buttonStyle, padding: "4px 10px", fontSize: 12, background: "var(--color-danger)" }}
-            >
+            <button onClick={() => smazatCil(c.id)} className="btn-pill danger">
               Smazat
             </button>
           </div>
           {zpravy[c.id] && <p className="mono" style={{ fontSize: 12, marginTop: 8 }}>{zpravy[c.id]}</p>}
         </article>
       ))}
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
@@ -138,14 +157,4 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 8,
   border: "1px solid var(--line)",
   fontSize: 14,
-};
-
-const buttonStyle: React.CSSProperties = {
-  background: "var(--navy-800)",
-  color: "#fff",
-  border: "none",
-  borderRadius: 8,
-  padding: "8px 16px",
-  fontWeight: 600,
-  cursor: "pointer",
 };
