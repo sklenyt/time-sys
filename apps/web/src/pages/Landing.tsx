@@ -11,6 +11,7 @@ export function Landing() {
         <nav className="landing-nav-links">
           <a href="#jak-to-funguje">Jak to funguje</a>
           <a href="#proc-depo">Proč Depo</a>
+          <a href="https://vysledky.depotime.cz">Výsledky</a>
         </nav>
         <div className="landing-nav-cta">
           <Link to="/login" className="btn-pill outline-light">
@@ -25,7 +26,7 @@ export function Landing() {
       <section className="landing-hero">
         <div className="landing-hero-grid">
           <div>
-            <div className="landing-eyebrow">Časomíra pro klubové závody</div>
+            <div className="landing-eyebrow">Časomíra pro sportovní závody</div>
             <h1>
               Zadej číslo.
               <br />
@@ -36,6 +37,10 @@ export function Landing() {
             <p className="lede">
               Depo měří na telefonu i iPadu, funguje bez signálu a výsledky posílá na váš klubový web hned po
               doběhu — bez ruční synchronizace mezi stanovišti.
+            </p>
+            <p className="landing-sports">
+              Běh · Cyklistika · Triatlon a duatlon · Orientační běh · Běžky · Inline brusle — cokoliv se
+              startovními čísly, ručně nebo přes RFID čip.
             </p>
             <div className="landing-hero-actions">
               <Link to="/dashboard" className="btn-pill accent" style={{ padding: "12px 22px", fontSize: 14 }}>
@@ -57,6 +62,10 @@ export function Landing() {
               <div className="landing-metric">
                 <div className="n">FTP</div>
                 <div className="l">export na váš web</div>
+              </div>
+              <div className="landing-metric">
+                <div className="n">RFID</div>
+                <div className="l">i čipová časomíra</div>
               </div>
             </div>
           </div>

@@ -94,6 +94,14 @@
   color: var(--steel-400);
   font-size: 15.5px;
   max-width: 46ch;
+  margin: 0 0 14px;
+}
+
+.landing-sports {
+  color: var(--steel-400);
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+  max-width: 48ch;
   margin: 0 0 26px;
 }
 
