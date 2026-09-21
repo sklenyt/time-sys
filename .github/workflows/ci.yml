@@ -98,16 +98,11 @@ jobs:
     concurrency: deploy-api-production
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      # Migrace před novým kódem, ne po něm — appka po redeployi nesmí narazit
-      # na schéma, které ještě neexistuje.
-      - run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
-        env:
-          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+      # Migrace neběží tady — GitHub Actions runnery nemají IPv6 a Supabase
+      # Direct connection je bez placeného IPv4 add-onu jen přes IPv6.
+      # Místo boje s poolerem (Supavisor, custom role) migraci spouští
+      # fly.toml [deploy].release_command uvnitř Fly sítě, která se ke
+      # Supabase prokazatelně připojuje.
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --remote-only --app depo-time
         env:
