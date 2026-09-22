@@ -35,7 +35,11 @@ describe("secret-crypto", () => {
   it("throws on tampered ciphertext (auth tag mismatch)", () => {
     const ciphertext = encryptSecret("tajemství");
     const [iv, authTag, data] = ciphertext.split(":");
-    const tampered = [iv, authTag, data.slice(0, -2) + "00"].join(":");
+    // XOR flip garantuje odlišný poslední bajt bez ohledu na náhodný IV/obsah
+    // (pevné "+ 00" je no-op, když už poslední bajt "00" je — flaky test).
+    const posledniBajt = parseInt(data.slice(-2), 16);
+    const preklopenyBajt = (posledniBajt ^ 0xff).toString(16).padStart(2, "0");
+    const tampered = [iv, authTag, data.slice(0, -2) + preklopenyBajt].join(":");
     expect(() => decryptSecret(tampered)).toThrow();
   });
 
