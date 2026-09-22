@@ -1,7 +1,30 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { AuthTokensDto } from "@depo/shared";
-import { api, setTokens } from "../lib/api";
+import { api, ApiError, setTokens } from "../lib/api";
+
+/**
+ * API vrací chybu jako JSON text v ApiError.message (viz lib/api.ts
+ * `throw new ApiError(res.status, body)`, kde body je res.text()). Dřív se
+ * tenhle text zahazoval a ukazovala se jen napevno daná hláška, takže
+ * i skutečnou příčinu (např. "účet už existuje") uživatel nikdy neviděl.
+ */
+function popisChyby(e: unknown, mode: "login" | "register"): string {
+  if (e instanceof ApiError) {
+    try {
+      const parsed = JSON.parse(e.message) as { message?: string | string[] };
+      if (parsed.message) {
+        return Array.isArray(parsed.message) ? parsed.message.join(", ") : parsed.message;
+      }
+    } catch {
+      // tělo nebylo JSON — spadne na obecnou hlášku níž
+    }
+  }
+  if (e instanceof TypeError) {
+    return "Nepodařilo se spojit se serverem. Zkontrolujte připojení a zkuste to znovu.";
+  }
+  return mode === "login" ? "Nesprávný e-mail nebo heslo" : "Registrace se nezdařila";
+}
 
 export function Login() {
   const navigate = useNavigate();
@@ -23,8 +46,8 @@ export function Login() {
           : await api.post<AuthTokensDto>("/auth/register", { email, heslo, jmeno });
       setTokens(tokens.accessToken, tokens.refreshToken);
       navigate("/dashboard");
-    } catch {
-      setError(mode === "login" ? "Nesprávný e-mail nebo heslo" : "Registrace se nezdařila");
+    } catch (e) {
+      setError(popisChyby(e, mode));
     } finally {
       setLoading(false);
     }
