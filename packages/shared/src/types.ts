@@ -55,6 +55,7 @@ export interface StartVlna {
   nazev: string;
   casStartu?: string | null;
   odkladSekund?: number | null;
+  planovanyStart?: string | null;
 }
 
 /** Jeden člen štafety/družstva (`Prihlaska.clenoveDruzstva`) — legacy vzor 4× jméno/ročník/klub. */
@@ -179,6 +180,7 @@ export interface AuthUserDto {
   id: string;
   email: string;
   jmeno: string;
+  poradiMenu: string[];
 }
 
 export interface PublikacniCil {

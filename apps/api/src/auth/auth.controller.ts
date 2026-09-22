@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Patch, Post } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
+import { UpdateMenuOrderDto } from "./dto/update-menu-order.dto";
 import { Public } from "./decorators/public.decorator";
 import { CurrentUser, AuthenticatedUser } from "./decorators/current-user.decorator";
 
@@ -31,5 +32,10 @@ export class AuthController {
   @Get("me")
   me(@CurrentUser() user: AuthenticatedUser) {
     return user;
+  }
+
+  @Patch("me/menu-order")
+  updateMenuOrder(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateMenuOrderDto) {
+    return this.auth.updateMenuOrder(user.id, dto.poradiMenu);
   }
 }

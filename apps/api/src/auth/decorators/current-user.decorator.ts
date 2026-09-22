@@ -5,6 +5,7 @@ export interface AuthenticatedUser {
   email: string;
   jmeno: string;
   organizaceId: string | null;
+  poradiMenu: string[];
 }
 
 export const CurrentUser = createParamDecorator((_data: unknown, ctx: ExecutionContext): AuthenticatedUser => {

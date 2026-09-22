@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { TypUdalosti } from "@depo/shared";
 import { getDeviceId } from "../lib/api";
 import { enqueueZaznam, listRecent, startAutoSync, type FrontaZaznam } from "../lib/offline-queue";
+import { SystemClockWidget } from "../components/SystemClockWidget";
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "DNF", "0", "⌫"];
 
@@ -80,6 +81,12 @@ export function Measurement() {
 
   return (
     <div className="measurement-layout" style={{ background: "var(--ink-900)", color: "#fff" }}>
+      <div className="measurement-topbar">
+        <Link to="/dashboard" className="measurement-back">
+          ← Zpět do administrace
+        </Link>
+        <SystemClockWidget />
+      </div>
       <div className="measurement-main">
         <div
           style={{

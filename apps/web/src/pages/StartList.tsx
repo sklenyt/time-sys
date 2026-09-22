@@ -4,6 +4,7 @@ import type { DruzstvoClen, ImportEntriesResponseDto, Kategorie, Prihlaska, Tras
 import { Pohlavi, StavUkonceni } from "@depo/shared";
 import { api } from "../lib/api";
 import { AppShell } from "../components/AppShell";
+import { BusyOverlay } from "../components/BusyOverlay";
 
 const STAV_LABEL: Record<StavUkonceni, string> = {
   [StavUkonceni.DNS]: "DNS",
@@ -31,6 +32,7 @@ export function StartList() {
   const [clenove, setClenove] = useState<DruzstvoClen[]>([{ ...PRAZDNY_CLEN }]);
   const [error, setError] = useState<string | null>(null);
   const [importVysledek, setImportVysledek] = useState<ImportEntriesResponseDto | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function reload() {
@@ -136,6 +138,7 @@ export function StartList() {
     if (!routeId) return;
     setError(null);
     setImportVysledek(null);
+    setBusy("Importuji CSV…");
     try {
       const formData = new FormData();
       formData.append("soubor", soubor);
@@ -145,6 +148,7 @@ export function StartList() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Import se nezdařil");
     } finally {
+      setBusy(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
@@ -163,13 +167,23 @@ export function StartList() {
 
   return (
     <AppShell active="listina" routeId={routeId} eventId={trasa.udalostId}>
+      <BusyOverlay active={busy !== null} label={busy ?? undefined} />
       <div style={{ maxWidth: 760 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 800 }}>Startovní listina — {trasa.nazev}</h1>
+      <div className="dash-header" style={{ marginBottom: 20 }}>
+        <div>
+          <h1>Startovní listina</h1>
+          <div className="meta mono">
+            {trasa.nazev} · {entries.length} {entries.length === 1 ? "závodník" : "závodníků"}
+          </div>
+        </div>
+      </div>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
       {trasa.kategorie.length === 0 && (
-        <section style={{ marginBottom: 24 }}>
-          <h2>Nejdřív přidejte kategorii</h2>
+        <section className="dash-card" style={{ marginBottom: 24 }}>
+          <div className="dash-card-head">
+            <h2>Nejdřív přidejte kategorii</h2>
+          </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <input placeholder="Kód, např. MAk" value={catKod} onChange={(e) => setCatKod(e.target.value)} style={inputStyle} />
             <input placeholder="Název, např. Muži A" value={catNazev} onChange={(e) => setCatNazev(e.target.value)} style={inputStyle} />
@@ -186,7 +200,9 @@ export function StartList() {
 
       {trasa.kategorie.length > 0 && (
         <section className="dash-card" style={{ marginBottom: 24 }}>
-          <h2 style={{ marginTop: 0, fontSize: 15 }}>Zápis na místě</h2>
+          <div className="dash-card-head">
+            <h2>Zápis na místě</h2>
+          </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <input placeholder="Číslo" value={cislo} onChange={(e) => setCislo(e.target.value)} style={{ ...inputStyle, width: 80 }} />
             <input placeholder="Příjmení" value={prijmeni} onChange={(e) => setPrijmeni(e.target.value)} style={inputStyle} />

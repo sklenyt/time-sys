@@ -23,7 +23,13 @@ describe("RolesGuard", () => {
     uzivatelRole: { findFirst: jest.Mock };
   };
 
-  const USER: AuthenticatedUser = { id: "user-1", email: "u@example.com", jmeno: "Uživatel", organizaceId: "org-1" };
+  const USER: AuthenticatedUser = {
+    id: "user-1",
+    email: "u@example.com",
+    jmeno: "Uživatel",
+    organizaceId: "org-1",
+    poradiMenu: [],
+  };
   const EVENT_ID = "event-1";
   const EVENT = { id: EVENT_ID, organizaceId: "org-1" };
 

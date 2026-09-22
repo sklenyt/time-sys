@@ -101,6 +101,7 @@ model Uzivatel {
   jmeno       String
   hesloHash   String   @map("heslo_hash")
   vytvorenoAt DateTime @default(now()) @map("vytvoreno_at")
+  poradiMenu  String[] @default([]) @map("poradi_menu")
 
   organizace  Organizace? @relation(fields: [organizaceId], references: [id])
   role        UzivatelRole[]
@@ -173,6 +174,7 @@ model StartVlna {
   nazev          String
   casStartu      DateTime? @map("cas_startu")
   odkladSekund   Int?      @map("odklad_sekund")
+  planovanyStart DateTime? @map("planovany_start")
 
   trasa      Trasa       @relation(fields: [trasaId], references: [id], onDelete: Cascade)
   prihlasky  Prihlaska[]
