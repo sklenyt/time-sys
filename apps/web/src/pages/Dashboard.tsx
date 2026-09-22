@@ -208,7 +208,7 @@ export function Dashboard() {
 
       {event && (
         <>
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 22 }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
             <SystemClockWidget />
           </div>
 
