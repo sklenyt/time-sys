@@ -207,7 +207,7 @@ export class EntriesService {
             }
           : {}),
       },
-      include: { kategorie: true },
+      include: { kategorie: true, cip: true },
       orderBy: { startovniCislo: "asc" },
     });
     return prihlasky.map(odsifrovatPrihlasku);
@@ -280,8 +280,8 @@ export class EntriesService {
     try {
       return await this.prisma.cip.upsert({
         where: { prihlaskaId },
-        create: { prihlaskaId, kodCipu, stav: "PRIREZEN" },
-        update: { kodCipu, stav: "PRIREZEN" },
+        create: { prihlaskaId, kodCipu, stav: "PRIREZEN", vydanoAt: new Date() },
+        update: { kodCipu, stav: "PRIREZEN", vydanoAt: new Date(), vracenoAt: null },
       });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {

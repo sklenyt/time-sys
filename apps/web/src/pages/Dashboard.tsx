@@ -12,6 +12,7 @@ import type {
 } from "@depo/shared";
 import { TypAnomalie } from "@depo/shared";
 import { api, API_BASE } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
 import { SystemClockWidget } from "../components/SystemClockWidget";
 
@@ -56,7 +57,7 @@ export function Dashboard() {
       setTrasyByEvent(Object.fromEntries(trasyEntries));
       setSelectedEventId((current) => (current && events.some((u) => u.id === current) ? current : (events[0]?.id ?? null)));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Chyba načítání");
+      setError(chybaZeServeru(e, "Chyba načítání"));
     }
   }
 

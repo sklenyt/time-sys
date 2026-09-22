@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import type { AnomaliesResponseDto, RunningResponseDto } from "@depo/shared";
 import { TypAnomalie } from "@depo/shared";
 import { api } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
 
 export function Running() {
@@ -17,7 +18,7 @@ export function Running() {
       api
         .get<RunningResponseDto>(`/routes/${routeId}/running`)
         .then(setData)
-        .catch((e) => setError(e instanceof Error ? e.message : "Chyba načítání"));
+        .catch((e) => setError(chybaZeServeru(e, "Chyba načítání")));
       api
         .get<AnomaliesResponseDto>(`/routes/${routeId}/anomalies`)
         .then(setAnomalie)

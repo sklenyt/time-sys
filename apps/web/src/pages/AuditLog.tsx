@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { AuditLogPolozka } from "@depo/shared";
 import { api } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
 
 export function AuditLog() {
@@ -21,7 +22,7 @@ export function AuditLog() {
     api
       .get<AuditLogPolozka[]>(`/routes/${routeId}/audit-log${qs ? `?${qs}` : ""}`)
       .then(setPolozky)
-      .catch((e) => setError(e instanceof Error ? e.message : "Chyba načítání"));
+      .catch((e) => setError(chybaZeServeru(e, "Chyba načítání")));
   }, [routeId, od, doData]);
 
   useEffect(() => {

@@ -1,10 +1,114 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { DruzstvoClen, ImportEntriesResponseDto, Kategorie, Prihlaska, Trasa } from "@depo/shared";
-import { Pohlavi, StavUkonceni } from "@depo/shared";
+import type { Cip, DruzstvoClen, ImportEntriesResponseDto, Kategorie, Prihlaska, Trasa } from "@depo/shared";
+import { Pohlavi, StavCipu, StavUkonceni } from "@depo/shared";
 import { api } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
 import { BusyOverlay } from "../components/BusyOverlay";
+
+const CIP_STAV_LABEL: Record<StavCipu, string> = {
+  [StavCipu.PRIREZEN]: "přiřazen",
+  [StavCipu.ZALOZNI]: "záložní",
+  [StavCipu.ZTRACEN]: "ztracen",
+  [StavCipu.VRACEN]: "vrácen",
+};
+
+const CIP_STAV_BARVA: Record<StavCipu, string> = {
+  [StavCipu.PRIREZEN]: "var(--color-live-700)",
+  [StavCipu.ZALOZNI]: "var(--color-attention)",
+  [StavCipu.ZTRACEN]: "var(--color-danger)",
+  [StavCipu.VRACEN]: "var(--text-secondary)",
+};
+
+function ChipBunka({
+  routeId,
+  entry,
+  onChanged,
+}: {
+  routeId: string;
+  entry: Prihlaska & { cip?: Cip | null };
+  onChanged: () => void;
+}) {
+  const [kod, setKod] = useState("");
+  const [odesilam, setOdesilam] = useState(false);
+  const [chyba, setChyba] = useState<string | null>(null);
+
+  async function parovat() {
+    if (!kod.trim()) return;
+    setOdesilam(true);
+    setChyba(null);
+    try {
+      await api.post(`/routes/${routeId}/entries/${entry.id}/chip`, { kodCipu: kod.trim() });
+      setKod("");
+      onChanged();
+    } catch (e) {
+      setChyba(chybaZeServeru(e, "Přiřazení čipu se nezdařilo"));
+    } finally {
+      setOdesilam(false);
+    }
+  }
+
+  async function odebrat() {
+    setOdesilam(true);
+    setChyba(null);
+    try {
+      await api.del(`/routes/${routeId}/entries/${entry.id}/chip`);
+      onChanged();
+    } catch (e) {
+      setChyba(chybaZeServeru(e, "Odebrání čipu se nezdařilo"));
+    } finally {
+      setOdesilam(false);
+    }
+  }
+
+  if (entry.cip) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        <span className="mono" style={{ fontSize: 12.5 }}>
+          {entry.cip.kodCipu}
+        </span>
+        <span
+          className="mono"
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            padding: "1px 7px",
+            borderRadius: 999,
+            background: CIP_STAV_BARVA[entry.cip.stav],
+            color: "#fff",
+            textTransform: "uppercase",
+            letterSpacing: 0.3,
+          }}
+        >
+          {CIP_STAV_LABEL[entry.cip.stav]}
+        </span>
+        <button onClick={odebrat} disabled={odesilam} className="btn-pill" style={{ padding: "2px 8px", fontSize: 11 }}>
+          Odebrat
+        </button>
+        {chyba && <span style={{ color: "var(--color-danger)", fontSize: 11 }}>{chyba}</span>}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+      <input
+        value={kod}
+        onChange={(e) => setKod(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && parovat()}
+        placeholder="Sériové číslo (čtečka)"
+        autoComplete="off"
+        className="mono"
+        style={{ width: 150, padding: "3px 6px", borderRadius: 6, border: "1px solid var(--line)", fontSize: 12 }}
+      />
+      <button onClick={parovat} disabled={odesilam || !kod.trim()} className="btn-pill" style={{ padding: "2px 8px", fontSize: 11 }}>
+        Přiřadit
+      </button>
+      {chyba && <span style={{ color: "var(--color-danger)", fontSize: 11 }}>{chyba}</span>}
+    </div>
+  );
+}
 
 const STAV_LABEL: Record<StavUkonceni, string> = {
   [StavUkonceni.DNS]: "DNS",
@@ -17,7 +121,7 @@ const PRAZDNY_CLEN: DruzstvoClen = { prijmeni: "", jmeno: "", rocnik: undefined,
 export function StartList() {
   const { routeId } = useParams<{ routeId: string }>();
   const [trasa, setTrasa] = useState<(Trasa & { kategorie: Kategorie[] }) | null>(null);
-  const [entries, setEntries] = useState<(Prihlaska & { kategorie?: Kategorie })[]>([]);
+  const [entries, setEntries] = useState<(Prihlaska & { kategorie?: Kategorie; cip?: Cip | null })[]>([]);
   const [catKod, setCatKod] = useState("");
   const [catNazev, setCatNazev] = useState("");
   const [catPohlavi, setCatPohlavi] = useState<Pohlavi>(Pohlavi.M);
@@ -42,10 +146,12 @@ export function StartList() {
     try {
       const t = await api.get<Trasa & { kategorie: Kategorie[] }>(`/routes/${routeId}`);
       setTrasa(t);
-      const e = await api.get<(Prihlaska & { kategorie?: Kategorie })[]>(`/routes/${routeId}/entries`);
+      const e = await api.get<(Prihlaska & { kategorie?: Kategorie; cip?: Cip | null })[]>(
+        `/routes/${routeId}/entries`
+      );
       setEntries(e);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Chyba načítání");
+      setError(chybaZeServeru(e, "Chyba načítání"));
     }
   }
 
@@ -159,7 +265,7 @@ export function StartList() {
       setClenove([{ ...PRAZDNY_CLEN }]);
       reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Chyba zápisu");
+      setError(chybaZeServeru(e, "Chyba zápisu"));
     }
   }
 
@@ -169,7 +275,7 @@ export function StartList() {
       await api.patch(`/routes/${routeId}/entries/${entryId}`, { stavUkonceni: stav });
       reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Nastavení stavu se nezdařilo");
+      setError(chybaZeServeru(e, "Nastavení stavu se nezdařilo"));
     }
   }
 
@@ -185,7 +291,7 @@ export function StartList() {
       setImportVysledek(vysledek);
       reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Import se nezdařil");
+      setError(chybaZeServeru(e, "Import se nezdařil"));
     } finally {
       setBusy(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -387,6 +493,7 @@ export function StartList() {
               <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Družstvo</th>
+              <th style={{ fontFamily: "var(--font-ui)" }}>Čip</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Stav</th>
             </tr>
           </thead>
@@ -402,6 +509,9 @@ export function StartList() {
                   {e.clenoveDruzstva?.length
                     ? e.clenoveDruzstva.map((c) => `${c.prijmeni} ${c.jmeno}`).join(", ")
                     : "—"}
+                </td>
+                <td>
+                  <ChipBunka routeId={routeId!} entry={e} onChanged={reload} />
                 </td>
                 <td>
                   <select

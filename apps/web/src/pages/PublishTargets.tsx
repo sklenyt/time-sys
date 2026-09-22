@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import type { PublikacniCil, PublishExportResponseDto, PublishTestResponseDto, Trasa } from "@depo/shared";
 import { ProtokolPublikace, StavExportu } from "@depo/shared";
 import { api } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
 
 export function PublishTargets() {
@@ -27,7 +28,7 @@ export function PublishTargets() {
       const routes = await api.get<Trasa[]>(`/events/${eventId}/routes`);
       setTrasy(routes);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Chyba načítání");
+      setError(chybaZeServeru(e, "Chyba načítání"));
     }
   }
 
@@ -57,7 +58,7 @@ export function PublishTargets() {
       setHeslo("");
       reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Založení se nezdařilo");
+      setError(chybaZeServeru(e, "Založení se nezdařilo"));
     }
   }
 
@@ -78,7 +79,7 @@ export function PublishTargets() {
       await api.del(`/publish-targets/${id}`);
       reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Smazání se nezdařilo");
+      setError(chybaZeServeru(e, "Smazání se nezdařilo"));
     }
   }
 

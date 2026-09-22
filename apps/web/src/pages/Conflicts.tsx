@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { ConflictItemDto } from "@depo/shared";
 import { api, API_BASE, getTokens } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
 
 export function Conflicts() {
@@ -15,7 +16,7 @@ export function Conflicts() {
     api
       .get<ConflictItemDto[]>(`/routes/${routeId}/records/conflicts`)
       .then(setKonflikty)
-      .catch((e) => setError(e instanceof Error ? e.message : "Chyba načítání"));
+      .catch((e) => setError(chybaZeServeru(e, "Chyba načítání")));
   }, [routeId]);
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export function Conflicts() {
       await api.patch(`/routes/${routeId}/records/${zaznamId}/resolve`, {});
       reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Potvrzení se nezdařilo");
+      setError(chybaZeServeru(e, "Potvrzení se nezdařilo"));
     }
   }
 
@@ -71,7 +72,7 @@ export function Conflicts() {
       await api.postForm(`/routes/${routeId}/records/${zaznamId}/foto`, formData);
       reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Nahrání fotodůkazu se nezdařilo");
+      setError(chybaZeServeru(e, "Nahrání fotodůkazu se nezdařilo"));
     }
   }
 

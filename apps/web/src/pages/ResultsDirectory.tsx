@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { VerejnaUdalostDto, OveritPristupResponseDto } from "@depo/shared";
 import { api } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
 
 /**
  * Domovská stránka vysledky.depotime.cz — veřejný adresář všech závodů.
@@ -23,7 +24,7 @@ export function ResultsDirectory() {
     api
       .get<VerejnaUdalostDto[]>("/events/verejne")
       .then(setUdalosti)
-      .catch((e) => setError(e instanceof Error ? e.message : "Chyba načítání"));
+      .catch((e) => setError(chybaZeServeru(e, "Chyba načítání")));
   }, []);
 
   function jitNaTrasy(trasy: { id: string; nazev: string }[]) {
