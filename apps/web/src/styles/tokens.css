@@ -126,6 +126,7 @@ body {
 .measurement-layout {
   display: grid;
   grid-template-columns: 1fr minmax(280px, 340px);
+  grid-template-rows: auto 1fr;
   min-height: 100%;
 }
 
@@ -133,6 +134,27 @@ body {
   .measurement-layout {
     grid-template-columns: 1fr;
   }
+}
+
+.measurement-topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--navy-700);
+}
+
+.measurement-back {
+  color: var(--steel-400);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.measurement-back:hover {
+  color: #fff;
 }
 
 .measurement-main {

@@ -5,6 +5,7 @@ import { api, clearTokens } from "../lib/api";
 
 export type NavKey =
   | "prehled"
+  | "sprava"
   | "mereni"
   | "listina"
   | "bezi"
@@ -24,6 +25,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { key: "prehled", label: "Přehled akce", href: () => "/dashboard" },
+  { key: "sprava", label: "Správa akcí", href: () => "/sprava" },
   { key: "mereni", label: "Měření", needsRoute: true, href: (routeId) => `/mereni/${routeId}` },
   { key: "listina", label: "Startovní listina", needsRoute: true, href: (routeId) => `/startovni-listina/${routeId}` },
   { key: "bezi", label: "Kdo ještě běží", needsRoute: true, href: (routeId) => `/kdo-bezi/${routeId}` },
@@ -33,6 +35,33 @@ const NAV_ITEMS: NavItem[] = [
   { key: "publikace", label: "Publikace", needsEvent: true, href: (_r, eventId) => `/publikace/${eventId}` },
   { key: "reporty", label: "Reporty", href: () => "/reporty" },
 ];
+
+const NAV_BY_KEY = new Map(NAV_ITEMS.map((i) => [i.key, i]));
+const VYCHOZI_PORADI: NavKey[] = NAV_ITEMS.map((i) => i.key);
+
+/**
+ * Sloučí uložené pořadí uživatele s výchozím — položky z uloženého pořadí
+ * jdou první (jen ty, co v appce pořád existují), zbytek (nové položky menu
+ * přidané po uložení, nebo když uživatel ještě nic nepřeuspořádal) se
+ * doplní na konec ve výchozím pořadí.
+ */
+function slouzitPoradi(ulozene: string[]): NavKey[] {
+  const platne = ulozene.filter((k): k is NavKey => VYCHOZI_PORADI.includes(k as NavKey));
+  const zbyva = VYCHOZI_PORADI.filter((k) => !platne.includes(k));
+  return [...platne, ...zbyva];
+}
+
+/**
+ * Vysvětlení, proč položka menu ještě nejde otevřít — nikdy jen tiše
+ * neztlumit, klik na ni musí uživatele posunout k řešení (viz Sprava.tsx,
+ * kde se tahle hláška zobrazí jako banner po přesměrování).
+ */
+function duvodNedostupnosti(item: NavItem): string {
+  if (item.needsRoute) {
+    return `Nejdřív přidejte trať k akci, ať můžete otevřít „${item.label}“.`;
+  }
+  return `Nejdřív založte akci, ať můžete otevřít „${item.label}“.`;
+}
 
 interface AppShellProps {
   active: NavKey;
@@ -49,11 +78,16 @@ interface AppShellProps {
 export function AppShell({ active, routeId, eventId, children }: AppShellProps) {
   const navigate = useNavigate();
   const [user, setUser] = useState<AuthUserDto | null>(null);
+  const [poradi, setPoradi] = useState<NavKey[]>(VYCHOZI_PORADI);
+  const [tazeneKey, setTazeneKey] = useState<NavKey | null>(null);
 
   useEffect(() => {
     api
       .get<AuthUserDto>("/auth/me")
-      .then(setUser)
+      .then((u) => {
+        setUser(u);
+        setPoradi(slouzitPoradi(u.poradiMenu));
+      })
       .catch(() => {
         // Sidebar funguje i bez znalosti jména přihlášeného uživatele.
       });
@@ -62,6 +96,20 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
   function odhlasit() {
     clearTokens();
     navigate("/login");
+  }
+
+  /** Přesune položku na pozici jiné a hned uloží nové pořadí k účtu (napříč zařízeními). */
+  function presunoutNa(cilKey: NavKey) {
+    if (!tazeneKey || tazeneKey === cilKey) return;
+    setPoradi((aktualni) => {
+      const bezTazene = aktualni.filter((k) => k !== tazeneKey);
+      const cilIndex = bezTazene.indexOf(cilKey);
+      const nove = [...bezTazene.slice(0, cilIndex), tazeneKey, ...bezTazene.slice(cilIndex)];
+      api.patch("/auth/me/menu-order", { poradiMenu: nove }).catch(() => {
+        // Nekritická cesta — pořadí zůstává lokálně, jen se neuloží pro jiná zařízení.
+      });
+      return nove;
+    });
   }
 
   const initialy = user?.jmeno
@@ -81,24 +129,42 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
           <span className="app-sidebar-brand-name">Depo</span>
         </div>
         <nav className="app-sidebar-nav">
-          {NAV_ITEMS.map((item) => {
+          {poradi.map((key) => {
+            const item = NAV_BY_KEY.get(key);
+            if (!item) return null;
             const disabled = (item.needsRoute && !routeId) || (item.needsEvent && !eventId);
-            if (disabled) {
-              return (
-                <span key={item.key} className="app-nav-link disabled">
-                  {item.label}
-                </span>
-              );
-            }
             return (
-              <Link
+              <div
                 key={item.key}
-                to={item.href(routeId, eventId)}
-                className={`app-nav-link${active === item.key ? " active" : ""}`}
-                aria-current={active === item.key ? "page" : undefined}
+                className={`app-nav-item${tazeneKey === item.key ? " dragging" : ""}`}
+                draggable
+                onDragStart={() => setTazeneKey(item.key)}
+                onDragEnd={() => setTazeneKey(null)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => presunoutNa(item.key)}
+                title="Přetažením změníte pořadí"
               >
-                {item.label}
-              </Link>
+                <span className="app-nav-handle" aria-hidden="true">
+                  ⠿
+                </span>
+                {disabled ? (
+                  <button
+                    type="button"
+                    className="app-nav-link disabled"
+                    onClick={() => navigate("/sprava", { state: { hint: duvodNedostupnosti(item) } })}
+                  >
+                    {item.label}
+                  </button>
+                ) : (
+                  <Link
+                    to={item.href(routeId, eventId)}
+                    className={`app-nav-link${active === item.key ? " active" : ""}`}
+                    aria-current={active === item.key ? "page" : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                )}
+              </div>
             );
           })}
         </nav>

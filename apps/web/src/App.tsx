@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
+import { Sprava } from "./pages/Sprava";
 import { StartList } from "./pages/StartList";
 import { Measurement } from "./pages/Measurement";
 import { Results } from "./pages/Results";
@@ -61,6 +62,14 @@ export function App() {
         element={
           <RequireAuth>
             <Dashboard />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/sprava"
+        element={
+          <RequireAuth>
+            <Sprava />
           </RequireAuth>
         }
       />

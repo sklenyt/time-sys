@@ -68,6 +68,15 @@ export class AuthService {
     return this.issueTokens(uzivatel.id, uzivatel.email);
   }
 
+  /** Vlastní pořadí položek postranního menu (přetahování v UI) — ukládá se k účtu napříč zařízeními. */
+  async updateMenuOrder(uzivatelId: string, poradiMenu: string[]) {
+    const uzivatel = await this.prisma.uzivatel.update({
+      where: { id: uzivatelId },
+      data: { poradiMenu },
+    });
+    return { poradiMenu: uzivatel.poradiMenu };
+  }
+
   private async issueTokens(uzivatelId: string, email: string): Promise<AuthTokensDto> {
     const payload = { sub: uzivatelId, email };
 

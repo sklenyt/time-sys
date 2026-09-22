@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import type {
   AnomaliePolozka,
   AnomaliesResponseDto,
-  AuthUserDto,
   ConflictItemDto,
   Organizace,
   RunningResponseDto,
@@ -11,9 +10,10 @@ import type {
   Udalost,
   VysledkyResponseDto,
 } from "@depo/shared";
-import { Role, TypAnomalie, TypStartu } from "@depo/shared";
+import { TypAnomalie } from "@depo/shared";
 import { api, API_BASE } from "../lib/api";
 import { AppShell } from "../components/AppShell";
+import { SystemClockWidget } from "../components/SystemClockWidget";
 
 interface LiveFeedItem {
   key: string;
@@ -35,10 +35,6 @@ export function Dashboard() {
   const [udalosti, setUdalosti] = useState<Udalost[]>([]);
   const [trasyByEvent, setTrasyByEvent] = useState<Record<string, Trasa[]>>({});
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [orgNazev, setOrgNazev] = useState("");
-  const [eventNazev, setEventNazev] = useState("");
-  const [eventDatum, setEventDatum] = useState("");
-  const [routeDrafts, setRouteDrafts] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
   const [runningByRoute, setRunningByRoute] = useState<Record<string, RunningResponseDto>>({});
@@ -153,138 +149,6 @@ export function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id, trasaIdsKey]);
 
-  async function createOrg() {
-    if (!orgNazev.trim()) return;
-    await api.post("/organizations", { nazev: orgNazev });
-    setOrgNazev("");
-    reload();
-  }
-
-  async function createEvent() {
-    if (!eventNazev.trim() || !eventDatum || organizace.length === 0) return;
-    const udalost = await api.post<Udalost>("/events", {
-      organizaceId: organizace[0].id,
-      nazev: eventNazev,
-      datum: eventDatum,
-    });
-    setEventNazev("");
-    setEventDatum("");
-    try {
-      const me = await api.get<AuthUserDto>("/auth/me");
-      await api.post(`/events/${udalost.id}/roles`, { uzivatelId: me.id, role: Role.ADMIN });
-    } catch {
-      // Role se přiřadí ručně přes Uživatelé a role, pokud událost už má admina.
-    }
-    setSelectedEventId(udalost.id);
-    reload();
-  }
-
-  async function createRoute(eventId: string) {
-    const nazev = routeDrafts[eventId];
-    if (!nazev?.trim()) return;
-    await api.post(`/events/${eventId}/routes`, {
-      nazev,
-      pocetKol: 1,
-      typStartu: TypStartu.HROMADNY,
-    });
-    setRouteDrafts((d) => ({ ...d, [eventId]: "" }));
-    reload();
-  }
-
-  async function startRace(routeId: string) {
-    try {
-      await api.post(`/routes/${routeId}/start`, {});
-      reload();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Start se nezdařil");
-    }
-  }
-
-  async function renameEvent(eventId: string, aktualniNazev: string) {
-    const novyNazev = window.prompt("Nový název akce", aktualniNazev);
-    if (!novyNazev || !novyNazev.trim() || novyNazev === aktualniNazev) return;
-    try {
-      await api.patch(`/events/${eventId}`, { nazev: novyNazev.trim() });
-      reload();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Přejmenování se nezdařilo");
-    }
-  }
-
-  /**
-   * Akce je na vysledky.depotime.cz veřejně vypsaná vždy (organizátor chce
-   * návštěvnost) — tohle nastaví jen heslo, které pak musí sdílet se
-   * závodníky, ať se ke jménům a časům nedostane kdokoliv.
-   */
-  async function nastavitHesloVysledku(eventId: string) {
-    const heslo = window.prompt(
-      "Heslo pro přístup k výsledkům na vysledky.depotime.cz (min. 4 znaky, sdílejte ho se závodníky). Nechte prázdné pro zrušení hesla."
-    );
-    if (heslo === null) return;
-    if (heslo.trim() && heslo.trim().length < 4) {
-      setError("Heslo musí mít aspoň 4 znaky");
-      return;
-    }
-    try {
-      await api.patch(`/events/${eventId}`, heslo.trim() ? { heslo: heslo.trim() } : { odebratHesloVysledku: true });
-      window.alert(heslo.trim() ? "Heslo nastaveno." : "Heslo zrušeno — výsledky jsou teď bez hesla.");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Nastavení hesla se nezdařilo");
-    }
-  }
-
-  async function toggleDokoncena(routeId: string, dokoncena: boolean) {
-    try {
-      await api.patch(`/routes/${routeId}`, { dokoncena });
-      reload();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Změna se nezdařila");
-    }
-  }
-
-  function ukazatEmbedKod(routeId: string) {
-    const kod = `<iframe src="${window.location.origin}/embed/vysledky/${routeId}" width="360" height="480" style="border:0"></iframe>`;
-    window.prompt("Zkopírujte kód pro vložení živých výsledků na web:", kod);
-  }
-
-  function ukazatRegistracniOdkaz(routeId: string) {
-    window.prompt("Odkaz na veřejný registrační formulář:", `${window.location.origin}/registrace/${routeId}`);
-  }
-
-  function ukazatEmbedRegistrace(routeId: string) {
-    const kod = `<iframe src="${window.location.origin}/embed/registrace/${routeId}" width="360" height="640" style="border:0"></iframe>`;
-    window.prompt("Zkopírujte kód pro vložení registrace na váš web:", kod);
-  }
-
-  async function toggleRegistrace(routeId: string, registraceUzavrena: boolean) {
-    try {
-      await api.patch(`/routes/${routeId}`, { registraceUzavrena });
-      reload();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Změna se nezdařila");
-    }
-  }
-
-  async function deleteEvent(eventId: string, nazev: string) {
-    if (!window.confirm(`Opravdu smazat akci "${nazev}"? Tuto akci nelze vrátit zpět.`)) return;
-    try {
-      await api.del(`/events/${eventId}`);
-      reload();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Smazání se nezdařilo");
-    }
-  }
-
-  async function deleteRoute(routeId: string, nazev: string) {
-    if (!window.confirm(`Opravdu smazat trasu "${nazev}"? Tuto akci nelze vrátit zpět.`)) return;
-    try {
-      await api.del(`/routes/${routeId}`);
-      reload();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Smazání se nezdařilo");
-    }
-  }
-
   const celkemVCili = trasy.reduce((s, t) => s + (runningByRoute[t.id]?.dokonceniPocet ?? 0), 0);
   const celkemNaTrati = trasy.reduce((s, t) => s + (runningByRoute[t.id]?.bezi.length ?? 0), 0);
   const celkemPrihlasenych = trasy.reduce((s, t) => s + (runningByRoute[t.id]?.celkemPrihlasenych ?? 0), 0);
@@ -320,36 +184,25 @@ export function Dashboard() {
 
       {organizace.length === 0 && (
         <section className="dash-card" style={{ maxWidth: 480, marginBottom: 24 }}>
-          <h2 style={{ marginTop: 0 }}>Nejdřív založte organizaci</h2>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input
-              value={orgNazev}
-              onChange={(e) => setOrgNazev(e.target.value)}
-              placeholder="Název klubu"
-              style={inputStyle}
-            />
-            <button onClick={createOrg} className="btn-pill primary">
-              Založit
-            </button>
-          </div>
+          <h2 style={{ marginTop: 0 }}>Zatím nemáte žádnou organizaci</h2>
+          <p style={{ color: "var(--text-secondary)", fontSize: 13.5 }}>
+            Založte organizaci a první akci ve Správě akcí.
+          </p>
+          <Link to="/sprava" className="btn-pill primary">
+            Přejít do Správy akcí
+          </Link>
         </section>
       )}
 
       {organizace.length > 0 && udalosti.length === 0 && (
         <section className="dash-card" style={{ maxWidth: 480, marginBottom: 24 }}>
-          <h2 style={{ marginTop: 0 }}>Založte první akci</h2>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input
-              value={eventNazev}
-              onChange={(e) => setEventNazev(e.target.value)}
-              placeholder="Např. Jarní běh Mělník 2026"
-              style={inputStyle}
-            />
-            <input type="date" value={eventDatum} onChange={(e) => setEventDatum(e.target.value)} style={inputStyle} />
-            <button onClick={createEvent} className="btn-pill primary">
-              Založit akci
-            </button>
-          </div>
+          <h2 style={{ marginTop: 0 }}>Zatím žádná akce</h2>
+          <p style={{ color: "var(--text-secondary)", fontSize: 13.5 }}>
+            Založte první akci a trať ve Správě akcí, pak se tu zobrazí živý přehled.
+          </p>
+          <Link to="/sprava" className="btn-pill primary">
+            Přejít do Správy akcí
+          </Link>
         </section>
       )}
 
@@ -378,6 +231,10 @@ export function Dashboard() {
               </div>
             </div>
             <div className="dash-header-actions">
+              <SystemClockWidget />
+              <Link to="/sprava" className="btn-pill">
+                Správa akcí
+              </Link>
               <Link to={`/publikace/${event.id}`} className="btn-pill">
                 Publikovat výsledky
               </Link>
@@ -508,120 +365,9 @@ export function Dashboard() {
           </div>
         </>
       )}
-
-      <section style={{ marginTop: 32 }}>
-        <h2 style={{ fontSize: 16 }}>Správa akcí a tratí</h2>
-
-        {organizace.length > 0 && (
-          <div className="dash-card" style={{ marginBottom: 16, maxWidth: 640 }}>
-            <div className="dash-card-head">
-              <h2>Nová akce</h2>
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <input
-                value={eventNazev}
-                onChange={(e) => setEventNazev(e.target.value)}
-                placeholder="Např. Jarní běh Mělník 2026"
-                style={inputStyle}
-              />
-              <input type="date" value={eventDatum} onChange={(e) => setEventDatum(e.target.value)} style={inputStyle} />
-              <button onClick={createEvent} className="btn-pill primary">
-                Založit akci
-              </button>
-            </div>
-          </div>
-        )}
-
-        {udalosti.map((u) => (
-          <article key={u.id} className="dash-card" style={{ marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "0 0 4px" }}>
-              <h3 style={{ margin: 0 }}>{u.nazev}</h3>
-              <button onClick={() => renameEvent(u.id, u.nazev)} className="btn-pill">
-                Přejmenovat
-              </button>
-              <button onClick={() => nastavitHesloVysledku(u.id)} className="btn-pill">
-                Heslo výsledků
-              </button>
-              <button onClick={() => deleteEvent(u.id, u.nazev)} className="btn-pill danger">
-                Smazat akci
-              </button>
-            </div>
-            <p className="mono" style={{ color: "var(--text-secondary)", margin: "0 0 12px" }}>
-              {formatDatum(u.datum)}
-            </p>
-
-            <ul style={{ listStyle: "none", padding: 0, margin: "0 0 12px" }}>
-              {(trasyByEvent[u.id] ?? []).map((t) => (
-                <li
-                  key={t.id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    flexWrap: "wrap",
-                    gap: 8,
-                    padding: "8px 0",
-                    borderTop: "1px solid var(--line)",
-                  }}
-                >
-                  <span>
-                    {t.nazev}
-                    {t.dokoncena && (
-                      <span className="mono" style={{ color: "var(--color-live)", marginLeft: 8, fontSize: 12 }}>
-                        dokončeno
-                      </span>
-                    )}
-                  </span>
-                  <span style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                    <button onClick={() => startRace(t.id)} className="btn-pill">
-                      Start
-                    </button>
-                    <button onClick={() => toggleDokoncena(t.id, !t.dokoncena)} className="btn-pill">
-                      {t.dokoncena ? "Otevřít znovu" : "Dokončit"}
-                    </button>
-                    <button onClick={() => ukazatRegistracniOdkaz(t.id)} className="btn-pill">
-                      Registrace
-                    </button>
-                    <button onClick={() => toggleRegistrace(t.id, !t.registraceUzavrena)} className="btn-pill">
-                      {t.registraceUzavrena ? "Otevřít registraci" : "Uzavřít registraci"}
-                    </button>
-                    <button onClick={() => ukazatEmbedRegistrace(t.id)} className="btn-pill">
-                      Embed registrace
-                    </button>
-                    <button onClick={() => ukazatEmbedKod(t.id)} className="btn-pill">
-                      Embed výsledků
-                    </button>
-                    <button onClick={() => deleteRoute(t.id, t.nazev)} className="btn-pill danger">
-                      Smazat
-                    </button>
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <div style={{ display: "flex", gap: 8 }}>
-              <input
-                value={routeDrafts[u.id] ?? ""}
-                onChange={(e) => setRouteDrafts((d) => ({ ...d, [u.id]: e.target.value }))}
-                placeholder="Nová trasa, např. 10 km"
-                style={inputStyle}
-              />
-              <button onClick={() => createRoute(u.id)} className="btn-pill primary">
-                Přidat trasu
-              </button>
-            </div>
-          </article>
-        ))}
-      </section>
     </AppShell>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  padding: "8px 12px",
-  borderRadius: 8,
-  border: "1px solid var(--line)",
-  fontSize: 14,
-};
 
 function formatDatum(iso: string): string {
   return new Date(iso).toLocaleDateString("cs-CZ", { day: "numeric", month: "numeric", year: "numeric" });
