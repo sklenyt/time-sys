@@ -208,6 +208,10 @@ export function Dashboard() {
 
       {event && (
         <>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 22 }}>
+            <SystemClockWidget />
+          </div>
+
           {udalosti.length > 1 && (
             <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
               {udalosti.map((u) => (
@@ -231,7 +235,6 @@ export function Dashboard() {
               </div>
             </div>
             <div className="dash-header-actions">
-              <SystemClockWidget />
               <Link to="/sprava" className="btn-pill">
                 Správa akcí
               </Link>

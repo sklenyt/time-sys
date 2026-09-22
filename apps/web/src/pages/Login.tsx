@@ -1,30 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { AuthTokensDto } from "@depo/shared";
-import { api, ApiError, setTokens } from "../lib/api";
-
-/**
- * API vrací chybu jako JSON text v ApiError.message (viz lib/api.ts
- * `throw new ApiError(res.status, body)`, kde body je res.text()). Dřív se
- * tenhle text zahazoval a ukazovala se jen napevno daná hláška, takže
- * i skutečnou příčinu (např. "účet už existuje") uživatel nikdy neviděl.
- */
-function popisChyby(e: unknown, mode: "login" | "register"): string {
-  if (e instanceof ApiError) {
-    try {
-      const parsed = JSON.parse(e.message) as { message?: string | string[] };
-      if (parsed.message) {
-        return Array.isArray(parsed.message) ? parsed.message.join(", ") : parsed.message;
-      }
-    } catch {
-      // tělo nebylo JSON — spadne na obecnou hlášku níž
-    }
-  }
-  if (e instanceof TypeError) {
-    return "Nepodařilo se spojit se serverem. Zkontrolujte připojení a zkuste to znovu.";
-  }
-  return mode === "login" ? "Nesprávný e-mail nebo heslo" : "Registrace se nezdařila";
-}
+import { api, setTokens } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
 
 export function Login() {
   const navigate = useNavigate();
@@ -47,7 +25,7 @@ export function Login() {
       setTokens(tokens.accessToken, tokens.refreshToken);
       navigate("/dashboard");
     } catch (e) {
-      setError(popisChyby(e, mode));
+      setError(chybaZeServeru(e, mode === "login" ? "Nesprávný e-mail nebo heslo" : "Registrace se nezdařila"));
     } finally {
       setLoading(false);
     }
@@ -59,8 +37,10 @@ export function Login() {
         minHeight: "100%",
         background: "var(--surface)",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
+        gap: 14,
         padding: 24,
       }}
     >
@@ -101,13 +81,23 @@ export function Login() {
             {mode === "login" ? "Přihlásit se" : "Registrovat"}
           </button>
         </form>
-        <button
-          onClick={() => setMode(mode === "login" ? "register" : "login")}
-          style={{ marginTop: 16, background: "none", border: "none", color: "var(--tape-700)", cursor: "pointer", fontSize: 13.5, padding: 0 }}
-        >
-          {mode === "login" ? "Nemáte účet? Registrovat se" : "Už máte účet? Přihlásit se"}
-        </button>
+        <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+          <button
+            onClick={() => setMode(mode === "login" ? "register" : "login")}
+            style={{ background: "none", border: "none", color: "var(--tape-700)", cursor: "pointer", fontSize: 13.5, padding: 0, textAlign: "left" }}
+          >
+            {mode === "login" ? "Nemáte účet? Registrovat se" : "Už máte účet? Přihlásit se"}
+          </button>
+          {mode === "login" && (
+            <Link to="/zapomenute-heslo" style={{ color: "var(--text-secondary)", fontSize: 13.5 }}>
+              Zapomenuté heslo?
+            </Link>
+          )}
+        </div>
       </div>
+      <a href="https://depotime.cz" style={{ color: "var(--text-secondary)", fontSize: 13, textDecoration: "none" }}>
+        ← Zpět na depotime.cz
+      </a>
     </div>
   );
 }
