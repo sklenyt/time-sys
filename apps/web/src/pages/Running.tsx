@@ -39,6 +39,8 @@ export function Running() {
     );
   }
 
+  const jeVickolova = data.bezi.some((b) => b.pocetKol > 1);
+
   return (
     <AppShell active="bezi" routeId={routeId}>
       <div style={{ maxWidth: 720 }}>
@@ -71,6 +73,7 @@ export function Running() {
               <th>Č.</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
+              {jeVickolova && <th style={{ fontFamily: "var(--font-ui)" }}>Kolo</th>}
               <th>Čas na trati</th>
             </tr>
           </thead>
@@ -82,6 +85,11 @@ export function Running() {
                   {b.prijmeni} {b.jmeno}
                 </td>
                 <td style={{ fontFamily: "var(--font-ui)" }}>{b.kategorieKod}</td>
+                {jeVickolova && (
+                  <td style={{ fontFamily: "var(--font-ui)" }}>
+                    {b.pocetKol > 1 ? `${b.aktualniKolo}/${b.pocetKol}` : "—"}
+                  </td>
+                )}
                 <td>{b.casOdStartu}</td>
               </tr>
             ))}

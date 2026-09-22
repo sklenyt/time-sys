@@ -164,6 +164,19 @@ export function Sprava() {
     window.prompt("Zkopírujte kód pro vložení registrace na váš web:", kod);
   }
 
+  /** Celoobrazovkový kiosk pro promítání v cíli (F42) — jedna trať/kategorie. */
+  function ukazatKioskOdkaz(routeId: string) {
+    window.prompt("Odkaz na kiosk s výsledky téhle trati (pro TV/monitor v cíli):", `${window.location.origin}/kiosk/${routeId}`);
+  }
+
+  /** Kiosk pro celou akci — sám rotuje mezi všemi tratěmi/kategoriemi, viz KioskEvent.tsx. */
+  function ukazatKioskAkce(eventId: string) {
+    window.prompt(
+      "Odkaz na kiosk pro celou akci (sám střídá kategorie, interval jde upravit přes ?interval=20):",
+      `${window.location.origin}/kiosk-akce/${eventId}`
+    );
+  }
+
   async function toggleRegistrace(routeId: string, registraceUzavrena: boolean) {
     await sBusy("Ukládám…", async () => {
       await api.patch(`/routes/${routeId}`, { registraceUzavrena });
@@ -309,6 +322,11 @@ export function Sprava() {
                   Heslo výsledků
                 </button>
               )}
+              {!u.ukoncena && (
+                <button onClick={() => ukazatKioskAkce(u.id)} className="btn-pill">
+                  Kiosk (celá akce)
+                </button>
+              )}
               <button onClick={() => toggleUkoncena(u.id, !u.ukoncena)} className="btn-pill">
                 {u.ukoncena ? "Obnovit akci" : "Ukončit akci"}
               </button>
@@ -352,6 +370,9 @@ export function Sprava() {
                       </button>
                       <button onClick={() => ukazatEmbedKod(t.id)} className="btn-pill">
                         Embed výsledků
+                      </button>
+                      <button onClick={() => ukazatKioskOdkaz(t.id)} className="btn-pill">
+                        Kiosk
                       </button>
                       <button onClick={() => deleteRoute(t.id, t.nazev)} className="btn-pill danger">
                         Smazat

@@ -29,6 +29,9 @@ export interface FrontaZaznam {
   prihlaskaId?: string | null;
   casCelkem?: string | null;
   puvod: "VLASTNI" | "CIZI";
+  /** Kolikátý průjezd cílem tohle je a kolik jich trať vyžaduje (víckolové závody) — jen u DOJEZD. */
+  aktualniKolo?: number | null;
+  pocetKol?: number | null;
 }
 
 function openDb(): Promise<IDBDatabase> {
@@ -149,6 +152,8 @@ export async function flushFrontu(trasaId: string, zarizeniId: string): Promise<
         serverId: vysledek.zaznam?.id,
         prihlaskaId: vysledek.zaznam?.prihlaskaId ?? null,
         casCelkem: vysledek.zaznam?.casCelkem ?? null,
+        aktualniKolo: vysledek.zaznam?.aktualniKolo ?? null,
+        pocetKol: vysledek.zaznam?.pocetKol ?? null,
       });
     }
   } catch {

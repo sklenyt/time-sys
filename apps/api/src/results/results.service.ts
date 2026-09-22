@@ -38,7 +38,7 @@ export class ResultsService {
    * tabulka výsledků, jen odvozený pohled nad append-only logem.
    */
   async getResults(trasaId: string): Promise<VysledkyResponseDto> {
-    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId } });
+    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId }, include: { udalost: true } });
     if (!trasa) {
       throw new NotFoundException("Trasa nenalezena");
     }
@@ -48,10 +48,10 @@ export class ResultsService {
       include: { kategorie: true, startVlna: true },
     });
 
-    const posledniZaznamPodlePrihlasce = await this.nacistAktualniZaznamyPodlePrihlasce(trasaId);
+    const projezdyPodlePrihlasce = await this.nacistProjezdyPodlePrihlasce(trasaId, trasa.pocetKol);
 
     const polozky: VysledekPolozka[] = prihlasky.map((prihlaska) =>
-      this.toPolozka(prihlaska, posledniZaznamPodlePrihlasce.get(prihlaska.id))
+      this.toPolozka(prihlaska, projezdyPodlePrihlasce.get(prihlaska.id), trasa.pocetKol)
     );
 
     const klasifikovani = polozky
@@ -76,7 +76,7 @@ export class ResultsService {
 
     const neklasifikovani = polozky.filter((p) => p.casCelkemMs === null);
 
-    return { trasaId, klasifikovani, neklasifikovani };
+    return { trasaId, trasaNazev: trasa.nazev, udalostNazev: trasa.udalost.nazev, klasifikovani, neklasifikovani };
   }
 
   /** Export výsledků do XLSX (F13) — stejná data jako getResults, jiný formát výstupu. */
@@ -239,7 +239,7 @@ export class ResultsService {
       include: { kategorie: true, startVlna: true },
     });
 
-    const posledniZaznamPodlePrihlasce = await this.nacistAktualniZaznamyPodlePrihlasce(trasaId);
+    const projezdyPodlePrihlasce = await this.nacistProjezdyPodlePrihlasce(trasaId, trasa.pocetKol);
     const ted = Date.now();
 
     const bezi: BezicPolozka[] = [];
@@ -251,7 +251,8 @@ export class ResultsService {
         neukonceniPocet += 1;
         continue;
       }
-      if (posledniZaznamPodlePrihlasce.has(prihlaska.id)) {
+      const projezd = projezdyPodlePrihlasce.get(prihlaska.id);
+      if (projezd?.finisniZaznam) {
         dokonceniPocet += 1;
         continue;
       }
@@ -265,6 +266,8 @@ export class ResultsService {
         jmeno: prihlaska.jmeno,
         kategorieKod: prihlaska.kategorie.kod,
         casOdStartu: formatDuration(ted - prihlaska.startVlna.casStartu.getTime()),
+        pocetKol: trasa.pocetKol,
+        aktualniKolo: projezd?.aktualniKolo ?? 0,
       });
     }
 
@@ -439,7 +442,20 @@ export class ResultsService {
     return QRCode.toBuffer(url, { type: "png", margin: 1, width: 240 });
   }
 
-  private async nacistAktualniZaznamyPodlePrihlasce(trasaId: string): Promise<Map<string, ZaznamUdalosti>> {
+  /**
+   * Kolikátý ne-nahrazený průjezd cílem (DOJEZD/OPRAVA) má která přihláška
+   * a jestli je to už finálních `pocetKol` průjezdů (vícekolové tratě,
+   * viz Trasa.pocetKol). U běžné jednokolové tratě (pocetKol<=1) je to
+   * přesně dřívější chování — bere se nejpozdější záznam jako doběh.
+   *
+   * OPRAVA nahrazuje konkrétní DOJEZD (přes nahrazujeZaznamId) — je to
+   * korekce téhož průjezdu, ne nový, takže se do počtu kol počítá stejně
+   * jako ten, co nahrazuje, jen s opraveným časem/číslem.
+   */
+  private async nacistProjezdyPodlePrihlasce(
+    trasaId: string,
+    pocetKol: number
+  ): Promise<Map<string, { finisniZaznam: ZaznamUdalosti | null; aktualniKolo: number }>> {
     const zaznamy = await this.prisma.zaznamUdalosti.findMany({
       where: { trasaId, typUdalosti: { in: [TypUdalosti.DOJEZD, TypUdalosti.OPRAVA] } },
     });
@@ -449,24 +465,38 @@ export class ResultsService {
     );
     const aktualniZaznamy = zaznamy.filter((z) => !nahrazeneIds.has(z.id));
 
-    // Za normální situace má běžec jen jeden nesuperseded záznam. Pokud by
-    // oprava přiřadila přihlášce druhý nezávislý záznam (dvojí zachycení
-    // stejného doběhu), bere se jako platný ten s pozdějším `cas` — sporné
-    // duplicity nad rámec MVP řeší organizátor ručně v audit logu.
-    const posledniZaznamPodlePrihlasce = new Map<string, ZaznamUdalosti>();
+    const projezdyPodlePrihlasce = new Map<string, ZaznamUdalosti[]>();
     for (const z of aktualniZaznamy) {
       if (!z.prihlaskaId) continue;
-      const stavajici = posledniZaznamPodlePrihlasce.get(z.prihlaskaId);
-      if (!stavajici || z.cas > stavajici.cas) {
-        posledniZaznamPodlePrihlasce.set(z.prihlaskaId, z);
+      const seznam = projezdyPodlePrihlasce.get(z.prihlaskaId) ?? [];
+      seznam.push(z);
+      projezdyPodlePrihlasce.set(z.prihlaskaId, seznam);
+    }
+
+    const vysledek = new Map<string, { finisniZaznam: ZaznamUdalosti | null; aktualniKolo: number }>();
+    for (const [prihlaskaId, seznam] of projezdyPodlePrihlasce) {
+      if (pocetKol <= 1) {
+        // Beze změny oproti dřívějšímu chování — sporné duplicity (dvojí
+        // zachycení stejného doběhu) řeší organizátor ručně v audit logu,
+        // do té doby platí ten s pozdějším `cas`.
+        const posledni = seznam.reduce((a, b) => (b.cas > a.cas ? b : a));
+        vysledek.set(prihlaskaId, { finisniZaznam: posledni, aktualniKolo: 1 });
+        continue;
+      }
+      const serazene = [...seznam].sort((a, b) => a.cas.getTime() - b.cas.getTime());
+      if (serazene.length >= pocetKol) {
+        vysledek.set(prihlaskaId, { finisniZaznam: serazene[pocetKol - 1], aktualniKolo: pocetKol });
+      } else {
+        vysledek.set(prihlaskaId, { finisniZaznam: null, aktualniKolo: serazene.length });
       }
     }
-    return posledniZaznamPodlePrihlasce;
+    return vysledek;
   }
 
   private toPolozka(
     prihlaska: PrihlaskaSPrislusenstvim,
-    zaznam: ZaznamUdalosti | undefined
+    projezd: { finisniZaznam: ZaznamUdalosti | null; aktualniKolo: number } | undefined,
+    pocetKol: number
   ): VysledekPolozka {
     const zakladPolozky = {
       prihlaskaId: prihlaska.id,
@@ -479,14 +509,22 @@ export class ResultsService {
       kategorieNazev: prihlaska.kategorie.nazev,
       stavUkonceni: prihlaska.stavUkonceni as StavUkonceni | null,
       clenoveDruzstva: prihlaska.clenoveDruzstva as VysledekPolozka["clenoveDruzstva"],
+      pocetKol,
     };
 
-    if (prihlaska.stavUkonceni || !zaznam || !prihlaska.startVlna?.casStartu) {
-      return { ...zakladPolozky, casCelkem: null, casCelkemMs: null, poradiCelkove: null, poradiKategorie: null };
+    if (prihlaska.stavUkonceni || !projezd?.finisniZaznam || !prihlaska.startVlna?.casStartu) {
+      return {
+        ...zakladPolozky,
+        casCelkem: null,
+        casCelkemMs: null,
+        poradiCelkove: null,
+        poradiKategorie: null,
+        aktualniKolo: prihlaska.stavUkonceni ? null : (projezd?.aktualniKolo ?? 0),
+      };
     }
 
     const penalizaceMs = (prihlaska.casovaPenalizace ?? 0) * 1000;
-    const casCelkemMs = zaznam.cas.getTime() - prihlaska.startVlna.casStartu.getTime() + penalizaceMs;
+    const casCelkemMs = projezd.finisniZaznam.cas.getTime() - prihlaska.startVlna.casStartu.getTime() + penalizaceMs;
 
     return {
       ...zakladPolozky,
@@ -494,6 +532,7 @@ export class ResultsService {
       casCelkemMs,
       poradiCelkove: null,
       poradiKategorie: null,
+      aktualniKolo: null,
     };
   }
 }
