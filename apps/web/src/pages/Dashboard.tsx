@@ -55,7 +55,10 @@ export function Dashboard() {
         events.map(async (u) => [u.id, await api.get<Trasa[]>(`/events/${u.id}/routes`)] as const)
       );
       setTrasyByEvent(Object.fromEntries(trasyEntries));
-      setSelectedEventId((current) => (current && events.some((u) => u.id === current) ? current : (events[0]?.id ?? null)));
+      const aktivni = events.filter((u) => !u.ukoncena);
+      setSelectedEventId((current) =>
+        current && aktivni.some((u) => u.id === current) ? current : (aktivni[0]?.id ?? null)
+      );
     } catch (e) {
       setError(chybaZeServeru(e, "Chyba načítání"));
     }
@@ -65,9 +68,12 @@ export function Dashboard() {
     reload();
   }, []);
 
+  // Ukončené akce (viz Sprava.tsx "Ukončit akci") na živém přehledu nechceme
+  // — organizátor je vědomě zavřel, aby se mu tu nekupily dopsané závody.
+  const aktivniUdalosti = useMemo(() => udalosti.filter((u) => !u.ukoncena), [udalosti]);
   const event = useMemo(
-    () => udalosti.find((u) => u.id === selectedEventId) ?? udalosti[0] ?? null,
-    [udalosti, selectedEventId]
+    () => aktivniUdalosti.find((u) => u.id === selectedEventId) ?? aktivniUdalosti[0] ?? null,
+    [aktivniUdalosti, selectedEventId]
   );
   const trasy = useMemo(() => (event ? (trasyByEvent[event.id] ?? []) : []), [event, trasyByEvent]);
   const trasaIdsKey = trasy.map((t) => t.id).join(",");
@@ -207,15 +213,27 @@ export function Dashboard() {
         </section>
       )}
 
+      {udalosti.length > 0 && aktivniUdalosti.length === 0 && (
+        <section className="dash-card" style={{ maxWidth: 480, marginBottom: 24 }}>
+          <h2 style={{ marginTop: 0 }}>Všechny akce jsou ukončené</h2>
+          <p style={{ color: "var(--text-secondary)", fontSize: 13.5 }}>
+            Živý přehled se ukazuje jen pro aktivní akce. Ukončenou akci jde kdykoli obnovit ve Správě akcí.
+          </p>
+          <Link to="/sprava" className="btn-pill primary">
+            Přejít do Správy akcí
+          </Link>
+        </section>
+      )}
+
       {event && (
         <>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
             <SystemClockWidget />
           </div>
 
-          {udalosti.length > 1 && (
+          {aktivniUdalosti.length > 1 && (
             <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
-              {udalosti.map((u) => (
+              {aktivniUdalosti.map((u) => (
                 <button
                   key={u.id}
                   className={`btn-pill${u.id === event.id ? " primary" : ""}`}

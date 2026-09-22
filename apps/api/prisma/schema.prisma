@@ -126,6 +126,11 @@ model Udalost {
   // zvolí a sdílí se závodníky — hash, nikdy plain text.
   verejnyVypis      Boolean @default(true) @map("verejny_vypis")
   hesloVysledkuHash String? @map("heslo_vysledku_hash")
+  // Ukončená akce zmizí z aktivních přehledů (Dashboard) a ve Správě se
+  // zešedí — organizátorské akce nad ní (start, registrace, přidání trati)
+  // se skryjí, ať se v seznamu nekupí dopsané závody. Data zůstávají beze
+  // změny (žádný mazací efekt), jde jen o UI stav.
+  ukoncena Boolean @default(false) @map("ukoncena")
 
   organizace       Organizace       @relation(fields: [organizaceId], references: [id], onDelete: Restrict)
   trasy            Trasa[]

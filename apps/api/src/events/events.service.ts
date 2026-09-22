@@ -71,6 +71,7 @@ export class EventsService {
         logoUrl: dto.logoUrl,
         verejnyVypis: dto.verejnyVypis,
         hesloVysledkuHash,
+        ukoncena: dto.ukoncena,
       },
     });
     return bezHesla(udalost);

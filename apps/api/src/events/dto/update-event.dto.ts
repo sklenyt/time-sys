@@ -33,4 +33,9 @@ export class UpdateEventDto {
   @IsOptional()
   @IsBoolean()
   odebratHesloVysledku?: boolean;
+
+  /** Ukončená akce zmizí z Dashboardu a ve Správě se zešedí — beze změny dat, jen UI stav. */
+  @IsOptional()
+  @IsBoolean()
+  ukoncena?: boolean;
 }

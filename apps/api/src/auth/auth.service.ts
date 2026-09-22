@@ -8,6 +8,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { EmailService } from "../notifications/email.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
+import { UserCacheService } from "./user-cache.service";
 
 const SALT_ROUNDS = 12;
 const RESET_TOKEN_PLATNOST_MS = 60 * 60 * 1000;
@@ -18,7 +19,8 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
-    private readonly email: EmailService
+    private readonly email: EmailService,
+    private readonly userCache: UserCacheService
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthTokensDto> {
@@ -118,6 +120,7 @@ export class AuthService {
       where: { id: uzivatelId },
       data: { poradiMenu },
     });
+    this.userCache.invalidate(uzivatelId);
     return { poradiMenu: uzivatel.poradiMenu };
   }
 

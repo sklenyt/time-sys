@@ -1,10 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { UserCacheService } from "../auth/user-cache.service";
 import { CreateOrganizationDto } from "./dto/create-organization.dto";
 
 @Injectable()
 export class OrganizationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly userCache: UserCacheService
+  ) {}
 
   /**
    * Zakladatel se stává členem nové organizace (pokud ještě žádnou nemá) —
@@ -19,6 +23,7 @@ export class OrganizationsService {
         where: { id: uzivatelId },
         data: { organizaceId: organizace.id },
       });
+      this.userCache.invalidate(uzivatelId);
     }
 
     return organizace;
