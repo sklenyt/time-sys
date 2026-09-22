@@ -8,6 +8,7 @@ export type NavKey =
   | "sprava"
   | "mereni"
   | "listina"
+  | "cipy"
   | "bezi"
   | "vysledky"
   | "kolize"
@@ -28,6 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "sprava", label: "Správa akcí", href: () => "/sprava" },
   { key: "mereni", label: "Měření", needsRoute: true, href: (routeId) => `/mereni/${routeId}` },
   { key: "listina", label: "Startovní listina", needsRoute: true, href: (routeId) => `/startovni-listina/${routeId}` },
+  { key: "cipy", label: "Čipy", needsRoute: true, href: (routeId) => `/cipy/${routeId}` },
   { key: "bezi", label: "Kdo ještě běží", needsRoute: true, href: (routeId) => `/kdo-bezi/${routeId}` },
   { key: "vysledky", label: "Výsledky", needsRoute: true, href: (routeId) => `/vysledky/${routeId}` },
   { key: "kolize", label: "Kolize", needsRoute: true, href: (routeId) => `/konflikty/${routeId}` },

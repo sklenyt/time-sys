@@ -12,7 +12,7 @@
 .app-sidebar {
   width: 240px;
   flex-shrink: 0;
-  background: var(--navy-700);
+  background: var(--navy-600);
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -38,7 +38,7 @@
 .app-sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
   flex: 1;
 }
 
@@ -58,7 +58,8 @@
 
 .app-nav-handle {
   cursor: grab;
-  color: var(--navy-600);
+  color: var(--steel-400);
+  opacity: 0.55;
   font-size: 13px;
   padding: 0 3px 0 5px;
   line-height: 1;
@@ -67,7 +68,7 @@
 }
 
 .app-nav-handle:hover {
-  color: var(--steel-400);
+  opacity: 1;
 }
 
 .app-nav-link {
@@ -94,20 +95,20 @@
 }
 
 .app-nav-link.active {
-  background: var(--navy-600);
+  background: var(--navy-500);
   color: #fff;
   border-left-color: var(--tape-500);
 }
 
-/* Ztlumené, ale ne mrtvé — klik navede do Správy akcí s vysvětlením, co chybí (viz AppShell.tsx duvodNedostupnosti). */
+/* Stejně čitelné jako ostatní položky — klik navede do Správy akcí s vysvětlením, co chybí (viz AppShell.tsx duvodNedostupnosti). Nejde o vizuálně "mrtvé" tlačítko, proto žádné ztlumení barvy. */
 .app-nav-link.disabled {
-  color: var(--navy-600);
+  color: var(--steel-400);
   cursor: pointer;
 }
 
 .app-nav-link.disabled:hover,
 .app-nav-link.disabled:focus-visible {
-  color: var(--steel-400);
+  color: #fff;
 }
 
 .app-sidebar-footer {
@@ -129,7 +130,7 @@
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  background: var(--navy-600);
+  background: var(--navy-500);
   color: #fff;
   display: flex;
   align-items: center;
@@ -165,12 +166,12 @@
        na dotykovém displeji nic nenapoví, že navigace pokračuje
        vpravo mimo obrazovku. */
     background:
-      linear-gradient(to right, var(--navy-700) 20%, transparent) left,
-      linear-gradient(to left, var(--navy-700) 20%, transparent) right,
+      linear-gradient(to right, var(--navy-600) 20%, transparent) left,
+      linear-gradient(to left, var(--navy-600) 20%, transparent) right,
       radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.5), transparent) left,
       radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.5), transparent) right;
     background-repeat: no-repeat;
-    background-color: var(--navy-700);
+    background-color: var(--navy-600);
     background-size:
       20px 100%,
       20px 100%,
@@ -589,6 +590,15 @@
 
 .btn-pill:hover {
   border-color: var(--navy-800);
+}
+
+.btn-pill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-pill:disabled:hover {
+  border-color: var(--line);
 }
 
 .btn-pill.primary {

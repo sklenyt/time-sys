@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import type { RegistrationInfoDto, RegistrationResponseDto } from "@depo/shared";
 import { Pohlavi } from "@depo/shared";
 import { api } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
 import { PublicHeader } from "../components/PublicHeader";
 
 /**
@@ -34,7 +35,7 @@ export function Register() {
     api
       .get<RegistrationInfoDto>(`/routes/${routeId}/register`)
       .then(setInfo)
-      .catch((e) => setError(e instanceof Error ? e.message : "Chyba načítání"));
+      .catch((e) => setError(chybaZeServeru(e, "Chyba načítání")));
   }, [routeId]);
 
   async function odeslat(e: React.FormEvent) {
@@ -61,7 +62,7 @@ export function Register() {
       });
       setHotovo(vysledek);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Registrace se nezdařila");
+      setError(chybaZeServeru(e, "Registrace se nezdařila"));
     } finally {
       setOdesilam(false);
     }

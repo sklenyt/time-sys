@@ -6,6 +6,7 @@ import { ResetPassword } from "./pages/ResetPassword";
 import { Dashboard } from "./pages/Dashboard";
 import { Sprava } from "./pages/Sprava";
 import { StartList } from "./pages/StartList";
+import { Chips } from "./pages/Chips";
 import { Measurement } from "./pages/Measurement";
 import { Results } from "./pages/Results";
 import { PersonalResult } from "./pages/PersonalResult";
@@ -82,6 +83,14 @@ export function App() {
         element={
           <RequireAuth>
             <StartList />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/cipy/:routeId"
+        element={
+          <RequireAuth>
+            <Chips />
           </RequireAuth>
         }
       />

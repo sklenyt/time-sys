@@ -17,6 +17,8 @@ Prosté párování `startovnicislo ↔ cip` je funkční jen pro nejjednodušš
 
 Doporučení pro Depo: **nezavazovat se v datovém modelu ani API k jedné konkrétní technologii** — `kod_cipu` je obecný string (funguje pro UHF EPC kód, NFC UID i obsah QR kódu stejně), a [Local Capture Agent](03-architecture.md#39-local-capture-agent--napojení-rfid-decodérů-f22-n12) je navržený jako vyměnitelný adaptér přesně proto, aby volba konkrétního výrobce HW nezamrzla v jádru aplikace.
 
+**Praktická poznámka k výběru konkrétního HW:** při výběru UHF readeru dej pozor, jestli jeho SDK/protokol (typicky LLRP) umí dotaz na stav jednotlivých anténních portů (připojeno/odpojeno, síla signálu) — bez toho agent nepozná odpojenou anténu jinak než "nikdo neproběhl cílem", což se v terénu všimne pozdě (viz [03-architecture.md §3.9](03-architecture.md#39-local-capture-agent--napojení-rfid-decodérů-f22-n12), kontrola připojení hardwaru).
+
 ## 12.3 Workflow: párování čipu se závodníkem
 
 Nová obrazovka **Párování čipů** (mockup [07-ui-mockups.md §7.9](07-ui-mockups.md)) pokrývá typický provoz u výdeje startovních čísel (packet pickup):

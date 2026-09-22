@@ -10,6 +10,7 @@ import { EventsModule } from "./events/events.module";
 import { RoutesModule } from "./routes/routes.module";
 import { CategoriesModule } from "./categories/categories.module";
 import { EntriesModule } from "./entries/entries.module";
+import { ChipsModule } from "./chips/chips.module";
 import { RecordsModule } from "./records/records.module";
 import { EventRolesModule } from "./event-roles/event-roles.module";
 import { ResultsModule } from "./results/results.module";
@@ -34,6 +35,7 @@ import { TenantContextInterceptor } from "./auth/interceptors/tenant-context.int
     RoutesModule,
     CategoriesModule,
     EntriesModule,
+    ChipsModule,
     RecordsModule,
     EventRolesModule,
     ResultsModule,

@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import type { AuthUserDto, Organizace, StartVlna, Trasa, Udalost } from "@depo/shared";
 import { Role, TypStartu } from "@depo/shared";
 import { api } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
 import { BusyOverlay } from "../components/BusyOverlay";
 import { StartPlanovac } from "../components/StartPlanovac";
@@ -44,7 +45,7 @@ export function Sprava() {
       );
       setVlnaByRoute(Object.fromEntries(vlnaEntries));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Chyba načítání");
+      setError(chybaZeServeru(e, "Chyba načítání"));
     }
   }
 
@@ -57,7 +58,7 @@ export function Sprava() {
     try {
       await akce();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Akce se nezdařila");
+      setError(chybaZeServeru(e, "Akce se nezdařila"));
     } finally {
       setBusy(null);
     }

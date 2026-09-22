@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { StartVlna } from "@depo/shared";
 import { api } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
 
 function formatOdpocet(msDoStartu: number): string {
   if (msDoStartu <= 0) return "start právě teď…";
@@ -9,6 +10,20 @@ function formatOdpocet(msDoStartu: number): string {
   const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
   const ss = String(s % 60).padStart(2, "0");
   return `${hh}:${mm}:${ss}`;
+}
+
+/**
+ * Výchozí hodnota pole (teď + 15 min) — na některých prohlížečích (Safari)
+ * prázdný <input type="datetime-local"> zobrazuje dnešní datum jako
+ * nezávazný šedý náhled, který ale NENÍ skutečná hodnota (input.value je
+ * pořád ""), takže tlačítko zůstane disabled a klik nic neudělá. Reálná
+ * přednastavená hodnota tomu předejde.
+ */
+function vychoziCas(): string {
+  const d = new Date(Date.now() + 15 * 60 * 1000);
+  d.setSeconds(0, 0);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 interface StartPlanovacProps {
@@ -24,7 +39,7 @@ interface StartPlanovacProps {
  * záloha a plán zruší (viz start-vlny.service.ts).
  */
 export function StartPlanovac({ routeId, vlna, onChanged }: StartPlanovacProps) {
-  const [cas, setCas] = useState("");
+  const [cas, setCas] = useState(vychoziCas);
   const [odesilam, setOdesilam] = useState(false);
   const [chyba, setChyba] = useState<string | null>(null);
   const [ted, setTed] = useState(() => Date.now());
@@ -49,10 +64,10 @@ export function StartPlanovac({ routeId, vlna, onChanged }: StartPlanovacProps) 
         startVlnaId: vlna?.id,
         planovanyStart: new Date(cas).toISOString(),
       });
-      setCas("");
+      setCas(vychoziCas());
       onChanged();
     } catch (e) {
-      setChyba(e instanceof Error ? e.message : "Naplánování se nezdařilo");
+      setChyba(chybaZeServeru(e, "Naplánování se nezdařilo"));
     } finally {
       setOdesilam(false);
     }
@@ -65,7 +80,7 @@ export function StartPlanovac({ routeId, vlna, onChanged }: StartPlanovacProps) 
       await api.del(`/routes/${routeId}/start-plan`);
       onChanged();
     } catch (e) {
-      setChyba(e instanceof Error ? e.message : "Zrušení se nezdařilo");
+      setChyba(chybaZeServeru(e, "Zrušení se nezdařilo"));
     } finally {
       setOdesilam(false);
     }

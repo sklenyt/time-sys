@@ -115,6 +115,13 @@ export interface Cip {
   vracenoAt?: string | null;
 }
 
+/** Řádek evidence čipů trati (F22/F29/F30) — Cip doplněný o identifikaci závodníka pro přehled ve stránce Čipy. */
+export interface CipSListem extends Cip {
+  startovniCislo: number;
+  prijmeni: string;
+  jmeno: string;
+}
+
 export interface Zarizeni {
   id: string;
   nazev: string;
