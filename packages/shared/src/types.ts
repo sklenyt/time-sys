@@ -25,6 +25,7 @@ export interface Udalost {
   datum: string;
   htmlHlavicka?: string | null;
   logoUrl?: string | null;
+  ukoncena: boolean;
 }
 
 export interface Trasa {

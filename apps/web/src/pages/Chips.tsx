@@ -164,7 +164,7 @@ export function Chips() {
   }
 
   return (
-    <AppShell active="cipy" routeId={routeId}>
+    <AppShell active="cipy" routeId={routeId} eventId={trasa.udalostId}>
       <div className="dash-header" style={{ marginBottom: 20 }}>
         <div>
           <h1>Čipy</h1>

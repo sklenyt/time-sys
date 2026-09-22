@@ -171,6 +171,19 @@ export function Sprava() {
     });
   }
 
+  /**
+   * Ukončená akce zmizí z Dashboardu (viz Dashboard.tsx) a tady se zešedí
+   * — data i tratě zůstávají beze změny, jen se schovají akce nad nimi
+   * (start, registrace, přidání trasy), ať se hotové závody nekupí mezi
+   * živými. Obnovení je vždy dostupné, žádné mazání.
+   */
+  async function toggleUkoncena(eventId: string, ukoncena: boolean) {
+    await sBusy(ukoncena ? "Ukončuji akci…" : "Obnovuji akci…", async () => {
+      await api.patch(`/events/${eventId}`, { ukoncena });
+      await reload();
+    });
+  }
+
   async function deleteEvent(eventId: string, nazev: string) {
     if (!window.confirm(`Opravdu smazat akci "${nazev}"? Tuto akci nelze vrátit zpět.`)) return;
     await sBusy("Mažu akci…", async () => {
@@ -247,19 +260,62 @@ export function Sprava() {
         </div>
       )}
 
-      {udalosti.map((u) => (
-        <article key={u.id} className="dash-card" style={{ marginBottom: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "0 0 4px" }}>
-            <h3 style={{ margin: 0 }}>{u.nazev}</h3>
-            <button onClick={() => renameEvent(u.id, u.nazev)} className="btn-pill">
-              Přejmenovat
-            </button>
-            <button onClick={() => nastavitHesloVysledku(u.id)} className="btn-pill">
-              Heslo výsledků
-            </button>
-            <button onClick={() => deleteEvent(u.id, u.nazev)} className="btn-pill danger">
-              Smazat akci
-            </button>
+      {[...udalosti]
+        .sort((a, b) => Number(a.ukoncena) - Number(b.ukoncena))
+        .map((u) => (
+        <article
+          key={u.id}
+          className="dash-card"
+          style={{ marginBottom: 16, opacity: u.ukoncena ? 0.6 : 1, background: u.ukoncena ? "var(--surface)" : undefined }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+              flexWrap: "wrap",
+              margin: "0 0 4px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <h3 style={{ margin: 0 }}>{u.nazev}</h3>
+              {u.ukoncena && (
+                <span
+                  className="mono"
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: "1px 7px",
+                    borderRadius: 999,
+                    background: "var(--text-secondary)",
+                    color: "#fff",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  Ukončeno
+                </span>
+              )}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              {!u.ukoncena && (
+                <button onClick={() => renameEvent(u.id, u.nazev)} className="btn-pill">
+                  Přejmenovat
+                </button>
+              )}
+              {!u.ukoncena && (
+                <button onClick={() => nastavitHesloVysledku(u.id)} className="btn-pill">
+                  Heslo výsledků
+                </button>
+              )}
+              <button onClick={() => toggleUkoncena(u.id, !u.ukoncena)} className="btn-pill">
+                {u.ukoncena ? "Obnovit akci" : "Ukončit akci"}
+              </button>
+              <button onClick={() => deleteEvent(u.id, u.nazev)} className="btn-pill danger">
+                Smazat akci
+              </button>
+            </div>
           </div>
           <p className="mono" style={{ color: "var(--text-secondary)", margin: "0 0 12px" }}>
             {formatDatum(u.datum)}
@@ -277,46 +333,50 @@ export function Sprava() {
                       </span>
                     )}
                   </span>
-                  <span style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                    <button onClick={() => startRace(t.id)} className="btn-pill">
-                      Start
-                    </button>
-                    <button onClick={() => toggleDokoncena(t.id, !t.dokoncena)} className="btn-pill">
-                      {t.dokoncena ? "Otevřít znovu" : "Dokončit"}
-                    </button>
-                    <button onClick={() => ukazatRegistracniOdkaz(t.id)} className="btn-pill">
-                      Registrace
-                    </button>
-                    <button onClick={() => toggleRegistrace(t.id, !t.registraceUzavrena)} className="btn-pill">
-                      {t.registraceUzavrena ? "Otevřít registraci" : "Uzavřít registraci"}
-                    </button>
-                    <button onClick={() => ukazatEmbedRegistrace(t.id)} className="btn-pill">
-                      Embed registrace
-                    </button>
-                    <button onClick={() => ukazatEmbedKod(t.id)} className="btn-pill">
-                      Embed výsledků
-                    </button>
-                    <button onClick={() => deleteRoute(t.id, t.nazev)} className="btn-pill danger">
-                      Smazat
-                    </button>
-                  </span>
+                  {!u.ukoncena && (
+                    <span style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                      <button onClick={() => startRace(t.id)} className="btn-pill">
+                        Start
+                      </button>
+                      <button onClick={() => toggleDokoncena(t.id, !t.dokoncena)} className="btn-pill">
+                        {t.dokoncena ? "Otevřít znovu" : "Dokončit"}
+                      </button>
+                      <button onClick={() => ukazatRegistracniOdkaz(t.id)} className="btn-pill">
+                        Registrace
+                      </button>
+                      <button onClick={() => toggleRegistrace(t.id, !t.registraceUzavrena)} className="btn-pill">
+                        {t.registraceUzavrena ? "Otevřít registraci" : "Uzavřít registraci"}
+                      </button>
+                      <button onClick={() => ukazatEmbedRegistrace(t.id)} className="btn-pill">
+                        Embed registrace
+                      </button>
+                      <button onClick={() => ukazatEmbedKod(t.id)} className="btn-pill">
+                        Embed výsledků
+                      </button>
+                      <button onClick={() => deleteRoute(t.id, t.nazev)} className="btn-pill danger">
+                        Smazat
+                      </button>
+                    </span>
+                  )}
                 </div>
-                <StartPlanovac routeId={t.id} vlna={vlnaByRoute[t.id]} onChanged={reload} />
+                {!u.ukoncena && <StartPlanovac routeId={t.id} vlna={vlnaByRoute[t.id]} onChanged={reload} />}
               </li>
             ))}
           </ul>
 
-          <div style={{ display: "flex", gap: 8 }}>
-            <input
-              value={routeDrafts[u.id] ?? ""}
-              onChange={(e) => setRouteDrafts((d) => ({ ...d, [u.id]: e.target.value }))}
-              placeholder="Nová trasa, např. 10 km"
-              style={inputStyle}
-            />
-            <button onClick={() => createRoute(u.id)} className="btn-pill primary">
-              Přidat trasu
-            </button>
-          </div>
+          {!u.ukoncena && (
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                value={routeDrafts[u.id] ?? ""}
+                onChange={(e) => setRouteDrafts((d) => ({ ...d, [u.id]: e.target.value }))}
+                placeholder="Nová trasa, např. 10 km"
+                style={inputStyle}
+              />
+              <button onClick={() => createRoute(u.id)} className="btn-pill primary">
+                Přidat trasu
+              </button>
+            </div>
+          )}
         </article>
       ))}
     </AppShell>

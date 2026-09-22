@@ -6,6 +6,7 @@ import { createHash } from "crypto";
 import { AuthService } from "./auth.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { EmailService } from "../notifications/email.service";
+import { UserCacheService } from "./user-cache.service";
 
 describe("AuthService.updateMenuOrder", () => {
   let service: AuthService;
@@ -20,6 +21,7 @@ describe("AuthService.updateMenuOrder", () => {
         { provide: JwtService, useValue: {} },
         { provide: ConfigService, useValue: {} },
         { provide: EmailService, useValue: {} },
+        UserCacheService,
       ],
     }).compile();
     service = moduleRef.get(AuthService);
@@ -57,6 +59,7 @@ describe("AuthService.forgotPassword / resetPassword", () => {
         { provide: JwtService, useValue: {} },
         { provide: ConfigService, useValue: {} },
         { provide: EmailService, useValue: email },
+        UserCacheService,
       ],
     }).compile();
     service = moduleRef.get(AuthService);

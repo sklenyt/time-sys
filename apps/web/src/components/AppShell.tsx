@@ -41,6 +41,37 @@ const NAV_ITEMS: NavItem[] = [
 const NAV_BY_KEY = new Map(NAV_ITEMS.map((i) => [i.key, i]));
 const VYCHOZI_PORADI: NavKey[] = NAV_ITEMS.map((i) => i.key);
 
+const POSLEDNI_ROUTE_KEY = "depo_posledni_route_id";
+const POSLEDNI_EVENT_KEY = "depo_posledni_event_id";
+
+/**
+ * Spousta stránek (Správa akcí, Reporty, ale i Kdo běží/Kolize/Audit) zná
+ * jen routeId, ne eventId, nebo nezná ani jedno — bez fallbacku na
+ * naposledy navštívenou trať/akci by menu bylo proklikatelné jen z
+ * Přehledu akce, což uživatele nutí se tam pořád vracet. Uložení je čistě
+ * per-prohlížeč pohodlí (ne zdroj pravdy), proto try/catch — v private
+ * módu nebo se zablokovaným úložištěm menu prostě jen nebude mít fallback.
+ */
+function ulozitPosledniKontext(routeId?: string, eventId?: string) {
+  try {
+    if (routeId) localStorage.setItem(POSLEDNI_ROUTE_KEY, routeId);
+    if (eventId) localStorage.setItem(POSLEDNI_EVENT_KEY, eventId);
+  } catch {
+    // localStorage nedostupné — fallback se příště jednoduše neuplatní
+  }
+}
+
+function nacistPosledniKontext(): { routeId?: string; eventId?: string } {
+  try {
+    return {
+      routeId: localStorage.getItem(POSLEDNI_ROUTE_KEY) ?? undefined,
+      eventId: localStorage.getItem(POSLEDNI_EVENT_KEY) ?? undefined,
+    };
+  } catch {
+    return {};
+  }
+}
+
 /**
  * Sloučí uložené pořadí uživatele s výchozím — položky z uloženého pořadí
  * jdou první (jen ty, co v appce pořád existují), zbytek (nové položky menu
@@ -51,6 +82,40 @@ function slouzitPoradi(ulozene: string[]): NavKey[] {
   const platne = ulozene.filter((k): k is NavKey => VYCHOZI_PORADI.includes(k as NavKey));
   const zbyva = VYCHOZI_PORADI.filter((k) => !platne.includes(k));
   return [...platne, ...zbyva];
+}
+
+/**
+ * AppShell se v aktuálním routingu (viz App.tsx) mountuje znovu na každé
+ * stránce — bez cache by to znamenalo nový /auth/me dotaz a viditelné
+ * probliknutí menu (nejdřív výchozí pořadí, pak přeskládání) při každém
+ * kliknutí. Modulová proměnná přežije mezi mounty v rámci jedné návštěvy
+ * appky, takže menu se po prvním načtení vykresluje rovnou staticky.
+ */
+let sdilenyUzivatel: AuthUserDto | null = null;
+let probihajiciNacteni: Promise<AuthUserDto> | null = null;
+
+function nacistUzivatele(): Promise<AuthUserDto> {
+  if (sdilenyUzivatel) {
+    return Promise.resolve(sdilenyUzivatel);
+  }
+  if (!probihajiciNacteni) {
+    probihajiciNacteni = api
+      .get<AuthUserDto>("/auth/me")
+      .then((u) => {
+        sdilenyUzivatel = u;
+        return u;
+      })
+      .finally(() => {
+        probihajiciNacteni = null;
+      });
+  }
+  return probihajiciNacteni;
+}
+
+/** Volat při odhlášení, ať se po přihlášení jiného účtu na chvíli nemihne předchozí jméno/pořadí. */
+function vycistitCacheUzivatele() {
+  sdilenyUzivatel = null;
+  probihajiciNacteni = null;
 }
 
 /**
@@ -79,13 +144,15 @@ interface AppShellProps {
  */
 export function AppShell({ active, routeId, eventId, children }: AppShellProps) {
   const navigate = useNavigate();
-  const [user, setUser] = useState<AuthUserDto | null>(null);
-  const [poradi, setPoradi] = useState<NavKey[]>(VYCHOZI_PORADI);
+  const [user, setUser] = useState<AuthUserDto | null>(sdilenyUzivatel);
+  const [poradi, setPoradi] = useState<NavKey[]>(
+    sdilenyUzivatel ? slouzitPoradi(sdilenyUzivatel.poradiMenu) : VYCHOZI_PORADI
+  );
   const [tazeneKey, setTazeneKey] = useState<NavKey | null>(null);
 
   useEffect(() => {
-    api
-      .get<AuthUserDto>("/auth/me")
+    if (sdilenyUzivatel) return; // už vykresleno synchronně výše, není co dotahovat
+    nacistUzivatele()
       .then((u) => {
         setUser(u);
         setPoradi(slouzitPoradi(u.poradiMenu));
@@ -95,8 +162,20 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
       });
   }, []);
 
+  useEffect(() => {
+    ulozitPosledniKontext(routeId, eventId);
+  }, [routeId, eventId]);
+
+  // Stránky jako Správa akcí nebo Reporty nemají vlastní trať/akci v URL —
+  // bez fallbacku na naposledy navštívenou by z nich nešlo proklikat menu
+  // a uživatel by se musel pokaždé vracet na Přehled akce.
+  const posledniKontext = nacistPosledniKontext();
+  const efektivniRouteId = routeId ?? posledniKontext.routeId;
+  const efektivniEventId = eventId ?? posledniKontext.eventId;
+
   function odhlasit() {
     clearTokens();
+    vycistitCacheUzivatele();
     navigate("/login");
   }
 
@@ -107,6 +186,11 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
       const bezTazene = aktualni.filter((k) => k !== tazeneKey);
       const cilIndex = bezTazene.indexOf(cilKey);
       const nove = [...bezTazene.slice(0, cilIndex), tazeneKey, ...bezTazene.slice(cilIndex)];
+      if (sdilenyUzivatel) {
+        // Jinak by další mount AppShellu (přechod na jinou stránku) přepsal
+        // pořadí zpátky na to staré z cache, viz komentář u nacistUzivatele().
+        sdilenyUzivatel = { ...sdilenyUzivatel, poradiMenu: nove };
+      }
       api.patch("/auth/me/menu-order", { poradiMenu: nove }).catch(() => {
         // Nekritická cesta — pořadí zůstává lokálně, jen se neuloží pro jiná zařízení.
       });
@@ -134,7 +218,7 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
           {poradi.map((key) => {
             const item = NAV_BY_KEY.get(key);
             if (!item) return null;
-            const disabled = (item.needsRoute && !routeId) || (item.needsEvent && !eventId);
+            const disabled = (item.needsRoute && !efektivniRouteId) || (item.needsEvent && !efektivniEventId);
             return (
               <div
                 key={item.key}
@@ -159,7 +243,7 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
                   </button>
                 ) : (
                   <Link
-                    to={item.href(routeId, eventId)}
+                    to={item.href(efektivniRouteId, efektivniEventId)}
                     className={`app-nav-link${active === item.key ? " active" : ""}`}
                     aria-current={active === item.key ? "page" : undefined}
                   >
