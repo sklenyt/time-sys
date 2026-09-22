@@ -5,12 +5,13 @@ export function Landing() {
     <div className="landing">
       <header className="landing-nav">
         <div className="brand">
-          <img src="/depo-mark.svg" alt="" width={40} height={40} />
+          <img src="/depo-mark.svg" alt="" width={52} height={52} />
           Depo
         </div>
         <nav className="landing-nav-links">
           <a href="#jak-to-funguje">Jak to funguje</a>
           <a href="#proc-depo">Proč Depo</a>
+          <a href="#cenik">Ceník</a>
           <a href="https://vysledky.depotime.cz">Výsledky</a>
         </nav>
         <div className="landing-nav-cta">
@@ -171,6 +172,33 @@ export function Landing() {
               <li className="yes">Živé výsledky + FTP/SFTP export na váš web</li>
               <li className="yes">Žádný nákup hardwaru — jen telefony, co máte</li>
             </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-section" id="cenik">
+        <div className="landing-section-head">
+          <h2>Ceník</h2>
+          <p>Žádné skryté poplatky ani platby za startovní číslo navíc.</p>
+        </div>
+        <div className="landing-pricing">
+          <div className="landing-pricing-card">
+            <div className="landing-pricing-badge">Pro kluby a komunitní závody</div>
+            <div className="landing-pricing-value">0 Kč</div>
+            <p>Depo je a zůstane zdarma — neomezený počet závodů, závodníků i zařízení.</p>
+            <ul>
+              <li className="yes">Offline měření na libovolném počtu stanovišť</li>
+              <li className="yes">Živé výsledky + FTP/SFTP export na váš web</li>
+              <li className="yes">RFID i ruční zápis, audit log, role a přístupy</li>
+            </ul>
+            <Link to="/dashboard" className="btn-pill accent">
+              Založit závod zdarma
+            </Link>
+          </div>
+          <div className="landing-pricing-support">
+            <h3>Podpořte vývoj</h3>
+            <p>Depo píše a udržuje jeden vývojář ve volném čase. Možnost dobrovolně přispět na další vývoj právě připravujeme.</p>
+            <span className="landing-pricing-soon">Připravujeme</span>
           </div>
         </div>
       </section>
