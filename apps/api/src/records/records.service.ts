@@ -65,6 +65,11 @@ export class RecordsService {
       : [];
     const [posledniZaznam] = drivejsiZaznamyDojezdu;
 
+    // Kolikátý průjezd cílem tohle je (víckolové tratě, Trasa.pocetKol) —
+    // jen u DOJEZD, ať se zbytečně nedotazuje trať na každý zápis mezičasu.
+    const trasaProKolo =
+      typUdalosti === TypUdalosti.DOJEZD ? await this.prisma.trasa.findUnique({ where: { id: trasaId } }) : null;
+
     // Kolize stanovišť (03-architecture.md §3.5): stejná přihláška dostala
     // DOJEZD z jiného zařízení nedávno — dvě nezávislá zařízení mohla
     // zaznamenat tentýž doběh. Nic se nezahazuje, jen se to označí
@@ -112,6 +117,13 @@ export class RecordsService {
           })()
         : null;
 
+    // U víckolové tratě se DOJEZD nepočítá za finální doběh, dokud běžec
+    // nemá za sebou pocetKol průjezdů — viz ResultsService.nacistProjezdyPodlePrihlasce,
+    // stejná logika (o kolikátý průjezd jde) se počítá i tady kvůli okamžité
+    // zpětné vazbě obsluze ("kolo 2/4") hned po zápisu.
+    const aktualniKolo = typUdalosti === TypUdalosti.DOJEZD ? drivejsiZaznamyDojezdu.length + 1 : null;
+    const pocetKol = trasaProKolo?.pocetKol ?? null;
+
     if (typUdalosti === TypUdalosti.DOJEZD) {
       // Fire-and-forget — nesmí zpomalit ani ohrozit odpověď na zápis měření (§3.10).
       // Mezičas výsledky neovlivňuje, export ani živé přepočítání by tu bylo zbytečné.
@@ -119,27 +131,26 @@ export class RecordsService {
       this.resultsEvents.oznamZmenu(trasaId);
 
       // F32 — e-mail rodině/blízké osobě při doběhu, taky fire-and-forget.
-      if (prihlaska?.oznamovaciEmail && casCelkem) {
-        this.prisma.trasa
-          .findUnique({ where: { id: trasaId } })
-          .then((trasa) => {
-            if (!trasa) return;
-            const webUrl = process.env.WEB_APP_URL ?? "http://localhost:5173";
-            return this.email.posliOznameniODobehu({
-              komu: prihlaska.oznamovaciEmail!,
-              prijmeni: prihlaska.prijmeni,
-              jmeno: prihlaska.jmeno,
-              startovniCislo: prihlaska.startovniCislo,
-              trasaNazev: trasa.nazev,
-              casCelkem,
-              odkazNaVysledky: `${webUrl}/vysledky/${trasaId}/bezec/${prihlaska.id}`,
-            });
+      // U víckolové tratě jen při skutečném doběhu (poslední z pocetKol
+      // průjezdů) — jinak by e-mail chodil po každém kole, ne jen v cíli.
+      const jeSkutecnyDobeh = aktualniKolo !== null && pocetKol !== null && aktualniKolo >= pocetKol;
+      if (prihlaska?.oznamovaciEmail && casCelkem && trasaProKolo && jeSkutecnyDobeh) {
+        const webUrl = process.env.WEB_APP_URL ?? "http://localhost:5173";
+        this.email
+          .posliOznameniODobehu({
+            komu: prihlaska.oznamovaciEmail,
+            prijmeni: prihlaska.prijmeni,
+            jmeno: prihlaska.jmeno,
+            startovniCislo: prihlaska.startovniCislo,
+            trasaNazev: trasaProKolo.nazev,
+            casCelkem,
+            odkazNaVysledky: `${webUrl}/vysledky/${trasaId}/bezec/${prihlaska.id}`,
           })
           .catch(() => {});
       }
     }
 
-    return this.toResponse(zaznam, casKola, casCelkem);
+    return this.toResponse(zaznam, casKola, casCelkem, aktualniKolo, pocetKol);
   }
 
   /**
@@ -306,7 +317,9 @@ export class RecordsService {
   toResponse(
     zaznam: ZaznamUdalosti,
     casKola: string | null = null,
-    casCelkem: string | null = null
+    casCelkem: string | null = null,
+    aktualniKolo: number | null = null,
+    pocetKol: number | null = null
   ): RecordResponseDto {
     return {
       id: zaznam.id,
@@ -319,6 +332,8 @@ export class RecordsService {
       casKola,
       casCelkem,
       maFotodukaz: Boolean(zaznam.fotoSouborNazev),
+      aktualniKolo,
+      pocetKol,
     };
   }
 }

@@ -30,8 +30,10 @@ describe("RecordsService", () => {
     auditLog: { create: jest.Mock };
     cip: { findFirst: jest.Mock };
   };
+  let emailMock: { posliOznameniODobehu: jest.Mock };
 
   beforeEach(async () => {
+    emailMock = { posliOznameniODobehu: jest.fn().mockResolvedValue(undefined) };
     prisma = {
       zaznamUdalosti: {
         findUnique: jest.fn().mockResolvedValue(null),
@@ -53,7 +55,7 @@ describe("RecordsService", () => {
         { provide: PrismaService, useValue: prisma },
         { provide: PublishTargetsService, useValue: { exportPoZaznamuProTrasu: jest.fn().mockResolvedValue(undefined) } },
         { provide: ResultsEventsService, useValue: { oznamZmenu: jest.fn() } },
-        { provide: EmailService, useValue: { posliOznameniODobehu: jest.fn().mockResolvedValue(undefined) } },
+        { provide: EmailService, useValue: emailMock },
       ],
     }).compile();
 
@@ -170,6 +172,64 @@ describe("RecordsService", () => {
       });
 
       expect(result.stav).toBe(StavZaznamu.OK);
+    });
+  });
+
+  describe("create — víckolové tratě (pocetKol > 1)", () => {
+    beforeEach(() => {
+      mockCreateEcho();
+      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 3 });
+      prisma.prihlaska.findFirst.mockResolvedValue({
+        id: "prihlaska-1",
+        startovniCislo: 1,
+        prijmeni: "Novák",
+        jmeno: "Petr",
+        oznamovaciEmail: "blizky@example.cz",
+        startVlna: { casStartu: START_CAS },
+      });
+    });
+
+    it("hlásí aktuální kolo podle počtu dřívějších DOJEZD záznamů a echuje pocetKol z trati", async () => {
+      // Dva dřívější průjezdy cílem u téhle přihlášky — tenhle zápis je třetí.
+      prisma.zaznamUdalosti.findMany.mockResolvedValue([
+        { id: "z1", zarizeniId: "zarizeni-A", cas: new Date(iso(10)), typUdalosti: TypUdalosti.DOJEZD },
+        { id: "z2", zarizeniId: "zarizeni-A", cas: new Date(iso(20)), typUdalosti: TypUdalosti.DOJEZD },
+      ]);
+
+      const result = await service.create(TRASA_ID, {
+        startovniCislo: 1,
+        zarizeniId: "zarizeni-A",
+        klientCas: iso(30),
+        klientEventId: "evt-3",
+      });
+
+      expect(result.aktualniKolo).toBe(3);
+      expect(result.pocetKol).toBe(3);
+    });
+
+    it("neposílá e-mail rodině po dílčím kole, jen po skutečném doběhu (posledním z pocetKol průjezdů)", async () => {
+      // 1. průjezd ze 3 potřebných — ještě není doběh.
+      prisma.zaznamUdalosti.findMany.mockResolvedValue([]);
+      await service.create(TRASA_ID, {
+        startovniCislo: 1,
+        zarizeniId: "zarizeni-A",
+        klientCas: iso(10),
+        klientEventId: "evt-kolo-1",
+      });
+      expect(emailMock.posliOznameniODobehu).not.toHaveBeenCalled();
+
+      // 3. (poslední) průjezd — až tady je to skutečný doběh.
+      prisma.zaznamUdalosti.findMany.mockResolvedValue([
+        { id: "z1", zarizeniId: "zarizeni-A", cas: new Date(iso(10)), typUdalosti: TypUdalosti.DOJEZD },
+        { id: "z2", zarizeniId: "zarizeni-A", cas: new Date(iso(20)), typUdalosti: TypUdalosti.DOJEZD },
+      ]);
+      await service.create(TRASA_ID, {
+        startovniCislo: 1,
+        zarizeniId: "zarizeni-A",
+        klientCas: iso(30),
+        klientEventId: "evt-kolo-3",
+      });
+      expect(emailMock.posliOznameniODobehu).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -239,10 +239,16 @@ export interface VysledekPolozka {
   poradiKategorie: number | null;
   stavUkonceni?: StavUkonceni | null;
   clenoveDruzstva?: DruzstvoClen[] | null;
+  /** Kolik kol trať vyžaduje (víckolové závody) — vždy stejné pro celou trať. */
+  pocetKol: number;
+  /** Kolik kol má běžec/běžkyně za sebou — jen dokud není klasifikován/a (pak null), jinak je bezpředmětné. */
+  aktualniKolo: number | null;
 }
 
 export interface VysledkyResponseDto {
   trasaId: string;
+  trasaNazev: string;
+  udalostNazev: string;
   klasifikovani: VysledekPolozka[];
   neklasifikovani: VysledekPolozka[];
 }
@@ -255,6 +261,9 @@ export interface BezicPolozka {
   jmeno: string;
   kategorieKod: string;
   casOdStartu: string | null;
+  /** Kolik kol trať vyžaduje a kolik jich běžec/běžkyně už má za sebou (víckolové závody). */
+  pocetKol: number;
+  aktualniKolo: number;
 }
 
 export interface RunningResponseDto {
@@ -286,6 +295,9 @@ export interface RecordResponseDto {
   casCelkem?: string | null;
   /** F41 — má tento záznam přiložený fotodůkaz z cíle (viz docs/12-rfid-a-doporuceni.md §12.8). */
   maFotodukaz?: boolean;
+  /** Kolikátý průjezd cílem tohle je a kolik jich trať vyžaduje (víckolové závody) — jen u DOJEZD, jinak null. */
+  aktualniKolo?: number | null;
+  pocetKol?: number | null;
 }
 
 export interface CorrectRecordDto {

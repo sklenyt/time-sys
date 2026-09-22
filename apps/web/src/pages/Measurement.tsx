@@ -226,6 +226,12 @@ export function Measurement() {
             <div style={{ fontSize: 12, color: "var(--steel-400)" }}>
               {z.casCelkem ?? new Date(z.klientCas).toLocaleTimeString("cs-CZ")}
               {z.typUdalosti === TypUdalosti.MEZICAS && <div>mezičas</div>}
+              {z.typUdalosti === TypUdalosti.DOJEZD && z.pocetKol && z.pocetKol > 1 && (
+                <div style={{ color: z.aktualniKolo === z.pocetKol ? "var(--color-live)" : "var(--tape-400)" }}>
+                  {z.aktualniKolo === z.pocetKol ? "doběh — " : "kolo "}
+                  {z.aktualniKolo}/{z.pocetKol}
+                </div>
+              )}
               {z.stav === "CEKA" && <div>čeká na odeslání…</div>}
               {z.stav === "NEEDS_REVIEW" && <div style={{ color: "var(--color-attention)" }}>ke kontrole — kolize stanovišť</div>}
               {z.puvod === "CIZI" && <div>z jiného zařízení</div>}

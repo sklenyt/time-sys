@@ -16,6 +16,7 @@ import { Conflicts } from "./pages/Conflicts";
 import { EmbedResults } from "./pages/EmbedResults";
 import { EmbedRegister } from "./pages/EmbedRegister";
 import { Kiosk } from "./pages/Kiosk";
+import { KioskEvent } from "./pages/KioskEvent";
 import { AuditLog } from "./pages/AuditLog";
 import { Register } from "./pages/Register";
 import { Reports } from "./pages/Reports";
@@ -54,6 +55,7 @@ export function App() {
       <Route path="/registrace/:routeId" element={<Register />} />
       <Route path="/embed/registrace/:routeId" element={<EmbedRegister />} />
       <Route path="/kiosk/:routeId" element={<Kiosk />} />
+      <Route path="/kiosk-akce/:eventId" element={<KioskEvent />} />
       <Route
         path="/audit/:routeId"
         element={

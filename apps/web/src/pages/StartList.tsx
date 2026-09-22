@@ -1,11 +1,103 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import type { Cip, DruzstvoClen, ImportEntriesResponseDto, Kategorie, Prihlaska, Trasa } from "@depo/shared";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import type { Cip, DruzstvoClen, ImportEntriesResponseDto, Kategorie, Prihlaska, Trasa, Udalost } from "@depo/shared";
 import { Pohlavi, StavCipu, StavUkonceni } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
 import { BusyOverlay } from "../components/BusyOverlay";
+
+/**
+ * Trať bez aktivní (neukončené) akce nesmí tiše ukázat startovní listinu —
+ * organizátor by tu jinak přes fallback poslední navštívené trati (viz
+ * AppShell) mohl narazit na seznam přihlášených u dávno ukončeného závodu.
+ * Místo listiny se nabídne výběr aktivní akce a trati, ať je vždy jasné,
+ * s čím se právě pracuje.
+ */
+function VyberAktivniAkce() {
+  const navigate = useNavigate();
+  const [udalosti, setUdalosti] = useState<Udalost[] | null>(null);
+  const [vybranaId, setVybranaId] = useState("");
+  const [trasy, setTrasy] = useState<Trasa[] | null>(null);
+  const [nacitamTrasy, setNacitamTrasy] = useState(false);
+
+  useEffect(() => {
+    api
+      .get<Udalost[]>("/events")
+      .then((vse) => setUdalosti(vse.filter((u) => !u.ukoncena)))
+      .catch(() => setUdalosti([]));
+  }, []);
+
+  function vybratAkci(id: string) {
+    setVybranaId(id);
+    setTrasy(null);
+    if (!id) return;
+    setNacitamTrasy(true);
+    api
+      .get<Trasa[]>(`/events/${id}/routes`)
+      .then(setTrasy)
+      .catch(() => setTrasy([]))
+      .finally(() => setNacitamTrasy(false));
+  }
+
+  return (
+    <div style={{ maxWidth: 480 }}>
+      <div className="dash-header" style={{ marginBottom: 20 }}>
+        <div>
+          <h1>Startovní listina</h1>
+          <div className="meta mono">Vyberte aktivní akci</div>
+        </div>
+      </div>
+      <section className="dash-card">
+        <p style={{ color: "var(--text-secondary)", fontSize: 13.5, marginTop: 0 }}>
+          Tahle trať patří k ukončené nebo neexistující akci, takže tu nejde vidět startovní listina — nejdřív
+          vyberte, se kterou aktivní akcí chcete pracovat.
+        </p>
+        {udalosti === null && <p className="mono">Načítám…</p>}
+        {udalosti?.length === 0 && (
+          <p style={{ color: "var(--text-secondary)", fontSize: 13.5 }}>
+            Zatím nemáte žádnou aktivní akci. <Link to="/sprava">Založte novou ve Správě akcí.</Link>
+          </p>
+        )}
+        {udalosti && udalosti.length > 0 && (
+          <>
+            <select value={vybranaId} onChange={(e) => vybratAkci(e.target.value)} style={inputStyle}>
+              <option value="">Vyberte akci…</option>
+              {udalosti.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.nazev}
+                </option>
+              ))}
+            </select>
+            {nacitamTrasy && (
+              <p className="mono" style={{ fontSize: 13 }}>
+                Načítám tratě…
+              </p>
+            )}
+            {trasy && trasy.length === 0 && (
+              <p style={{ color: "var(--text-secondary)", fontSize: 13.5 }}>Tahle akce zatím nemá žádnou trať.</p>
+            )}
+            {trasy && trasy.length > 0 && (
+              <ul style={{ listStyle: "none", padding: 0, margin: "12px 0 0", display: "flex", flexDirection: "column", gap: 6 }}>
+                {trasy.map((t) => (
+                  <li key={t.id}>
+                    <button
+                      onClick={() => navigate(`/startovni-listina/${t.id}`)}
+                      className="btn-pill"
+                      style={{ width: "100%" }}
+                    >
+                      {t.nazev}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+      </section>
+    </div>
+  );
+}
 
 const CIP_STAV_LABEL: Record<StavCipu, string> = {
   [StavCipu.PRIREZEN]: "přiřazen",
@@ -121,6 +213,7 @@ const PRAZDNY_CLEN: DruzstvoClen = { prijmeni: "", jmeno: "", rocnik: undefined,
 export function StartList() {
   const { routeId } = useParams<{ routeId: string }>();
   const [trasa, setTrasa] = useState<(Trasa & { kategorie: Kategorie[] }) | null>(null);
+  const [udalost, setUdalost] = useState<Udalost | null>(null);
   const [entries, setEntries] = useState<(Prihlaska & { kategorie?: Kategorie; cip?: Cip | null })[]>([]);
   const [catKod, setCatKod] = useState("");
   const [catNazev, setCatNazev] = useState("");
@@ -146,6 +239,9 @@ export function StartList() {
     try {
       const t = await api.get<Trasa & { kategorie: Kategorie[] }>(`/routes/${routeId}`);
       setTrasa(t);
+      const u = await api.get<Udalost>(`/events/${t.udalostId}`);
+      setUdalost(u);
+      if (u.ukoncena) return; // ukončená akce — listina se nenačítá, viz VyberAktivniAkce níže
       const e = await api.get<(Prihlaska & { kategorie?: Kategorie; cip?: Cip | null })[]>(
         `/routes/${routeId}/entries`
       );
@@ -306,6 +402,14 @@ export function StartList() {
     return (
       <AppShell active="listina" routeId={routeId}>
         {error ?? "Načítám…"}
+      </AppShell>
+    );
+  }
+
+  if (udalost?.ukoncena) {
+    return (
+      <AppShell active="listina" routeId={routeId} eventId={trasa.udalostId}>
+        <VyberAktivniAkce />
       </AppShell>
     );
   }
