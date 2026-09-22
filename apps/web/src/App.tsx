@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
+import { ForgotPassword } from "./pages/ForgotPassword";
+import { ResetPassword } from "./pages/ResetPassword";
 import { Dashboard } from "./pages/Dashboard";
 import { Sprava } from "./pages/Sprava";
 import { StartList } from "./pages/StartList";
@@ -43,6 +45,8 @@ export function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/zapomenute-heslo" element={<ForgotPassword />} />
+      <Route path="/reset-heslo" element={<ResetPassword />} />
       <Route path="/vysledky/:routeId" element={<Results />} />
       <Route path="/vysledky/:routeId/bezec/:prihlaskaId" element={<PersonalResult />} />
       <Route path="/embed/vysledky/:routeId" element={<EmbedResults />} />

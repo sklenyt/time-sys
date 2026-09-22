@@ -71,11 +71,26 @@ export function StartPlanovac({ routeId, vlna, onChanged }: StartPlanovacProps) 
     }
   }
 
+  const boxStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 8,
+    flexWrap: "wrap",
+    background: "var(--surface)",
+    border: "1px solid var(--line)",
+    borderRadius: 10,
+    padding: "8px 12px",
+  };
+
   if (planovanyStart) {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+      <div style={boxStyle}>
+        <span className="mono" style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4, color: "var(--text-secondary)" }}>
+          Automatický start
+        </span>
         <span className="mono" style={{ fontSize: 13, color: "var(--tape-700)", fontWeight: 700 }}>
-          Automatický start za {formatOdpocet(planovanyStart.getTime() - ted)}
+          za {formatOdpocet(planovanyStart.getTime() - ted)}
         </span>
         <button onClick={zrusit} disabled={odesilam} className="btn-pill">
           Zrušit plán
@@ -86,7 +101,10 @@ export function StartPlanovac({ routeId, vlna, onChanged }: StartPlanovacProps) 
   }
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+    <div style={boxStyle}>
+      <span className="mono" style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4, color: "var(--text-secondary)" }}>
+        Automatický start
+      </span>
       <input
         type="datetime-local"
         value={cas}

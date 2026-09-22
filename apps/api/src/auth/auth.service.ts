@@ -2,19 +2,23 @@ import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/co
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
+import { randomBytes, createHash } from "crypto";
 import type { AuthTokensDto } from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
+import { EmailService } from "../notifications/email.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 
 const SALT_ROUNDS = 12;
+const RESET_TOKEN_PLATNOST_MS = 60 * 60 * 1000;
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
-    private readonly config: ConfigService
+    private readonly config: ConfigService,
+    private readonly email: EmailService
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthTokensDto> {
@@ -66,6 +70,46 @@ export class AuthService {
     }
 
     return this.issueTokens(uzivatel.id, uzivatel.email);
+  }
+
+  /**
+   * Vždy vrací úspěch bez ohledu na to, jestli e-mail existuje — jinak by
+   * odpověď prozrazovala, které účty v systému existují (account enumeration).
+   */
+  async forgotPassword(email: string): Promise<void> {
+    const uzivatel = await this.prisma.uzivatel.findUnique({ where: { email } });
+    if (!uzivatel) return;
+
+    const token = randomBytes(32).toString("hex");
+    const resetTokenHash = createHash("sha256").update(token).digest("hex");
+    await this.prisma.uzivatel.update({
+      where: { id: uzivatel.id },
+      data: {
+        resetTokenHash,
+        resetTokenExpiruje: new Date(Date.now() + RESET_TOKEN_PLATNOST_MS),
+      },
+    });
+
+    const webUrl = process.env.WEB_APP_URL ?? "http://localhost:5173";
+    await this.email.posliOdkazNaResetHesla({
+      komu: uzivatel.email,
+      jmeno: uzivatel.jmeno,
+      odkaz: `${webUrl}/reset-heslo?token=${token}`,
+    });
+  }
+
+  async resetPassword(token: string, noveHeslo: string): Promise<void> {
+    const resetTokenHash = createHash("sha256").update(token).digest("hex");
+    const uzivatel = await this.prisma.uzivatel.findFirst({ where: { resetTokenHash } });
+    if (!uzivatel || !uzivatel.resetTokenExpiruje || uzivatel.resetTokenExpiruje < new Date()) {
+      throw new UnauthorizedException("Odkaz pro reset hesla je neplatný nebo vypršel");
+    }
+
+    const hesloHash = await bcrypt.hash(noveHeslo, SALT_ROUNDS);
+    await this.prisma.uzivatel.update({
+      where: { id: uzivatel.id },
+      data: { hesloHash, resetTokenHash: null, resetTokenExpiruje: null },
+    });
   }
 
   /** Vlastní pořadí položek postranního menu (přetahování v UI) — ukládá se k účtu napříč zařízeními. */

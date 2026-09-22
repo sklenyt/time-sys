@@ -55,4 +55,25 @@ export class EmailService {
       this.logger.warn(`Odeslání oznámení o doběhu na ${params.komu} selhalo: ${err}`);
     }
   }
+
+  async posliOdkazNaResetHesla(params: { komu: string; jmeno: string; odkaz: string }): Promise<void> {
+    const transporter = this.getTransporter();
+    if (!transporter) {
+      // Na rozdíl od oznámení o doběhu tady tiché selhání znamená, že se uživatel
+      // nikdy nedostane zpět ke svému účtu — proto warn, ne debug.
+      this.logger.warn(`SMTP nenakonfigurováno — odkaz na reset hesla pro ${params.komu} nebyl odeslán`);
+      return;
+    }
+
+    try {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM ?? "vysledky@depo.app",
+        to: params.komu,
+        subject: "Reset hesla — Depo",
+        text: `Ahoj ${params.jmeno},\n\npožádali jste o reset hesla k účtu Depo. Pro nastavení nového hesla klikněte na odkaz níže. Odkaz je platný 1 hodinu.\n\n${params.odkaz}\n\nPokud jste o reset hesla nežádali, tento e-mail ignorujte.`,
+      });
+    } catch (err) {
+      this.logger.warn(`Odeslání odkazu na reset hesla na ${params.komu} selhalo: ${err}`);
+    }
+  }
 }

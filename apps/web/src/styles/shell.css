@@ -12,7 +12,7 @@
 .app-sidebar {
   width: 240px;
   flex-shrink: 0;
-  background: var(--navy-800);
+  background: var(--navy-700);
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -94,14 +94,14 @@
 }
 
 .app-nav-link.active {
-  background: var(--navy-700);
+  background: var(--navy-600);
   color: #fff;
   border-left-color: var(--tape-500);
 }
 
 /* Ztlumené, ale ne mrtvé — klik navede do Správy akcí s vysvětlením, co chybí (viz AppShell.tsx duvodNedostupnosti). */
 .app-nav-link.disabled {
-  color: var(--navy-700);
+  color: var(--navy-600);
   cursor: pointer;
 }
 
@@ -165,12 +165,12 @@
        na dotykovém displeji nic nenapoví, že navigace pokračuje
        vpravo mimo obrazovku. */
     background:
-      linear-gradient(to right, var(--navy-800) 20%, transparent) left,
-      linear-gradient(to left, var(--navy-800) 20%, transparent) right,
+      linear-gradient(to right, var(--navy-700) 20%, transparent) left,
+      linear-gradient(to left, var(--navy-700) 20%, transparent) right,
       radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.5), transparent) left,
       radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.5), transparent) right;
     background-repeat: no-repeat;
-    background-color: var(--navy-800);
+    background-color: var(--navy-700);
     background-size:
       20px 100%,
       20px 100%,

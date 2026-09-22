@@ -102,12 +102,15 @@ model Uzivatel {
   hesloHash   String   @map("heslo_hash")
   vytvorenoAt DateTime @default(now()) @map("vytvoreno_at")
   poradiMenu  String[] @default([]) @map("poradi_menu")
+  resetTokenHash     String?   @map("reset_token_hash")
+  resetTokenExpiruje DateTime? @map("reset_token_expiruje")
 
   organizace  Organizace? @relation(fields: [organizaceId], references: [id])
   role        UzivatelRole[]
   zaznamy     ZaznamUdalosti[]
   auditLogy   AuditLog[]
 
+  @@index([resetTokenHash])
   @@map("uzivatel")
 }
 

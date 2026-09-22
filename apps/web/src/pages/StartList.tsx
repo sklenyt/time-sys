@@ -33,6 +33,7 @@ export function StartList() {
   const [error, setError] = useState<string | null>(null);
   const [importVysledek, setImportVysledek] = useState<ImportEntriesResponseDto | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [pridatKategorii, setPridatKategorii] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function reload() {
@@ -89,6 +90,44 @@ export function StartList() {
     setCatKod("");
     setCatNazev("");
     reload();
+  }
+
+  function stahnoutSablonuCsv() {
+    const hlavicka = [
+      "cislo",
+      "prijmeni",
+      "jmeno",
+      "kategorie",
+      "rocnik",
+      "pohlavi",
+      "klub",
+      "clen1_prijmeni",
+      "clen1_jmeno",
+      "clen1_rocnik",
+      "clen1_klub",
+      "clen2_prijmeni",
+      "clen2_jmeno",
+      "clen2_rocnik",
+      "clen2_klub",
+      "clen3_prijmeni",
+      "clen3_jmeno",
+      "clen3_rocnik",
+      "clen3_klub",
+      "clen4_prijmeni",
+      "clen4_jmeno",
+      "clen4_rocnik",
+      "clen4_klub",
+    ];
+    const ukazkovyKod = trasa?.kategorie[0]?.kod ?? "MAk";
+    const ukazka = ["101", "Novák", "Petr", ukazkovyKod, "1990", "M", "AC Sparta"];
+    const csv = [hlavicka.join(","), ukazka.join(",")].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const odkaz = document.createElement("a");
+    odkaz.href = url;
+    odkaz.download = "startovni-listina-sablona.csv";
+    odkaz.click();
+    URL.revokeObjectURL(url);
   }
 
   async function createEntry() {
@@ -179,12 +218,34 @@ export function StartList() {
       </div>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
-      {trasa.kategorie.length === 0 && (
-        <section className="dash-card" style={{ marginBottom: 24 }}>
-          <div className="dash-card-head">
-            <h2>Nejdřív přidejte kategorii</h2>
-          </div>
+      <section className="dash-card" style={{ marginBottom: 24 }}>
+        <div className="dash-card-head">
+          <h2>Kategorie</h2>
+          {trasa.kategorie.length > 0 && (
+            <button onClick={() => setPridatKategorii((v) => !v)} className="btn-pill">
+              {pridatKategorii ? "Zrušit" : "+ Přidat kategorii"}
+            </button>
+          )}
+        </div>
+        {trasa.kategorie.length > 0 ? (
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {trasa.kategorie.map((k) => (
+              <span
+                key={k.id}
+                className="mono"
+                style={{ padding: "4px 10px", borderRadius: 999, border: "1px solid var(--line)", fontSize: 12.5 }}
+              >
+                {k.kod} — {k.nazev} ({k.pohlavi})
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p style={{ color: "var(--text-secondary)", fontSize: 13.5, margin: 0 }}>
+            Zatím žádná kategorie — bez alespoň jedné kategorie nejde zapsat závodníka do listiny.
+          </p>
+        )}
+        {(pridatKategorii || trasa.kategorie.length === 0) && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
             <input placeholder="Kód, např. MAk" value={catKod} onChange={(e) => setCatKod(e.target.value)} style={inputStyle} />
             <input placeholder="Název, např. Muži A" value={catNazev} onChange={(e) => setCatNazev(e.target.value)} style={inputStyle} />
             <select value={catPohlavi} onChange={(e) => setCatPohlavi(e.target.value as Pohlavi)} style={inputStyle}>
@@ -195,8 +256,8 @@ export function StartList() {
               Přidat kategorii
             </button>
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {trasa.kategorie.length > 0 && (
         <section className="dash-card" style={{ marginBottom: 24 }}>
@@ -294,6 +355,9 @@ export function StartList() {
               Import z CSV (cislo, prijmeni, jmeno, kategorie — nepovinné rocnik, pohlavi, klub; bez kategorie se
               dopočítá z ročníku/pohlaví; clen1_prijmeni…clen4_klub pro štafety)
             </label>
+            <button type="button" onClick={stahnoutSablonuCsv} className="btn-pill">
+              Stáhnout šablonu CSV
+            </button>
             <input
               ref={fileInputRef}
               type="file"
