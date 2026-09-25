@@ -159,10 +159,11 @@ export function EmbedRegister() {
       )}
 
       <p style={{ margin: "16px 0 0", fontSize: 10.5, color: "var(--text-secondary)", textAlign: "center" }}>
-        Registrace přes{" "}
+        Registrace probíhá přes platformu{" "}
         <a href={API_BASE.replace(/\/api\/v1$/, "")} target="_blank" rel="noreferrer">
           Depo
-        </a>
+        </a>{" "}
+        — závodní časomíra.
       </p>
     </div>
   );

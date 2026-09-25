@@ -12,6 +12,45 @@ function RankBadge({ poradi }: { poradi: number | null }) {
   return <span className={`rank-badge${trida}`}>{poradi}</span>;
 }
 
+const stitekStyl: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  borderRadius: 6,
+  padding: "2px 8px",
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: 1,
+};
+
+/**
+ * Tři stavy, ne dva — dokud trať neodstartuje, "ŽIVĚ" by lhalo stejně jako
+ * u dokončené trati (SSE spojení samo o sobě nic neříká o tom, jestli
+ * závod vůbec začal, viz VysledkyResponseDto.trasaOdstartovana).
+ */
+function StavStitek({ dokoncena, odstartovana, zive }: { dokoncena: boolean; odstartovana: boolean; zive: boolean }) {
+  if (dokoncena) {
+    return (
+      <span className="mono" style={{ ...stitekStyl, background: "var(--text-secondary)", color: "#fff" }}>
+        UKONČENO
+      </span>
+    );
+  }
+  if (!odstartovana) {
+    return (
+      <span className="mono" style={{ ...stitekStyl, background: "var(--surface)", color: "var(--text-secondary)" }}>
+        PŘED STARTEM
+      </span>
+    );
+  }
+  if (!zive) return null;
+  return (
+    <span className="mono" style={{ ...stitekStyl, background: "var(--color-live-700)", color: "#fff" }}>
+      ● ŽIVĚ
+    </span>
+  );
+}
+
 function odpovidaHledani(p: VysledekPolozka, hledani: string): boolean {
   if (!hledani) return true;
   const jehla = hledani.toLowerCase();
@@ -125,45 +164,7 @@ export function Results() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <h1 style={{ margin: 0, fontWeight: 800, fontSize: 24, letterSpacing: "-0.02em" }}>{vysledky.trasaNazev}</h1>
-                {vysledky.trasaDokoncena ? (
-                  <span
-                    className="mono"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      background: "var(--text-secondary)",
-                      color: "#fff",
-                      borderRadius: 6,
-                      padding: "2px 8px",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: 1,
-                    }}
-                  >
-                    UKONČENO
-                  </span>
-                ) : (
-                  zive && (
-                    <span
-                      className="mono"
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        background: "var(--color-live-700)",
-                        color: "#fff",
-                        borderRadius: 6,
-                        padding: "2px 8px",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: 1,
-                      }}
-                    >
-                      ● ŽIVĚ
-                    </span>
-                  )
-                )}
+                <StavStitek dokoncena={vysledky.trasaDokoncena} odstartovana={vysledky.trasaOdstartovana} zive={zive} />
               </div>
               <div className="meta mono" style={{ marginTop: 2 }}>
                 {vysledky.udalostNazev}

@@ -87,15 +87,15 @@ export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskRes
           <span
             className="mono"
             style={{
-              background: vysledky.trasaDokoncena ? "var(--kiosk-line-strong)" : "var(--color-live-700)",
-              color: vysledky.trasaDokoncena ? "var(--kiosk-muted)" : "#fff",
+              background: vysledky.trasaDokoncena || !vysledky.trasaOdstartovana ? "var(--kiosk-line-strong)" : "var(--color-live-700)",
+              color: vysledky.trasaDokoncena || !vysledky.trasaOdstartovana ? "var(--kiosk-muted)" : "#fff",
               padding: "6px 16px",
               borderRadius: 8,
               fontSize: 18,
               fontWeight: 700,
             }}
           >
-            {vysledky.trasaDokoncena ? "UKONČENO" : "● ŽIVĚ"}
+            {vysledky.trasaDokoncena ? "UKONČENO" : !vysledky.trasaOdstartovana ? "PŘED STARTEM" : "● ŽIVĚ"}
           </span>
           <span className="mono kiosk-clock">{hodiny.toLocaleTimeString("cs-CZ")}</span>
           <TemaPrepinac tema={tema} onPrepnout={prepnoutTema} />

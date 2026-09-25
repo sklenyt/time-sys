@@ -94,6 +94,7 @@ describe("ResultsService", () => {
         pocetKol: 1,
         dokoncena: false,
         udalost: { nazev: "Test akce", trasy: [] },
+        startVlny: [{ casStartu: new Date() }],
       });
 
       const runnerA = prihlaska({ id: "a", startovniCislo: 1, kategorieId: kategorieMuz.id, kategorie: kategorieMuz });
@@ -140,6 +141,7 @@ describe("ResultsService", () => {
       const vysledky = await service.getResults(TRASA_ID);
 
       expect(vysledky.trasaDokoncena).toBe(false);
+      expect(vysledky.trasaOdstartovana).toBe(true);
       expect(vysledky.klasifikovani.map((p) => p.prihlaskaId)).toEqual(["a", "c", "penalized", "b"]);
       expect(vysledky.klasifikovani.map((p) => p.poradiCelkove)).toEqual([1, 2, 3, 4]);
 
@@ -168,6 +170,7 @@ describe("ResultsService", () => {
         pocetKol: 1,
         dokoncena: true,
         udalost: { nazev: "Test akce", trasy: [] },
+        startVlny: [{ casStartu: new Date() }],
       });
       prisma.prihlaska.findMany.mockResolvedValue([]);
       prisma.zaznamUdalosti.findMany.mockResolvedValue([]);
@@ -177,8 +180,25 @@ describe("ResultsService", () => {
       expect(vysledky.trasaDokoncena).toBe(true);
     });
 
+    it("trasaOdstartovana je false, dokud žádná startovní vlna neodstartovala — 'ŽIVĚ' před startem nemá svítit", async () => {
+      prisma.trasa.findUnique.mockResolvedValue({
+        id: TRASA_ID,
+        nazev: "Test trasa",
+        pocetKol: 1,
+        dokoncena: false,
+        udalost: { nazev: "Test akce", trasy: [] },
+        startVlny: [{ casStartu: null }],
+      });
+      prisma.prihlaska.findMany.mockResolvedValue([]);
+      prisma.zaznamUdalosti.findMany.mockResolvedValue([]);
+
+      const vysledky = await service.getResults(TRASA_ID);
+
+      expect(vysledky.trasaOdstartovana).toBe(false);
+    });
+
     it("stejný čas na setiny = stejné pořadí (1, 1, 3), celkově i v kategorii", async () => {
-      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, udalost: { nazev: "Test akce" } });
+      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, udalost: { nazev: "Test akce" }, startVlny: [{ casStartu: new Date() }] });
       prisma.prihlaska.findMany.mockResolvedValue([
         prihlaska({ id: "a", startovniCislo: 1 }),
         prihlaska({ id: "b", startovniCislo: 2 }),
@@ -204,7 +224,7 @@ describe("ResultsService", () => {
     });
 
     it("prefers the OPRAVA correction over the original DOJEZD it supersedes", async () => {
-      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, udalost: { nazev: "Test akce" } });
+      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, udalost: { nazev: "Test akce" }, startVlny: [{ casStartu: new Date() }] });
       const runner = prihlaska({ id: "a", startovniCislo: 1 });
       prisma.prihlaska.findMany.mockResolvedValue([runner]);
 
@@ -223,7 +243,7 @@ describe("ResultsService", () => {
     });
 
     it("víckolová trať (pocetKol=3): doběh počítá až 3. průjezd, dřívější zůstávají neklasifikovaní s číslem aktuálního kola", async () => {
-      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 3, udalost: { nazev: "Test akce" } });
+      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 3, udalost: { nazev: "Test akce" }, startVlny: [{ casStartu: new Date() }] });
 
       const dokoncil = prihlaska({ id: "dokoncil", startovniCislo: 1 });
       const naDruhemKole = prihlaska({ id: "na-druhem-kole", startovniCislo: 2 });
@@ -296,7 +316,7 @@ describe("ResultsService", () => {
 
   describe("getAnomalies", () => {
     it("flags a runner far outside the category median as too fast, but not the rest", async () => {
-      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, udalost: { nazev: "Test akce" } });
+      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, udalost: { nazev: "Test akce" }, startVlny: [{ casStartu: new Date() }] });
 
       const normal1 = prihlaska({ id: "n1", startovniCislo: 1 });
       const normal2 = prihlaska({ id: "n2", startovniCislo: 2 });
@@ -325,7 +345,7 @@ describe("ResultsService", () => {
     });
 
     it("does not flag anything when the category has fewer than 3 comparable runners", async () => {
-      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, udalost: { nazev: "Test akce" } });
+      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, udalost: { nazev: "Test akce" }, startVlny: [{ casStartu: new Date() }] });
 
       const a = prihlaska({ id: "a", startovniCislo: 1 });
       const b = prihlaska({ id: "b", startovniCislo: 2 });

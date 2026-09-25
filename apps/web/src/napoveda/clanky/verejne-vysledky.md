@@ -10,7 +10,7 @@ Každá trať má vlastní veřejnou stránku výsledků na adrese `depotime.cz/
 
 ## Co stránka ukazuje
 
-- Název trasy a akce, štítek **● ŽIVĚ** (dokud trať běží) nebo **UKONČENO** (jakmile ji organizátor ve Správě akcí označí jako dokončenou).
+- Název trasy a akce, štítek podle stavu: **PŘED STARTEM** (trať ještě neodstartovala), **● ŽIVĚ** (odstartovala a běží) nebo **UKONČENO** (organizátor ji ve Správě akcí označil jako dokončenou).
 - Počet klasifikovaných, počet kategorií a případně počet neklasifikovaných (DNS/DNF/DQ nebo zatím bez doběhu).
 - Tabulku výsledků: celkové pořadí, pořadí v kategorii, startovní číslo, jméno, klub, kategorii a čas.
 - Samostatnou tabulku **Neklasifikovaní** dole, pokud nějací jsou.

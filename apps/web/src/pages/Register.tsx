@@ -111,7 +111,7 @@ export function Register() {
   return (
     <div style={pageStyle}>
       <div className="dash-card" style={{ maxWidth: 480, margin: "0 auto" }}>
-        <PublicHeader />
+        <PublicHeader tagline="závodní časomíra" />
         <h1 style={{ fontWeight: 800, fontSize: 22 }}>{info.udalostNazev}</h1>
         <p style={{ color: "var(--text-secondary)", marginTop: -8 }}>Registrace na trasu „{info.trasaNazev}"</p>
         {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
@@ -166,6 +166,9 @@ export function Register() {
           {odesilam ? "Odesílám…" : "Registrovat se"}
         </button>
       </form>
+      <p style={{ color: "var(--text-secondary)", fontSize: 12, textAlign: "center", marginTop: 16, marginBottom: 0 }}>
+        Registrace probíhá přes platformu Depo — závodní časomíra.
+      </p>
       </div>
     </div>
   );

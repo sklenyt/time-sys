@@ -253,6 +253,8 @@ export interface VysledkyResponseDto {
   trasy: { id: string; nazev: string }[];
   /** Organizátor trať ručně označil jako dokončenou — štítek "ŽIVĚ" se pak nemá zobrazovat. */
   trasaDokoncena: boolean;
+  /** Aspoň jedna startovní vlna trati už odstartovala — bez toho "ŽIVĚ" neplatí, závod ještě nezačal. */
+  trasaOdstartovana: boolean;
   klasifikovani: VysledekPolozka[];
   neklasifikovani: VysledekPolozka[];
 }

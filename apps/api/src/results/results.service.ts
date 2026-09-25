@@ -69,7 +69,10 @@ export class ResultsService {
   async getResults(trasaId: string): Promise<VysledkyResponseDto> {
     const trasa = await this.prisma.trasa.findUnique({
       where: { id: trasaId },
-      include: { udalost: { include: { trasy: { select: { id: true, nazev: true } } } } },
+      include: {
+        udalost: { include: { trasy: { select: { id: true, nazev: true } } } },
+        startVlny: { select: { casStartu: true } },
+      },
     });
     if (!trasa) {
       throw new NotFoundException("Trasa nenalezena");
@@ -114,6 +117,10 @@ export class ResultsService {
       udalostNazev: trasa.udalost.nazev,
       trasy: trasa.udalost.trasy,
       trasaDokoncena: trasa.dokoncena,
+      // Aspoň jedna startovní vlna musí být odstartovaná — dokud nikdo
+      // neodstartoval, štítek "ŽIVĚ" by lhal (SSE spojení samo o sobě nic
+      // neříká o tom, jestli závod vůbec začal).
+      trasaOdstartovana: trasa.startVlny.some((v) => v.casStartu !== null),
       klasifikovani,
       neklasifikovani,
     };
