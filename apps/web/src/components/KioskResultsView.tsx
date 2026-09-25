@@ -1,30 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import type { VysledkyResponseDto } from "@depo/shared";
-
-type KioskTema = "tmavy" | "svetly";
+import { nactiTema, useTema } from "../lib/tema";
+import { TemaPrepinac } from "./TemaPrepinac";
 
 const TEMA_KEY = "depo_kiosk_tema";
-
-function nactiTema(): KioskTema {
-  try {
-    return localStorage.getItem(TEMA_KEY) === "svetly" ? "svetly" : "tmavy";
-  } catch {
-    return "tmavy";
-  }
-}
-
-function ulozTema(tema: KioskTema) {
-  try {
-    localStorage.setItem(TEMA_KEY, tema);
-  } catch {
-    // soukromé okno apod. — volba prostě nepřežije reload
-  }
-}
 
 /** Celoobrazovková hláška (načítání apod.) ve stejném režimu jako kiosk — jinak by rotace tratí ve světlém režimu problikávala tmavou. */
 export function KioskZprava({ children }: { children: React.ReactNode }) {
   return (
-    <div className="kiosk" data-tema={nactiTema()} style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>
+    <div className="kiosk" data-tema={nactiTema(TEMA_KEY)} style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>
       {children}
     </div>
   );
@@ -46,14 +30,8 @@ interface KioskResultsViewProps {
  */
 export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskResultsViewProps) {
   const [hodiny, setHodiny] = useState(new Date());
-  const [tema, setTema] = useState<KioskTema>(nactiTema);
+  const [tema, prepnoutTema] = useTema(TEMA_KEY);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  function prepnoutTema() {
-    const nove = tema === "tmavy" ? "svetly" : "tmavy";
-    setTema(nove);
-    ulozTema(nove);
-  }
 
   useEffect(() => {
     const tik = setInterval(() => setHodiny(new Date()), 1000);
@@ -113,15 +91,7 @@ export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskRes
             ● ŽIVĚ
           </span>
           <span className="mono kiosk-clock">{hodiny.toLocaleTimeString("cs-CZ")}</span>
-          <button
-            type="button"
-            className="kiosk-tema-prepinac"
-            onClick={prepnoutTema}
-            aria-label={tema === "tmavy" ? "Přepnout na světlý režim" : "Přepnout na tmavý režim"}
-            title={tema === "tmavy" ? "Světlý režim" : "Tmavý režim"}
-          >
-            {tema === "tmavy" ? "☀" : "☾"}
-          </button>
+          <TemaPrepinac tema={tema} onPrepnout={prepnoutTema} />
         </div>
       </div>
 

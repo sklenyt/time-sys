@@ -4,6 +4,8 @@ import { TypUdalosti } from "@depo/shared";
 import { getDeviceId } from "../lib/api";
 import { enqueueZaznam, listRecent, startAutoSync, type FrontaZaznam } from "../lib/offline-queue";
 import { SystemClockWidget } from "../components/SystemClockWidget";
+import { TemaPrepinac } from "../components/TemaPrepinac";
+import { useTema } from "../lib/tema";
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "DNF", "0", "⌫"];
 
@@ -19,6 +21,7 @@ export function Measurement() {
   const [posledni, setPosledni] = useState<FrontaZaznam[]>([]);
   const [chyba, setChyba] = useState<string | null>(null);
   const [online, setOnline] = useState(navigator.onLine);
+  const [tema, prepnoutTema] = useTema("depo_mereni_tema");
 
   const obnovitPosledni = useCallback(() => {
     if (!routeId) return;
@@ -80,18 +83,21 @@ export function Measurement() {
   }, [stiskniKlavesu, zapsat]);
 
   return (
-    <div className="measurement-layout" style={{ background: "var(--ink-900)", color: "#fff" }}>
+    <div className="measurement-layout" data-tema={tema}>
       <div className="measurement-topbar">
         <Link to="/dashboard" className="measurement-back">
           ← Zpět do administrace
         </Link>
-        <SystemClockWidget />
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <TemaPrepinac tema={tema} onPrepnout={prepnoutTema} />
+          <SystemClockWidget />
+        </div>
       </div>
       <div className="measurement-main">
         <div
           style={{
-            background: "var(--navy-800)",
-            border: "2px solid var(--navy-600)",
+            background: "var(--m-panel)",
+            border: "2px solid var(--m-panel-border)",
             borderRadius: 20,
             padding: "24px 32px",
             width: "100%",
@@ -107,7 +113,7 @@ export function Measurement() {
               gap: 8,
               fontSize: 12,
               letterSpacing: 2,
-              color: "var(--steel-400)",
+              color: "var(--m-muted)",
               textTransform: "uppercase",
             }}
           >
@@ -138,7 +144,7 @@ export function Measurement() {
               fontSize: 76,
               fontWeight: 700,
               lineHeight: 1.1,
-              color: cislo ? (jeMezicas ? "var(--color-live)" : "var(--tape-500)") : "var(--steel-400)",
+              color: cislo ? (jeMezicas ? "var(--m-live)" : "var(--m-accent)") : "var(--m-muted)",
             }}
           >
             {cislo || "—"}
@@ -154,9 +160,9 @@ export function Measurement() {
               aria-label={k === "⌫" ? "Smazat poslední číslici" : undefined}
               style={{
                 borderRadius: 14,
-                border: "none",
-                background: k === "DNF" ? "var(--navy-700)" : "var(--navy-800)",
-                color: k === "DNF" ? "var(--steel-400)" : "#fff",
+                border: "1px solid var(--m-key-border)",
+                background: k === "DNF" ? "var(--m-key-alt)" : "var(--m-key)",
+                color: k === "DNF" ? "var(--m-muted)" : "var(--m-fg)",
                 fontSize: 24,
                 fontWeight: 700,
                 cursor: "pointer",
@@ -194,7 +200,7 @@ export function Measurement() {
       </div>
 
       <div className="measurement-sidebar">
-        <h3 style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: 1, color: "var(--steel-400)" }}>
+        <h3 style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: 1, color: "var(--m-muted)" }}>
           Poslední zápisy
         </h3>
         {posledni.map((z) => (
@@ -205,7 +211,7 @@ export function Measurement() {
               alignItems: "center",
               gap: 12,
               padding: "10px 0",
-              borderBottom: "1px solid var(--navy-700)",
+              borderBottom: "1px solid var(--m-line)",
             }}
           >
             <div
@@ -223,11 +229,11 @@ export function Measurement() {
             >
               {z.startovniCislo}
             </div>
-            <div style={{ fontSize: 12, color: "var(--steel-400)" }}>
+            <div style={{ fontSize: 12, color: "var(--m-muted)" }}>
               {z.casCelkem ?? new Date(z.klientCas).toLocaleTimeString("cs-CZ")}
               {z.typUdalosti === TypUdalosti.MEZICAS && <div>mezičas</div>}
               {z.typUdalosti === TypUdalosti.DOJEZD && z.pocetKol && z.pocetKol > 1 && (
-                <div style={{ color: z.aktualniKolo === z.pocetKol ? "var(--color-live)" : "var(--tape-400)" }}>
+                <div style={{ color: z.aktualniKolo === z.pocetKol ? "var(--m-live)" : "var(--m-accent)" }}>
                   {z.aktualniKolo === z.pocetKol ? "doběh — " : "kolo "}
                   {z.aktualniKolo}/{z.pocetKol}
                 </div>
@@ -246,7 +252,7 @@ export function Measurement() {
 
 function stavBarvaPozadi(z: FrontaZaznam): string {
   if (z.stav === "NEEDS_REVIEW") return "var(--color-attention)";
-  if (z.stav === "CEKA") return "var(--navy-600)";
+  if (z.stav === "CEKA") return "var(--m-badge-ceka)";
   if (z.puvod === "VLASTNI" && !z.prihlaskaId) return "var(--color-attention)";
-  return "var(--navy-700)";
+  return "var(--m-badge)";
 }
