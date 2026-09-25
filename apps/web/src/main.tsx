@@ -1,10 +1,15 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
+import { registerSW } from "virtual:pwa-register";
 import "./styles/tokens.css";
 import "./styles/shell.css";
 import "./styles/landing.css";
 import { App } from "./App";
+
+// Bez tohohle nový service worker po deployi převezme stránku až při
+// dalším načtení — návštěvník by viděl starou verzi z precache.
+registerSW({ immediate: true });
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
