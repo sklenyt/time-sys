@@ -37,8 +37,12 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
  * nemá pro každou doménu samostatný deploy.
  */
 function Home() {
-  if (window.location.hostname.startsWith("vysledky.")) {
+  const hostname = window.location.hostname;
+  if (hostname.startsWith("vysledky.")) {
     return <ResultsDirectory />;
+  }
+  if (hostname.startsWith("app.")) {
+    return <Navigate to={isLoggedIn() ? "/dashboard" : "/login"} replace />;
   }
   return <Landing />;
 }
