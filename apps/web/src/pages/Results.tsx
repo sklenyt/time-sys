@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import type { VysledekPolozka, VysledkyResponseDto } from "@depo/shared";
 import { api, API_BASE } from "../lib/api";
 import { PublicHeader } from "../components/PublicHeader";
@@ -25,6 +25,7 @@ function odpovidaHledani(p: VysledekPolozka, hledani: string): boolean {
 
 export function Results() {
   const { routeId } = useParams<{ routeId: string }>();
+  const navigate = useNavigate();
   const [vysledky, setVysledky] = useState<VysledkyResponseDto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [zive, setZive] = useState(false);
@@ -64,6 +65,11 @@ export function Results() {
       }
     };
     return () => es.close();
+  }, [routeId]);
+
+  useEffect(() => {
+    setKategorie(VSE_KATEGORIE);
+    setHledani("");
   }, [routeId]);
 
   const kategorieSeznam = useMemo(() => {
@@ -182,6 +188,19 @@ export function Results() {
             type="search"
           />
         </div>
+        {vysledky.trasy && vysledky.trasy.length > 1 && (
+          <div className="results-category-pills" style={{ marginBottom: 12 }}>
+            {vysledky.trasy.map((t) => (
+              <button
+                key={t.id}
+                className={`chip-filter${t.id === routeId ? " active" : ""}`}
+                onClick={() => t.id !== routeId && navigate(`/vysledky/${t.id}`)}
+              >
+                {t.nazev}
+              </button>
+            ))}
+          </div>
+        )}
         {kategorieSeznam.length > 1 && (
           <div className="results-category-pills" style={{ marginBottom: 16 }}>
             <button

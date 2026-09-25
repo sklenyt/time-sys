@@ -43,12 +43,11 @@ export function ResultsDirectory() {
   function otevritUdalost(u: VerejnaUdalostDto) {
     setHesloChyba(null);
     setVyberTras(null);
-    if (!u.vyzadujeHeslo) {
-      jitNaTrasy(u.trasy);
-      return;
-    }
     setOtevrenaId(u.id);
     setHeslo("");
+    if (!u.vyzadujeHeslo) {
+      jitNaTrasy(u.trasy);
+    }
   }
 
   async function odeslatHeslo(e: React.FormEvent) {
@@ -120,7 +119,7 @@ export function ResultsDirectory() {
                 </span>
               </button>
 
-              {otevrenaId === u.id && (
+              {otevrenaId === u.id && u.vyzadujeHeslo && (
                 <form onSubmit={odeslatHeslo} style={{ display: "flex", gap: 8, marginTop: 12 }}>
                   <input
                     type="password"

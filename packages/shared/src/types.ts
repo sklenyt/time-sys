@@ -249,6 +249,8 @@ export interface VysledkyResponseDto {
   trasaId: string;
   trasaNazev: string;
   udalostNazev: string;
+  /** Ostatní tratě téže akce — pro přepínač trati na stránce výsledků. */
+  trasy: { id: string; nazev: string }[];
   klasifikovani: VysledekPolozka[];
   neklasifikovani: VysledekPolozka[];
 }

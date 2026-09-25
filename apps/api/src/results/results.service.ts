@@ -59,7 +59,10 @@ export class ResultsService {
    * tabulka výsledků, jen odvozený pohled nad append-only logem.
    */
   async getResults(trasaId: string): Promise<VysledkyResponseDto> {
-    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId }, include: { udalost: true } });
+    const trasa = await this.prisma.trasa.findUnique({
+      where: { id: trasaId },
+      include: { udalost: { include: { trasy: { select: { id: true, nazev: true } } } } },
+    });
     if (!trasa) {
       throw new NotFoundException("Trasa nenalezena");
     }
@@ -97,7 +100,14 @@ export class ResultsService {
 
     const neklasifikovani = polozky.filter((p) => p.casCelkemMs === null);
 
-    return { trasaId, trasaNazev: trasa.nazev, udalostNazev: trasa.udalost.nazev, klasifikovani, neklasifikovani };
+    return {
+      trasaId,
+      trasaNazev: trasa.nazev,
+      udalostNazev: trasa.udalost.nazev,
+      trasy: trasa.udalost.trasy,
+      klasifikovani,
+      neklasifikovani,
+    };
   }
 
   /** Export výsledků do XLSX (F13) — stejná data jako getResults, jiný formát výstupu. */
