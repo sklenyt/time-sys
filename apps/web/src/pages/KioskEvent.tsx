@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import type { OveritPristupResponseDto, VysledkyResponseDto } from "@depo/shared";
 import { api, API_BASE } from "../lib/api";
-import { KioskResultsView } from "../components/KioskResultsView";
+import { KioskResultsView, KioskZprava } from "../components/KioskResultsView";
 
 const VYCHOZI_INTERVAL_S = 15;
 
@@ -143,11 +143,7 @@ export function KioskEvent() {
   }
 
   if (!trasy || trasy.length === 0 || !vysledky) {
-    return (
-      <div style={{ minHeight: "100vh", background: "var(--ink-900)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>
-        {trasy && trasy.length === 0 ? "Tahle akce zatím nemá žádnou trať." : "Načítám…"}
-      </div>
-    );
+    return <KioskZprava>{trasy && trasy.length === 0 ? "Tahle akce zatím nemá žádnou trať." : "Načítám…"}</KioskZprava>;
   }
 
   return (

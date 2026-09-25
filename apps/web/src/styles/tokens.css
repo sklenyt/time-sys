@@ -283,12 +283,69 @@ body {
    sloupec Kategorie i velikosti písma jsou navržené na 40px odsazení,
    které se na úzkém displeji nevejde a celé pravé sloupce (Kategorie, Čas)
    by jinak byly natrvalo mimo obrazovku bez možnosti scrollu. */
+.kiosk {
+  --kiosk-bg: var(--ink-900);
+  --kiosk-fg: #fff;
+  --kiosk-muted: var(--steel-400);
+  --kiosk-line-strong: var(--navy-600);
+  --kiosk-line: var(--navy-700);
+  --kiosk-podium: var(--tape-500);
+  background: var(--kiosk-bg);
+  color: var(--kiosk-fg);
+}
+
+.kiosk[data-tema="svetly"] {
+  --kiosk-bg: #fff;
+  --kiosk-fg: var(--navy-800);
+  --kiosk-muted: var(--text-secondary);
+  --kiosk-line-strong: var(--line);
+  --kiosk-line: #eceef2;
+  --kiosk-podium: var(--tape-700);
+}
+
+.kiosk-muted {
+  color: var(--kiosk-muted);
+}
+
+.kiosk-podium {
+  color: var(--kiosk-podium);
+}
+
+.kiosk-tecka {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--kiosk-line-strong);
+}
+
+.kiosk-tecka.aktivni {
+  background: var(--tape-500);
+}
+
+.kiosk-tema-prepinac {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--kiosk-line-strong);
+  background: transparent;
+  color: var(--kiosk-muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  flex: none;
+}
+
+.kiosk-tema-prepinac:hover {
+  color: var(--kiosk-fg);
+  border-color: var(--kiosk-muted);
+}
+
 .kiosk-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 24px 40px;
-  border-bottom: 2px solid var(--navy-600);
+  border-bottom: 2px solid var(--kiosk-line-strong);
 }
 
 .kiosk-title {
@@ -300,7 +357,7 @@ body {
 
 .kiosk-clock {
   font-size: 28px;
-  color: var(--steel-400);
+  color: var(--kiosk-muted);
 }
 
 .kiosk-table-wrap {
@@ -319,6 +376,24 @@ body {
 .kiosk-table th,
 .kiosk-table td {
   padding: 16px 12px;
+}
+
+.kiosk-table thead tr {
+  text-align: left;
+  border-bottom: 2px solid var(--kiosk-line-strong);
+  position: sticky;
+  top: 0;
+  background: var(--kiosk-bg);
+}
+
+.kiosk-table tbody tr {
+  border-bottom: 1px solid var(--kiosk-line);
+}
+
+.kiosk-table th:not(.kiosk-col-jmeno),
+.kiosk-table td:not(.kiosk-col-jmeno) {
+  width: 1%;
+  white-space: nowrap;
 }
 
 .kiosk-table tbody td {

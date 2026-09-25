@@ -1,6 +1,35 @@
 import { useEffect, useRef, useState } from "react";
 import type { VysledkyResponseDto } from "@depo/shared";
 
+type KioskTema = "tmavy" | "svetly";
+
+const TEMA_KEY = "depo_kiosk_tema";
+
+function nactiTema(): KioskTema {
+  try {
+    return localStorage.getItem(TEMA_KEY) === "svetly" ? "svetly" : "tmavy";
+  } catch {
+    return "tmavy";
+  }
+}
+
+function ulozTema(tema: KioskTema) {
+  try {
+    localStorage.setItem(TEMA_KEY, tema);
+  } catch {
+    // soukromé okno apod. — volba prostě nepřežije reload
+  }
+}
+
+/** Celoobrazovková hláška (načítání apod.) ve stejném režimu jako kiosk — jinak by rotace tratí ve světlém režimu problikávala tmavou. */
+export function KioskZprava({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="kiosk" data-tema={nactiTema()} style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>
+      {children}
+    </div>
+  );
+}
+
 interface KioskResultsViewProps {
   vysledky: VysledkyResponseDto;
   /** Doplňkový popisek pod nadpisem — u kiosku pro celou akci název akce + pozice v rotaci. */
@@ -12,12 +41,19 @@ interface KioskResultsViewProps {
 /**
  * Sdílené tělo kioskové obrazovky (F42) — použito jak pro jednu trať
  * (Kiosk.tsx), tak pro automatickou rotaci mezi tratěmi celé akce
- * (KioskEvent.tsx). Bez ovládání, jen velké čitelné řádky, živé
- * aktualizace přes SSE dodává volající stránka.
+ * (KioskEvent.tsx). Jediné ovládání je přepínač světlý/tmavý režim,
+ * živé aktualizace přes SSE dodává volající stránka.
  */
 export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskResultsViewProps) {
   const [hodiny, setHodiny] = useState(new Date());
+  const [tema, setTema] = useState<KioskTema>(nactiTema);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  function prepnoutTema() {
+    const nove = tema === "tmavy" ? "svetly" : "tmavy";
+    setTema(nove);
+    ulozTema(nove);
+  }
 
   useEffect(() => {
     const tik = setInterval(() => setHodiny(new Date()), 1000);
@@ -52,12 +88,12 @@ export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskRes
   }, [vysledky]);
 
   return (
-    <div style={{ height: "100vh", background: "var(--ink-900)", color: "#fff", display: "flex", flexDirection: "column" }}>
+    <div className="kiosk" data-tema={tema} style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div className="kiosk-header">
         <div>
           <h1 className="kiosk-title">{vysledky.trasaNazev}</h1>
           {podtitulek && (
-            <div className="mono" style={{ color: "var(--steel-400)", fontSize: 15, marginTop: 2 }}>
+            <div className="mono kiosk-muted" style={{ fontSize: 15, marginTop: 2 }}>
               {podtitulek}
             </div>
           )}
@@ -66,56 +102,57 @@ export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskRes
           {rotaceTecky && (
             <span style={{ display: "flex", gap: 6 }} aria-hidden="true">
               {Array.from({ length: rotaceTecky.celkem }).map((_, i) => (
-                <span
-                  key={i}
-                  style={{
-                    width: 9,
-                    height: 9,
-                    borderRadius: "50%",
-                    background: i === rotaceTecky.aktualni ? "var(--tape-500)" : "var(--navy-600)",
-                  }}
-                />
+                <span key={i} className={`kiosk-tecka${i === rotaceTecky.aktualni ? " aktivni" : ""}`} />
               ))}
             </span>
           )}
           <span
             className="mono"
-            style={{ background: "var(--color-live-700)", padding: "6px 16px", borderRadius: 8, fontSize: 18, fontWeight: 700 }}
+            style={{ background: "var(--color-live-700)", color: "#fff", padding: "6px 16px", borderRadius: 8, fontSize: 18, fontWeight: 700 }}
           >
             ● ŽIVĚ
           </span>
           <span className="mono kiosk-clock">{hodiny.toLocaleTimeString("cs-CZ")}</span>
+          <button
+            type="button"
+            className="kiosk-tema-prepinac"
+            onClick={prepnoutTema}
+            aria-label={tema === "tmavy" ? "Přepnout na světlý režim" : "Přepnout na tmavý režim"}
+            title={tema === "tmavy" ? "Světlý režim" : "Tmavý režim"}
+          >
+            {tema === "tmavy" ? "☀" : "☾"}
+          </button>
         </div>
       </div>
 
       <div ref={scrollRef} className="kiosk-table-wrap">
         <table className="mono kiosk-table">
           <thead>
-            <tr style={{ textAlign: "left", borderBottom: "2px solid var(--navy-600)", position: "sticky", top: 0, background: "var(--ink-900)" }}>
+            <tr>
               <th>Poř.</th>
-              <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
               <th className="kiosk-col-kategorie" style={{ fontFamily: "var(--font-ui)" }}>
                 Kategorie
               </th>
+              <th className="kiosk-col-jmeno" style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
               <th>Čas</th>
             </tr>
           </thead>
           <tbody>
             {vysledky.klasifikovani.map((p) => (
-              <tr key={p.prihlaskaId} style={{ borderBottom: "1px solid var(--navy-700)" }}>
-                <td style={{ color: p.poradiCelkove && p.poradiCelkove <= 3 ? "var(--tape-500)" : "#fff" }}>{p.poradiCelkove}</td>
-                <td style={{ fontFamily: "var(--font-ui)" }}>
-                  {p.prijmeni} {p.jmeno}
-                </td>
-                <td className="kiosk-col-kategorie" style={{ fontFamily: "var(--font-ui)", color: "var(--steel-400)" }}>
+              <tr key={p.prihlaskaId}>
+                <td className={p.poradiCelkove && p.poradiCelkove <= 3 ? "kiosk-podium" : undefined}>{p.poradiCelkove}</td>
+                <td className="kiosk-col-kategorie kiosk-muted" style={{ fontFamily: "var(--font-ui)" }}>
                   {p.kategorieKod}
+                </td>
+                <td className="kiosk-col-jmeno" style={{ fontFamily: "var(--font-ui)" }}>
+                  {p.prijmeni} {p.jmeno}
                 </td>
                 <td style={{ fontWeight: 700 }}>{p.casCelkem}</td>
               </tr>
             ))}
             {vysledky.klasifikovani.length === 0 && (
               <tr>
-                <td colSpan={4} style={{ color: "var(--steel-400)", fontFamily: "var(--font-ui)", padding: "16px 0" }}>
+                <td colSpan={4} className="kiosk-col-jmeno kiosk-muted" style={{ fontFamily: "var(--font-ui)", padding: "16px 0" }}>
                   Zatím žádný doběh.
                 </td>
               </tr>

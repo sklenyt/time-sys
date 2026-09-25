@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { VysledkyResponseDto } from "@depo/shared";
 import { api, API_BASE } from "../lib/api";
-import { KioskResultsView } from "../components/KioskResultsView";
+import { KioskResultsView, KioskZprava } from "../components/KioskResultsView";
 
 /**
  * Kioskový režim (F42) — celoobrazovková, automaticky se posouvající
@@ -36,11 +36,7 @@ export function Kiosk() {
   }, [routeId]);
 
   if (!vysledky) {
-    return (
-      <div style={{ minHeight: "100vh", background: "var(--ink-900)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>
-        Načítám…
-      </div>
-    );
+    return <KioskZprava>Načítám…</KioskZprava>;
   }
 
   return <KioskResultsView vysledky={vysledky} podtitulek={vysledky.udalostNazev} />;
