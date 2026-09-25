@@ -99,7 +99,7 @@ export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskRes
         <table className="mono kiosk-table">
           <thead>
             <tr>
-              <th>Poř.</th>
+              <th className="kiosk-col-poradi">Poř.</th>
               <th className="kiosk-col-kategorie" style={{ fontFamily: "var(--font-ui)" }}>
                 Kategorie
               </th>
@@ -110,7 +110,7 @@ export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskRes
           <tbody>
             {vysledky.klasifikovani.map((p) => (
               <tr key={p.prihlaskaId}>
-                <td className={p.poradiCelkove && p.poradiCelkove <= 3 ? "kiosk-podium" : undefined}>{p.poradiCelkove}</td>
+                <td className={`kiosk-col-poradi${p.poradiCelkove && p.poradiCelkove <= 3 ? " kiosk-podium" : ""}`}>{p.poradiCelkove}</td>
                 <td className="kiosk-col-kategorie kiosk-muted" style={{ fontFamily: "var(--font-ui)" }}>
                   {p.kategorieKod}
                 </td>
