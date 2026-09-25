@@ -103,7 +103,7 @@ export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskRes
               <th className="kiosk-col-kategorie" style={{ fontFamily: "var(--font-ui)" }}>
                 Kategorie
               </th>
-              <th className="kiosk-col-jmeno" style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
+              <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
               <th>Čas</th>
             </tr>
           </thead>
@@ -114,7 +114,7 @@ export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskRes
                 <td className="kiosk-col-kategorie kiosk-muted" style={{ fontFamily: "var(--font-ui)" }}>
                   {p.kategorieKod}
                 </td>
-                <td className="kiosk-col-jmeno" style={{ fontFamily: "var(--font-ui)" }}>
+                <td style={{ fontFamily: "var(--font-ui)" }}>
                   {p.prijmeni} {p.jmeno}
                 </td>
                 <td style={{ fontWeight: 700 }}>{p.casCelkem}</td>
@@ -122,7 +122,7 @@ export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskRes
             ))}
             {vysledky.klasifikovani.length === 0 && (
               <tr>
-                <td colSpan={4} className="kiosk-col-jmeno kiosk-muted" style={{ fontFamily: "var(--font-ui)", padding: "16px 0" }}>
+                <td colSpan={4} className="kiosk-muted" style={{ fontFamily: "var(--font-ui)", padding: "16px 0" }}>
                   Zatím žádný doběh.
                 </td>
               </tr>

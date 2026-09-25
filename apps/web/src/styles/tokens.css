@@ -431,12 +431,6 @@ body {
   border-bottom: 1px solid var(--kiosk-line);
 }
 
-.kiosk-table th:not(.kiosk-col-jmeno),
-.kiosk-table td:not(.kiosk-col-jmeno) {
-  width: 1%;
-  white-space: nowrap;
-}
-
 .kiosk-table tbody td {
   padding: 14px 12px;
 }
