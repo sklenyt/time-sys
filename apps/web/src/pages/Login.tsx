@@ -77,12 +77,31 @@ export function Login() {
             style={inputStyle}
           />
           {error && <p style={{ color: "var(--color-danger)", margin: 0, fontSize: 13.5 }}>{error}</p>}
-          <button type="submit" disabled={loading} className="btn-pill primary" style={{ padding: "10px 16px", justifyContent: "center" }}>
-            {mode === "login" ? "Přihlásit se" : "Registrovat"}
+          <button
+            type="submit"
+            disabled={loading}
+            aria-busy={loading}
+            className={`btn-pill primary${loading ? " is-loading" : ""}`}
+            style={{ padding: "10px 16px", justifyContent: "center", gap: 8 }}
+          >
+            {loading && <span className="btn-spinner" aria-hidden="true" />}
+            {loading
+              ? mode === "login"
+                ? "Přihlašuji…"
+                : "Zakládám účet…"
+              : mode === "login"
+                ? "Přihlásit se"
+                : "Registrovat"}
           </button>
+          {loading && (
+            <p style={{ color: "var(--text-secondary)", margin: 0, fontSize: 12.5, textAlign: "center" }}>
+              Může to trvat pár vteřin, neklikejte prosím znovu.
+            </p>
+          )}
         </form>
         <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
           <button
+            disabled={loading}
             onClick={() => setMode(mode === "login" ? "register" : "login")}
             style={{ background: "none", border: "none", color: "var(--tape-700)", cursor: "pointer", fontSize: 13.5, padding: 0, textAlign: "left" }}
           >

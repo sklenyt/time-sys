@@ -648,6 +648,21 @@
   font-size: 14px;
 }
 
+.btn-pill.is-loading:disabled {
+  opacity: 0.85;
+  cursor: progress;
+}
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  animation: busy-spin 0.75s linear infinite;
+  flex: none;
+}
+
 @keyframes busy-spin {
   to {
     transform: rotate(360deg);
