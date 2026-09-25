@@ -154,6 +154,7 @@
   border-radius: 20px;
   border: 2px solid var(--navy-600);
   box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+  cursor: zoom-in;
 }
 
 .landing-device-caption {
@@ -232,12 +233,66 @@
 .landing-card-shot {
   display: block;
   width: calc(100% + 44px);
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-  object-position: top left;
+  height: auto;
   margin: -22px -22px 18px;
   border-bottom: 1px solid var(--line);
-  background: var(--navy-800);
+  cursor: zoom-in;
+}
+
+/* ---------- Lightbox (rozklikatelné náhledy) ---------- */
+.landing-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 12, 18, 0.86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 20px;
+  z-index: 100;
+  cursor: zoom-out;
+  animation: landing-lightbox-in 0.15s ease-out;
+}
+
+@keyframes landing-lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.landing-lightbox img {
+  display: block;
+  max-width: min(1200px, 92vw);
+  max-height: 86vh;
+  width: auto;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7);
+  cursor: default;
+}
+
+.landing-lightbox-close {
+  position: fixed;
+  top: 18px;
+  right: 20px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landing-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .landing-card .num {
@@ -436,7 +491,7 @@
 /* ---------- Ceník ---------- */
 .landing-pricing {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1fr 1.3fr;
   gap: 20px;
   max-width: 1100px;
   margin: 0 auto;
@@ -508,33 +563,49 @@
 
 .landing-pricing-support {
   background: var(--paper);
-  border: 1px solid var(--line);
+  border: 1px solid var(--tape-400);
   border-radius: var(--radius-lg);
-  padding: 28px;
+  padding: 32px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
+  gap: 22px;
 }
 
 .landing-pricing-support h3 {
-  font-size: 16px;
-  margin: 0;
+  font-size: 19px;
+  margin: 0 0 8px;
 }
 
 .landing-pricing-support p {
   color: var(--text-secondary);
-  font-size: 13.5px;
+  font-size: 14.5px;
   line-height: 1.5;
   margin: 0;
+  max-width: 42ch;
 }
 
-.landing-pricing-soon {
-  margin-top: 6px;
+.landing-pricing-qr {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 26px;
   background: var(--surface);
-  border: 1px dashed var(--line);
-  border-radius: 999px;
-  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.landing-pricing-qr img {
+  display: block;
+  width: 200px;
+  height: 200px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.landing-pricing-qr span {
   font-size: 12px;
   font-weight: 700;
   color: var(--text-secondary);

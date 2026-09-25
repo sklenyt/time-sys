@@ -1,6 +1,49 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+type LightboxImage = { src: string; alt: string };
+
+function Screenshot({
+  src,
+  alt,
+  className,
+  onOpen,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  onOpen: (image: LightboxImage) => void;
+}) {
+  return (
+    <img
+      className={className}
+      src={src}
+      alt={alt}
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen({ src, alt })}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen({ src, alt });
+        }
+      }}
+    />
+  );
+}
+
 export function Landing() {
+  const [lightbox, setLightbox] = useState<LightboxImage | null>(null);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightbox(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [lightbox]);
+
   return (
     <div className="landing">
       <header className="landing-nav">
@@ -69,7 +112,11 @@ export function Landing() {
 
           {/* Skutečný snímek obrazovky Měření (ne mockup) — viz F06, workflow číslo + Enter. */}
           <div className="landing-device">
-            <img src="/screenshots/mereni.png" alt="Obrazovka Měření v aplikaci Depo se zadaným startovním číslem 147" />
+            <Screenshot
+              src="/screenshots/mereni.png"
+              alt="Obrazovka Měření v aplikaci Depo se zadaným startovním číslem 147"
+              onOpen={setLightbox}
+            />
             <div className="landing-device-caption">
               <span className="landing-device-chip">offline</span>
               Zápis čísla + Enter — přesně tahle obrazovka, žádný mockup
@@ -85,19 +132,34 @@ export function Landing() {
         </div>
         <div className="landing-cards">
           <div className="landing-card">
-            <img className="landing-card-shot" src="/screenshots/startovni-listina.png" alt="Startovní listina se zapsanými závodníky a kategoriemi" />
+            <Screenshot
+              className="landing-card-shot"
+              src="/screenshots/startovni-listina.png"
+              alt="Startovní listina se zapsanými závodníky a kategoriemi"
+              onOpen={setLightbox}
+            />
             <div className="num">01</div>
             <h3>Startovní listina za pár minut</h3>
             <p>Ruční zápis na místě nebo import z CSV. Kategorie se navrhne sama podle ročníku a pohlaví, jen ji potvrdíte.</p>
           </div>
           <div className="landing-card">
-            <img className="landing-card-shot" src="/screenshots/dashboard.png" alt="Přehled akce se stavem v cíli, na trati a průběhem tratě v reálném čase" />
+            <Screenshot
+              className="landing-card-shot"
+              src="/screenshots/dashboard.png"
+              alt="Přehled akce se stavem v cíli, na trati a průběhem tratě v reálném čase"
+              onOpen={setLightbox}
+            />
             <div className="num">02</div>
             <h3>Přehled akce v reálném čase</h3>
             <p>Kdo je v cíli, kdo ještě běží a co vyžaduje pozornost — vidíte živě z jednoho zázemí, i když měříte na víc stanovištích.</p>
           </div>
           <div className="landing-card">
-            <img className="landing-card-shot" src="/screenshots/vysledky.png" alt="Veřejná stránka výsledků s pořadím a časy závodníků" />
+            <Screenshot
+              className="landing-card-shot"
+              src="/screenshots/vysledky.png"
+              alt="Veřejná stránka výsledků s pořadím a časy závodníků"
+              onOpen={setLightbox}
+            />
             <div className="num">03</div>
             <h3>Výsledky hned na webu</h3>
             <p>Živá veřejná stránka bez přihlášení a automatický export přes FTP/SFTP na váš vlastní klubový web.</p>
@@ -122,7 +184,7 @@ export function Landing() {
       <section className="landing-section" id="proc-depo">
         <div className="landing-section-head">
           <h2>Proč ne excelová tabulka nebo drahý systém</h2>
-          <p>Mezi papírem a stopkami a profesionální časomírou za statisíce je prázdné místo — tam patří Depo.</p>
+          <p>Mezi papírem a stopkami a profesionální časomírou za desetitisíce je prázdné místo — tam patří Depo.</p>
         </div>
         <div className="landing-compare">
           <div className="landing-compare-card">
@@ -151,7 +213,7 @@ export function Landing() {
           <div className="landing-compare-card">
             <div className="landing-compare-head">
               <h3>Profesionální systémy</h3>
-              <span className="landing-compare-price">statisíce Kč</span>
+              <span className="landing-compare-price">desetitisíce Kč</span>
             </div>
             <p className="landing-compare-sub">RFID transpondéry, licence, podpora</p>
             <ul>
@@ -184,8 +246,8 @@ export function Landing() {
         <div className="landing-pricing">
           <div className="landing-pricing-card">
             <div className="landing-pricing-badge">Pro kluby a komunitní závody</div>
-            <div className="landing-pricing-value">0 Kč</div>
-            <p>Depo je a zůstane zdarma — neomezený počet závodů, závodníků i zařízení.</p>
+            <div className="landing-pricing-value">Zdarma</div>
+            <p>Založte závod bez poplatků — neomezený počet závodů, závodníků i zařízení.</p>
             <ul>
               <li className="yes">Offline měření na libovolném počtu stanovišť</li>
               <li className="yes">Živé výsledky + FTP/SFTP export na váš web</li>
@@ -196,9 +258,14 @@ export function Landing() {
             </Link>
           </div>
           <div className="landing-pricing-support">
-            <h3>Podpořte vývoj</h3>
-            <p>Depo píše a udržuje jeden vývojář ve volném čase. Možnost dobrovolně přispět na další vývoj právě připravujeme.</p>
-            <span className="landing-pricing-soon">Připravujeme</span>
+            <div>
+              <h3>Podpořte vývoj</h3>
+              <p>Depo píšu a udržuju sám ve volném čase. Pokud vám ušetří práci na závodě, budu rád za dobrovolný příspěvek na další vývoj — libovolnou částkou.</p>
+            </div>
+            <div className="landing-pricing-qr">
+              <img src="/qr-platba.jpg" alt="QR platba na podporu vývoje Depo" width={200} height={200} />
+              <span>Naskenujte bankovní aplikací</span>
+            </div>
           </div>
         </div>
       </section>
@@ -212,6 +279,20 @@ export function Landing() {
           Založit závod
         </Link>
       </section>
+
+      {lightbox && (
+        <div className="landing-lightbox" onClick={() => setLightbox(null)}>
+          <button
+            type="button"
+            className="landing-lightbox-close"
+            onClick={() => setLightbox(null)}
+            aria-label="Zavřít náhled"
+          >
+            ×
+          </button>
+          <img src={lightbox.src} alt={lightbox.alt} onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
     </div>
   );
 }
