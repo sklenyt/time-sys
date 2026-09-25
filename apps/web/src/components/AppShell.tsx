@@ -261,6 +261,9 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
               <span>{user.jmeno}</span>
             </div>
           )}
+          <a href="/napoveda" target="_blank" rel="noreferrer" className="app-nav-link">
+            Nápověda
+          </a>
           <button className="app-nav-link" onClick={odhlasit}>
             Odhlásit se
           </button>

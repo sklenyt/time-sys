@@ -75,7 +75,11 @@ export class EntriesService {
 
     let radky: Record<string, string>[];
     try {
-      radky = parse(obsahSouboru, { columns: true, trim: true, skip_empty_lines: true });
+      // České Excely defaultně ukládají CSV se středníkem (desetinná čárka
+      // by jinak kolidovala s čárkou jako oddělovačem) a s UTF-8 BOM na
+      // začátku souboru — bez obojího by import se šablonou z Excelu tiše
+      // selhal na "chybí startovní číslo" u každého řádku.
+      radky = parse(obsahSouboru, { columns: true, trim: true, skip_empty_lines: true, delimiter: [",", ";"], bom: true });
     } catch {
       return { importovano: 0, chyby: [{ radek: 0, zprava: "Soubor se nepodařilo přečíst jako CSV" }] };
     }

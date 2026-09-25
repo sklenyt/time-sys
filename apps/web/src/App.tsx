@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Landing } from "./pages/Landing";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
@@ -23,6 +24,17 @@ import { Register } from "./pages/Register";
 import { Reports } from "./pages/Reports";
 import { ResultsDirectory } from "./pages/ResultsDirectory";
 import { isLoggedIn } from "./lib/api";
+
+// Nápověda tahá vlastní knihovny (Markdown, vyhledávání) — načte se až při první návštěvě.
+const Napoveda = lazy(() => import("./pages/Napoveda").then((m) => ({ default: m.Napoveda })));
+
+function NapovedaRoute() {
+  return (
+    <Suspense fallback={<div style={{ padding: 40 }}>Načítám nápovědu…</div>}>
+      <Napoveda />
+    </Suspense>
+  );
+}
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!isLoggedIn()) {
@@ -52,6 +64,8 @@ export function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/zasady-ochrany-osobnich-udaju" element={<PrivacyPolicy />} />
+      <Route path="/napoveda" element={<NapovedaRoute />} />
+      <Route path="/napoveda/:slug" element={<NapovedaRoute />} />
       <Route path="/login" element={<Login />} />
       <Route path="/zapomenute-heslo" element={<ForgotPassword />} />
       <Route path="/reset-heslo" element={<ResetPassword />} />

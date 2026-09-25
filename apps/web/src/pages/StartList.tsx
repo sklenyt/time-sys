@@ -218,6 +218,8 @@ export function StartList() {
   const [catKod, setCatKod] = useState("");
   const [catNazev, setCatNazev] = useState("");
   const [catPohlavi, setCatPohlavi] = useState<Pohlavi>(Pohlavi.M);
+  const [catRocnikOd, setCatRocnikOd] = useState("");
+  const [catRocnikDo, setCatRocnikDo] = useState("");
   const [cislo, setCislo] = useState("");
   const [prijmeni, setPrijmeni] = useState("");
   const [jmeno, setJmeno] = useState("");
@@ -284,13 +286,22 @@ export function StartList() {
 
   async function createCategory() {
     if (!routeId || !catKod.trim() || !catNazev.trim()) return;
-    await api.post(`/routes/${routeId}/categories`, {
-      kod: catKod,
-      nazev: catNazev,
-      pohlavi: catPohlavi,
-    });
+    try {
+      await api.post(`/routes/${routeId}/categories`, {
+        kod: catKod,
+        nazev: catNazev,
+        pohlavi: catPohlavi,
+        rocnikOd: catRocnikOd ? Number(catRocnikOd) : undefined,
+        rocnikDo: catRocnikDo ? Number(catRocnikDo) : undefined,
+      });
+    } catch (e) {
+      setError(chybaZeServeru(e, "Kategorii se nepodařilo přidat"));
+      return;
+    }
     setCatKod("");
     setCatNazev("");
+    setCatRocnikOd("");
+    setCatRocnikDo("");
     reload();
   }
 
@@ -375,6 +386,28 @@ export function StartList() {
     }
   }
 
+  /**
+   * Právo na výmaz (GDPR) — smaže jméno, kontakty a zdravotní poznámku
+   * závodníka. Naměřené časy zůstávají (jen anonymně), ať výsledky a
+   * audit log neztratí integritu — viz zásady ochrany osobních údajů.
+   */
+  async function anonymizovatZavodnika(entryId: string, jmeno: string) {
+    if (!routeId) return;
+    if (
+      !window.confirm(
+        `Opravdu trvale smazat osobní údaje závodníka "${jmeno}" (jméno, kontakty, zdravotní poznámka)? Naměřený čas zůstane ve výsledcích jako anonymní. Tuto akci nelze vrátit zpět.`
+      )
+    ) {
+      return;
+    }
+    try {
+      await api.del(`/routes/${routeId}/entries/${entryId}`);
+      reload();
+    } catch (e) {
+      setError(chybaZeServeru(e, "Smazání údajů se nezdařilo"));
+    }
+  }
+
   async function importCsv(soubor: File) {
     if (!routeId) return;
     setError(null);
@@ -445,7 +478,8 @@ export function StartList() {
                 className="mono"
                 style={{ padding: "4px 10px", borderRadius: 999, border: "1px solid var(--line)", fontSize: 12.5 }}
               >
-                {k.kod} — {k.nazev} ({k.pohlavi})
+                {k.kod} — {k.nazev} ({k.pohlavi}
+                {k.rocnikOd || k.rocnikDo ? `, ročník ${k.rocnikOd ?? "…"}–${k.rocnikDo ?? "…"}` : ""})
               </span>
             ))}
           </div>
@@ -462,6 +496,20 @@ export function StartList() {
               <option value={Pohlavi.M}>M</option>
               <option value={Pohlavi.Z}>Z</option>
             </select>
+            <input
+              placeholder="Ročník od"
+              inputMode="numeric"
+              value={catRocnikOd}
+              onChange={(e) => setCatRocnikOd(e.target.value)}
+              style={{ ...inputStyle, width: 100 }}
+            />
+            <input
+              placeholder="Ročník do"
+              inputMode="numeric"
+              value={catRocnikDo}
+              onChange={(e) => setCatRocnikDo(e.target.value)}
+              style={{ ...inputStyle, width: 100 }}
+            />
             <button onClick={createCategory} className="btn-pill primary">
               Přidat kategorii
             </button>
@@ -599,6 +647,7 @@ export function StartList() {
               <th style={{ fontFamily: "var(--font-ui)" }}>Družstvo</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Čip</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Stav</th>
+              <th style={{ fontFamily: "var(--font-ui)" }}>GDPR</th>
             </tr>
           </thead>
           <tbody>
@@ -636,6 +685,17 @@ export function StartList() {
                       </option>
                     ))}
                   </select>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => anonymizovatZavodnika(e.id, `${e.prijmeni} ${e.jmeno}`)}
+                    className="btn-pill danger"
+                    style={{ padding: "3px 8px", fontSize: 11 }}
+                    title="Trvale smazat jméno, kontakty a zdravotní poznámku (naměřený čas zůstane anonymně)"
+                  >
+                    Smazat údaje
+                  </button>
                 </td>
               </tr>
             ))}

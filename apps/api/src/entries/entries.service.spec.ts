@@ -147,6 +147,13 @@ describe("EntriesService", () => {
       expect(vysledek.chyby[0].zprava).toMatch(/nešlo ji dopočítat/);
     });
 
+    it("čte i středníkem oddělený CSV s UTF-8 BOM (výchozí export z českého Excelu)", async () => {
+      const csv = "﻿cislo;prijmeni;jmeno;kategorie\n1;Novák;Petr;MUZ\n";
+      const vysledek = await service.importCsv("trasa-1", Buffer.from(csv));
+      expect(vysledek.importovano).toBe(1);
+      expect(vysledek.chyby).toHaveLength(0);
+    });
+
     it("parses up to 4 clenN_* columns into a team roster", async () => {
       const csv =
         "cislo,prijmeni,jmeno,kategorie,clen1_prijmeni,clen1_jmeno,clen1_rocnik,clen2_prijmeni,clen2_jmeno\n" +

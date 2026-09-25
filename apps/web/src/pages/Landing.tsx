@@ -1,20 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { appHref } from "../lib/domeny";
 
 type LightboxImage = { src: string; alt: string };
 
-/**
- * Z marketingové "/" (depotime.cz) musí přihlášení/registrace/správa vést
- * na app.depotime.cz (§App.tsx Home()) — na app./vysledky. subdoméně a v
- * dev/preview prostředí (localhost, *.pages.dev) zůstává odkaz relativní.
- */
-function appHref(path: string) {
-  const host = window.location.hostname;
-  if (host === "depotime.cz" || host === "www.depotime.cz") {
-    return `https://app.depotime.cz${path}`;
-  }
-  return path;
-}
 
 function Screenshot({
   src,
@@ -69,6 +58,7 @@ export function Landing() {
           <a href="#proc-depo">Proč Depo</a>
           <a href="#cenik">Ceník</a>
           <a href="https://vysledky.depotime.cz">Výsledky</a>
+          <Link to="/napoveda">Nápověda</Link>
         </nav>
         <div className="landing-nav-cta">
           <a href={appHref("/login")} className="btn-pill outline-light">
@@ -300,6 +290,7 @@ export function Landing() {
             Depo
           </div>
           <div className="landing-footer-links">
+            <Link to="/napoveda">Nápověda</Link>
             <Link to="/zasady-ochrany-osobnich-udaju">Zásady ochrany osobních údajů</Link>
             <a href="mailto:gdpr@depotime.cz">gdpr@depotime.cz</a>
           </div>

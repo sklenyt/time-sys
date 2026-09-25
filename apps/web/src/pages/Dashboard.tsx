@@ -331,6 +331,12 @@ export function Dashboard() {
                       </span>
                       {vitez && <span className="win">vítěz {vitez.casCelkem}</span>}
                     </div>
+                    <div className="route-row-links">
+                      <Link to={`/mereni/${t.id}`}>Měření</Link>
+                      <Link to={`/startovni-listina/${t.id}`}>Startovní listina</Link>
+                      <Link to={`/kdo-bezi/${t.id}`}>Kdo ještě běží</Link>
+                      <Link to={`/vysledky/${t.id}`}>Výsledky</Link>
+                    </div>
                   </div>
                 );
               })}

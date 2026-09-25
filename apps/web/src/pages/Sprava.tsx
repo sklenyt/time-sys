@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import type { AuthUserDto, Organizace, StartVlna, Trasa, Udalost } from "@depo/shared";
 import { Role, TypStartu } from "@depo/shared";
 import { api } from "../lib/api";
@@ -24,6 +24,7 @@ export function Sprava() {
   const [eventNazev, setEventNazev] = useState("");
   const [eventDatum, setEventDatum] = useState("");
   const [routeDrafts, setRouteDrafts] = useState<Record<string, string>>({});
+  const [routeKolDrafts, setRouteKolDrafts] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -96,18 +97,28 @@ export function Sprava() {
   async function createRoute(eventId: string) {
     const nazev = routeDrafts[eventId];
     if (!nazev?.trim()) return;
+    const pocetKol = Math.max(1, Number(routeKolDrafts[eventId]) || 1);
     await sBusy("Přidávám trasu…", async () => {
       await api.post(`/events/${eventId}/routes`, {
         nazev,
-        pocetKol: 1,
+        pocetKol,
         typStartu: TypStartu.HROMADNY,
       });
       setRouteDrafts((d) => ({ ...d, [eventId]: "" }));
+      setRouteKolDrafts((d) => ({ ...d, [eventId]: "" }));
       await reload();
     });
   }
 
   async function startRace(routeId: string) {
+    if (
+      vlnaByRoute[routeId]?.casStartu &&
+      !window.confirm(
+        "Tahle trať už odstartovala. Nový start přepíše čas startu na teď a změní tím časy všech závodníků. Opravdu znovu odstartovat?"
+      )
+    ) {
+      return;
+    }
     await sBusy("Spouštím start…", async () => {
       await api.post(`/routes/${routeId}/start`, {});
       await reload();
@@ -345,6 +356,11 @@ export function Sprava() {
                 <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
                   <span>
                     {t.nazev}
+                    {t.pocetKol > 1 && (
+                      <span className="mono" style={{ color: "var(--text-secondary)", marginLeft: 8, fontSize: 12 }}>
+                        {t.pocetKol}× kolo
+                      </span>
+                    )}
                     {t.dokoncena && (
                       <span className="mono" style={{ color: "var(--color-live)", marginLeft: 8, fontSize: 12 }}>
                         dokončeno
@@ -353,6 +369,12 @@ export function Sprava() {
                   </span>
                   {!u.ukoncena && (
                     <span style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                      <Link to={`/startovni-listina/${t.id}`} className="btn-pill">
+                        Startovní listina
+                      </Link>
+                      <Link to={`/mereni/${t.id}`} className="btn-pill">
+                        Měření
+                      </Link>
                       <button onClick={() => startRace(t.id)} className="btn-pill">
                         Start
                       </button>
@@ -386,12 +408,20 @@ export function Sprava() {
           </ul>
 
           {!u.ukoncena && (
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <input
                 value={routeDrafts[u.id] ?? ""}
                 onChange={(e) => setRouteDrafts((d) => ({ ...d, [u.id]: e.target.value }))}
                 placeholder="Nová trasa, např. 10 km"
                 style={inputStyle}
+              />
+              <input
+                value={routeKolDrafts[u.id] ?? ""}
+                onChange={(e) => setRouteKolDrafts((d) => ({ ...d, [u.id]: e.target.value }))}
+                placeholder="Počet kol"
+                inputMode="numeric"
+                title="Kolikrát závodník objede okruh, než doběhne — nechte prázdné pro trať bez kol (1)"
+                style={{ ...inputStyle, width: 100 }}
               />
               <button onClick={() => createRoute(u.id)} className="btn-pill primary">
                 Přidat trasu
