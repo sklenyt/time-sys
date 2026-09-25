@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import type { AuthUserDto, Organizace, StartVlna, Trasa, Udalost } from "@depo/shared";
 import { Role, TypStartu } from "@depo/shared";
 import { api } from "../lib/api";
@@ -369,12 +369,6 @@ export function Sprava() {
                   </span>
                   {!u.ukoncena && (
                     <span style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                      <Link to={`/startovni-listina/${t.id}`} className="btn-pill">
-                        Startovní listina
-                      </Link>
-                      <Link to={`/mereni/${t.id}`} className="btn-pill">
-                        Měření
-                      </Link>
                       <button onClick={() => startRace(t.id)} className="btn-pill">
                         Start
                       </button>

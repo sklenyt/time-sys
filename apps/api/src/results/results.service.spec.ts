@@ -88,7 +88,13 @@ describe("ResultsService", () => {
     });
 
     it("ranks finishers overall and per category, applies time penalty, and separates DNF/still-running", async () => {
-      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, udalost: { nazev: "Test akce" } });
+      prisma.trasa.findUnique.mockResolvedValue({
+        id: TRASA_ID,
+        nazev: "Test trasa",
+        pocetKol: 1,
+        dokoncena: false,
+        udalost: { nazev: "Test akce", trasy: [] },
+      });
 
       const runnerA = prihlaska({ id: "a", startovniCislo: 1, kategorieId: kategorieMuz.id, kategorie: kategorieMuz });
       const runnerB = prihlaska({ id: "b", startovniCislo: 2, kategorieId: kategorieMuz.id, kategorie: kategorieMuz });
@@ -133,6 +139,7 @@ describe("ResultsService", () => {
 
       const vysledky = await service.getResults(TRASA_ID);
 
+      expect(vysledky.trasaDokoncena).toBe(false);
       expect(vysledky.klasifikovani.map((p) => p.prihlaskaId)).toEqual(["a", "c", "penalized", "b"]);
       expect(vysledky.klasifikovani.map((p) => p.poradiCelkove)).toEqual([1, 2, 3, 4]);
 
@@ -152,6 +159,22 @@ describe("ResultsService", () => {
       const dnf = vysledky.neklasifikovani.find((p) => p.prihlaskaId === "dnf")!;
       expect(dnf.stavUkonceni).toBe(StavUkonceni.DNF);
       expect(dnf.casCelkem).toBeNull();
+    });
+
+    it("trasaDokoncena odráží stav trati — pro živý štítek na veřejné stránce výsledků", async () => {
+      prisma.trasa.findUnique.mockResolvedValue({
+        id: TRASA_ID,
+        nazev: "Test trasa",
+        pocetKol: 1,
+        dokoncena: true,
+        udalost: { nazev: "Test akce", trasy: [] },
+      });
+      prisma.prihlaska.findMany.mockResolvedValue([]);
+      prisma.zaznamUdalosti.findMany.mockResolvedValue([]);
+
+      const vysledky = await service.getResults(TRASA_ID);
+
+      expect(vysledky.trasaDokoncena).toBe(true);
     });
 
     it("stejný čas na setiny = stejné pořadí (1, 1, 3), celkově i v kategorii", async () => {

@@ -10,3 +10,16 @@ export function appHref(path: string) {
   }
   return path;
 }
+
+/**
+ * Odkaz "Výsledky" z appky (app.depotime.cz) musí vést na veřejnou
+ * doménu vysledky.depotime.cz, ne zůstat na interní app. doméně — v
+ * dev/preview prostředí zůstává relativní, ať jde appku testovat lokálně.
+ */
+export function vysledkyHref(path: string) {
+  const host = window.location.hostname;
+  if (host === "app.depotime.cz" || host === "depotime.cz" || host === "www.depotime.cz") {
+    return `https://vysledky.depotime.cz${path}`;
+  }
+  return path;
+}

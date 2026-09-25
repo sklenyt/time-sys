@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { AuthUserDto } from "@depo/shared";
 import { api, clearTokens } from "../lib/api";
+import { vysledkyHref } from "../lib/domeny";
 
 export type NavKey =
   | "prehled"
@@ -21,6 +22,8 @@ interface NavItem {
   label: string;
   needsRoute?: boolean;
   needsEvent?: boolean;
+  /** Otevírá se jako obyčejný <a target="_blank"> na jinou doménu, ne jako interní <Link>. */
+  external?: boolean;
   href: (routeId?: string, eventId?: string) => string;
 }
 
@@ -31,7 +34,13 @@ const NAV_ITEMS: NavItem[] = [
   { key: "listina", label: "Startovní listina", needsRoute: true, href: (routeId) => `/startovni-listina/${routeId}` },
   { key: "cipy", label: "Čipy", needsRoute: true, href: (routeId) => `/cipy/${routeId}` },
   { key: "bezi", label: "Kdo ještě běží", needsRoute: true, href: (routeId) => `/kdo-bezi/${routeId}` },
-  { key: "vysledky", label: "Výsledky", needsRoute: true, href: (routeId) => `/vysledky/${routeId}` },
+  {
+    key: "vysledky",
+    label: "Výsledky",
+    needsRoute: true,
+    external: true,
+    href: (routeId) => vysledkyHref(`/vysledky/${routeId}`),
+  },
   { key: "kolize", label: "Kolize", needsRoute: true, href: (routeId) => `/konflikty/${routeId}` },
   { key: "audit", label: "Audit log", needsRoute: true, href: (routeId) => `/audit/${routeId}` },
   { key: "publikace", label: "Publikace", needsEvent: true, href: (_r, eventId) => `/publikace/${eventId}` },
@@ -241,6 +250,15 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
                   >
                     {item.label}
                   </button>
+                ) : item.external ? (
+                  <a
+                    href={item.href(efektivniRouteId, efektivniEventId)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="app-nav-link"
+                  >
+                    {item.label}
+                  </a>
                 ) : (
                   <Link
                     to={item.href(efektivniRouteId, efektivniEventId)}

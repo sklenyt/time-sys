@@ -125,14 +125,14 @@ export function Results() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <h1 style={{ margin: 0, fontWeight: 800, fontSize: 24, letterSpacing: "-0.02em" }}>{vysledky.trasaNazev}</h1>
-                {zive && (
+                {vysledky.trasaDokoncena ? (
                   <span
                     className="mono"
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 6,
-                      background: "var(--color-live-700)",
+                      background: "var(--text-secondary)",
                       color: "#fff",
                       borderRadius: 6,
                       padding: "2px 8px",
@@ -141,8 +141,28 @@ export function Results() {
                       letterSpacing: 1,
                     }}
                   >
-                    ● ŽIVĚ
+                    UKONČENO
                   </span>
+                ) : (
+                  zive && (
+                    <span
+                      className="mono"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        background: "var(--color-live-700)",
+                        color: "#fff",
+                        borderRadius: 6,
+                        padding: "2px 8px",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: 1,
+                      }}
+                    >
+                      ● ŽIVĚ
+                    </span>
+                  )
                 )}
               </div>
               <div className="meta mono" style={{ marginTop: 2 }}>

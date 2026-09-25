@@ -251,6 +251,8 @@ export interface VysledkyResponseDto {
   udalostNazev: string;
   /** Ostatní tratě téže akce — pro přepínač trati na stránce výsledků. */
   trasy: { id: string; nazev: string }[];
+  /** Organizátor trať ručně označil jako dokončenou — štítek "ŽIVĚ" se pak nemá zobrazovat. */
+  trasaDokoncena: boolean;
   klasifikovani: VysledekPolozka[];
   neklasifikovani: VysledekPolozka[];
 }

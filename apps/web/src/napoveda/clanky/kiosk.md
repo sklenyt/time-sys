@@ -17,7 +17,7 @@ U kiosku celé akce jde interval rotace upravit přes `?interval=20` v adrese (p
 
 ## Co obrazovka ukazuje
 
-Živě se aktualizující tabulka výsledků: pořadí, kategorie, pořadí v kategorii, jméno a čas — plus hodiny a štítek „● ŽIVĚ“. Tabulka se sama pomalu posouvá nahoru a dolů, pokud se výsledky nevejdou na jednu obrazovku najednou, s pauzou nahoře a dole, ať se dá čtení dohnat.
+Živě se aktualizující tabulka výsledků: pořadí, kategorie, pořadí v kategorii, jméno a čas — plus hodiny a štítek „● ŽIVĚ“ (nebo „UKONČENO“, jakmile organizátor trať ve Správě akcí označí jako dokončenou). Tabulka se sama pomalu posouvá nahoru a dolů, pokud se výsledky nevejdou na jednu obrazovku najednou, s pauzou nahoře a dole, ať se dá čtení dohnat.
 
 ## Heslo u kiosku celé akce
 

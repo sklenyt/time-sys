@@ -48,6 +48,14 @@ export function priraditPoradi(
 // pokrývá Latin Extended-A.
 const FONT_REGULAR = join(__dirname, "..", "assets", "fonts", "LiberationSans-Regular.ttf");
 const FONT_BOLD = join(__dirname, "..", "assets", "fonts", "LiberationSans-Bold.ttf");
+const LOGO_PATH = join(__dirname, "..", "assets", "images", "depo-mark.png");
+
+// Brand barvy (viz apps/web/src/styles/tokens.css) — PDF export má vypadat
+// jako součást appky, ne jako generická tabulka.
+const BARVA_TMAVA = "#0b1220"; // --navy-800
+const BARVA_AKCENT = "#ff4a17"; // --tape-500
+const BARVA_SEDA = "#8c97a6"; // --steel-400
+const BARVA_LINKA = "#dde0e6"; // --line
 
 @Injectable()
 export class ResultsService {
@@ -105,6 +113,7 @@ export class ResultsService {
       trasaNazev: trasa.nazev,
       udalostNazev: trasa.udalost.nazev,
       trasy: trasa.udalost.trasy,
+      trasaDokoncena: trasa.dokoncena,
       klasifikovani,
       neklasifikovani,
     };
@@ -150,11 +159,29 @@ export class ResultsService {
       }
     }
 
+    // Dva řádky značky nad hlavičku tabulky (stejná informace jako v PDF) —
+    // vloženo až na konec spliceRows, ať je vidět, z čeho soubor pochází, i
+    // když ho někdo otevře bez kontextu webu. sheet.columns výš jen nastaví
+    // klíče/šířky sloupců, samotná data řádků se posunutím nemění.
+    sheet.spliceRows(1, 0, [`Depo — Výsledky — ${trasa.nazev}`], [`${vysledky.udalostNazev} · depotime.cz`], []);
+    sheet.mergeCells(1, 1, 1, sheet.columns.length);
+    sheet.mergeCells(2, 1, 2, sheet.columns.length);
+    sheet.getRow(1).font = { bold: true, size: 14 };
+    sheet.getRow(2).font = { size: 10, color: { argb: "FF8C97A6" } };
+    sheet.getRow(4).font = { bold: true };
+    sheet.views = [{ state: "frozen", ySplit: 4 }];
+
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);
   }
 
-  /** Export výsledků do PDF (F13) — stejná data jako getResults, tisková sestava pro vyvěšení/tisk. */
+  /**
+   * Export výsledků do PDF (F13) — stejná data jako getResults, tisková
+   * sestava pro vyvěšení/tisk. Značka Depo je vidět na první stránce
+   * (velké logo v záhlaví) i na každé další (drobné logo nahoře, patička
+   * "Depo · depotime.cz" dole) — dokument nesmí vypadat jako generická
+   * tabulka bez kontextu, odkud pochází.
+   */
   async buildResultsPdf(trasaId: string): Promise<Buffer> {
     const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId } });
     if (!trasa) {
@@ -162,11 +189,12 @@ export class ResultsService {
     }
     const vysledky = await this.getResults(trasaId);
 
-    const doc = new PDFDocument({ margin: 40, size: "A4" });
+    const doc = new PDFDocument({ margin: 40, size: "A4", bufferPages: true });
     const chunks: Buffer[] = [];
     doc.on("data", (chunk: Buffer) => chunks.push(chunk));
     const done = new Promise<Buffer>((resolve) => doc.on("end", () => resolve(Buffer.concat(chunks))));
 
+    const sirkaObsahu = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const sloupce = [
       { label: "Poř.", width: 35 },
       { label: "Kat.", width: 35 },
@@ -176,38 +204,76 @@ export class ResultsService {
       { label: "Čas", width: 90 },
     ];
 
-    doc.fontSize(18).font(FONT_BOLD).text(`Výsledky — ${trasa.nazev}`, { align: "left" });
-    doc.moveDown(1);
+    /** Drobné logo + "DEPO" v rohu — na úplně každé stránce, i po pádu na novou stránku uprostřed tabulky. */
+    const znackaStranky = () => {
+      const x = doc.page.margins.left;
+      const y = doc.page.margins.top;
+      doc.image(LOGO_PATH, x, y, { width: 16 });
+      doc
+        .font(FONT_BOLD)
+        .fontSize(9)
+        .fillColor(BARVA_SEDA)
+        .text("DEPO", x + 22, y + 4, { characterSpacing: 1.2 });
+      doc.y = y + 26;
+      doc.fillColor(BARVA_TMAVA);
+    };
 
-    const hlavickaRadku = () => {
-      doc.fontSize(10).font(FONT_BOLD);
-      let x = doc.page.margins.left;
+    /** Velké záhlaví s názvem trati a akcentovým proužkem — jen na první stránce. */
+    const hlavniZahlavi = () => {
+      doc.font(FONT_BOLD).fontSize(20).fillColor(BARVA_TMAVA).text(`Výsledky — ${trasa.nazev}`);
+      const vygenerovano = new Date().toLocaleString("cs-CZ", { dateStyle: "long", timeStyle: "short" });
+      doc
+        .font(FONT_REGULAR)
+        .fontSize(11)
+        .fillColor(BARVA_SEDA)
+        .text(`${vysledky.udalostNazev} · vygenerováno ${vygenerovano}`);
+      doc.moveDown(0.5);
+      doc.rect(doc.page.margins.left, doc.y, sirkaObsahu, 3).fill(BARVA_AKCENT);
+      doc.fillColor(BARVA_TMAVA);
+      doc.y += 16;
+    };
+
+    const hlavickaTabulky = () => {
       const y = doc.y;
+      doc.rect(doc.page.margins.left, y - 4, sirkaObsahu, 20).fill("#f3f1ec");
+      doc.fillColor(BARVA_TMAVA).font(FONT_BOLD).fontSize(10);
+      let x = doc.page.margins.left + 6;
       for (const s of sloupce) {
         doc.text(s.label, x, y, { width: s.width });
         x += s.width;
       }
-      doc.moveDown(0.5);
+      doc.y = y + 20;
       doc
         .moveTo(doc.page.margins.left, doc.y)
         .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+        .strokeColor(BARVA_TMAVA)
+        .lineWidth(1)
         .stroke();
-      doc.moveDown(0.3);
+      doc.moveDown(0.4);
+      doc.strokeColor(BARVA_LINKA).lineWidth(0.5);
     };
 
     const novaStrankaPokudTreba = () => {
       if (doc.y > doc.page.height - doc.page.margins.bottom - 40) {
         doc.addPage();
-        hlavickaRadku();
+        znackaStranky();
+        hlavickaTabulky();
       }
     };
 
-    hlavickaRadku();
-    doc.font(FONT_REGULAR).fontSize(10);
-    for (const p of vysledky.klasifikovani) {
+    znackaStranky();
+    hlavniZahlavi();
+    hlavickaTabulky();
+
+    doc.font(FONT_REGULAR).fontSize(10).fillColor(BARVA_TMAVA);
+    vysledky.klasifikovani.forEach((p, i) => {
       novaStrankaPokudTreba();
       const y = doc.y;
-      let x = doc.page.margins.left;
+      if (i % 2 === 1) {
+        doc.rect(doc.page.margins.left, y - 2, sirkaObsahu, 17).fill("#f9f8f6");
+        doc.fillColor(BARVA_TMAVA);
+      }
+      let x = doc.page.margins.left + 6;
       const hodnoty = [
         String(p.poradiCelkove ?? ""),
         String(p.poradiKategorie ?? ""),
@@ -216,23 +282,23 @@ export class ResultsService {
         p.kategorieKod,
         p.casCelkem ?? "",
       ];
-      hodnoty.forEach((hodnota, i) => {
-        doc.text(hodnota, x, y, { width: sloupce[i].width });
-        x += sloupce[i].width;
+      hodnoty.forEach((hodnota, sloupecI) => {
+        doc.text(hodnota, x, y, { width: sloupce[sloupecI].width });
+        x += sloupce[sloupecI].width;
       });
-      doc.moveDown(0.4);
-    }
+      doc.y = y + 17;
+    });
 
     if (vysledky.neklasifikovani.length > 0) {
       doc.moveDown(0.8);
       novaStrankaPokudTreba();
-      doc.font(FONT_BOLD).fontSize(13).text("Neklasifikovaní");
+      doc.font(FONT_BOLD).fontSize(13).fillColor(BARVA_TMAVA).text("Neklasifikovaní");
       doc.moveDown(0.3);
       doc.font(FONT_REGULAR).fontSize(10);
       for (const p of vysledky.neklasifikovani) {
         novaStrankaPokudTreba();
         const y = doc.y;
-        let x = doc.page.margins.left;
+        let x = doc.page.margins.left + 6;
         const hodnoty = [
           "",
           "",
@@ -241,12 +307,48 @@ export class ResultsService {
           p.kategorieKod,
           p.stavUkonceni ?? "v cíli zatím ne",
         ];
-        hodnoty.forEach((hodnota, i) => {
-          doc.text(hodnota, x, y, { width: sloupce[i].width });
-          x += sloupce[i].width;
+        hodnoty.forEach((hodnota, sloupecI) => {
+          doc.text(hodnota, x, y, { width: sloupce[sloupecI].width });
+          x += sloupce[sloupecI].width;
         });
-        doc.moveDown(0.4);
+        doc.y = y + 17;
       }
+    }
+
+    // Patička "Depo · depotime.cz" + číslo strany — dopisuje se až na konci
+    // na všechny nabufferované stránky najednou (bufferPages: true), ať se
+    // vejde přesný "N/M" i na stránku, jejíž existenci appka při psaní
+    // obsahu ještě neznala dopředu.
+    const { start, count } = doc.bufferedPageRange();
+    const puvodniOkrajDole = doc.page.margins.bottom;
+    for (let i = start; i < start + count; i++) {
+      doc.switchToPage(i);
+      const yPaticky = doc.page.height - puvodniOkrajDole + 14;
+      // Text v patičce leží uvnitř spodního okraje (pod ním) — PDFKit i s
+      // explicitním y bere v úvahu margins.bottom a bez tohohle by na to
+      // reagoval přidáním další (prázdné) stránky navíc, viz pdfkit#653.
+      doc.page.margins.bottom = 0;
+      doc
+        .moveTo(doc.page.margins.left, yPaticky - 8)
+        .lineTo(doc.page.width - doc.page.margins.right, yPaticky - 8)
+        .strokeColor(BARVA_LINKA)
+        .lineWidth(0.5)
+        .stroke();
+      doc
+        .font(FONT_REGULAR)
+        .fontSize(8)
+        .fillColor(BARVA_SEDA)
+        .text("Depo · depotime.cz", doc.page.margins.left, yPaticky, { lineBreak: false });
+      doc
+        .font(FONT_REGULAR)
+        .fontSize(8)
+        .fillColor(BARVA_SEDA)
+        .text(`${i - start + 1}/${count}`, doc.page.margins.left, yPaticky, {
+          width: sirkaObsahu,
+          align: "right",
+          lineBreak: false,
+        });
+      doc.page.margins.bottom = puvodniOkrajDole;
     }
 
     doc.end();

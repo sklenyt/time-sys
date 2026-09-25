@@ -10,7 +10,7 @@ Každá trať má vlastní veřejnou stránku výsledků na adrese `depotime.cz/
 
 ## Co stránka ukazuje
 
-- Název trasy a akce, štítek **● ŽIVĚ**, pokud se výsledky ještě mění.
+- Název trasy a akce, štítek **● ŽIVĚ** (dokud trať běží) nebo **UKONČENO** (jakmile ji organizátor ve Správě akcí označí jako dokončenou).
 - Počet klasifikovaných, počet kategorií a případně počet neklasifikovaných (DNS/DNF/DQ nebo zatím bez doběhu).
 - Tabulku výsledků: celkové pořadí, pořadí v kategorii, startovní číslo, jméno, klub, kategorii a čas.
 - Samostatnou tabulku **Neklasifikovaní** dole, pokud nějací jsou.
@@ -29,7 +29,11 @@ Nahoře je pole pro hledání podle jména, startovního čísla nebo klubu, a p
 
 ## Stažení výsledků
 
-Vpravo nahoře jsou tlačítka **Stáhnout XLSX** a **Stáhnout PDF** — stáhnou kompletní výsledky v daném formátu, se stejnými sloupci jako na obrazovce.
+Vpravo nahoře jsou tlačítka **Stáhnout XLSX** a **Stáhnout PDF** — stáhnou kompletní výsledky v daném formátu, se stejnými sloupci jako na obrazovce. PDF má vlastní tiskovou úpravu se značkou Depo v záhlaví i patičce každé strany (hodí se rovnou k vyvěšení v cíli), XLSX má nad tabulkou dva řádky s názvem trati a akce.
+
+## Otevření z appky
+
+Z aplikace (`app.depotime.cz`) vede položka **Výsledky** v levém menu rovnou na tuhle veřejnou stránku — otevře se v nové záložce na doméně `vysledky.depotime.cz`, ať organizátor neztratí rozdělanou práci v appce.
 
 ## Pořadí v kategorii — jak se počítá
 

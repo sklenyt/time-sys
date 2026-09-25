@@ -68,10 +68,13 @@ export function ResultsDirectory() {
   return (
     <div className="landing">
       <header className="landing-nav">
-        <div className="brand">
-          <img src="/depo-mark.svg" alt="" width={52} height={52} />
+        <a href="https://depotime.cz" className="brand" style={{ textDecoration: "none", color: "inherit" }}>
+          <img src="/depo-mark.svg" alt="" width={68} height={68} />
           Depo výsledky
-        </div>
+        </a>
+        <nav className="landing-nav-links">
+          <a href="https://depotime.cz">depotime.cz</a>
+        </nav>
       </header>
 
       <section className="landing-hero" style={{ paddingBottom: 40 }}>

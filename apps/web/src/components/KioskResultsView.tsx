@@ -86,9 +86,16 @@ export function KioskResultsView({ vysledky, podtitulek, rotaceTecky }: KioskRes
           )}
           <span
             className="mono"
-            style={{ background: "var(--color-live-700)", color: "#fff", padding: "6px 16px", borderRadius: 8, fontSize: 18, fontWeight: 700 }}
+            style={{
+              background: vysledky.trasaDokoncena ? "var(--kiosk-line-strong)" : "var(--color-live-700)",
+              color: vysledky.trasaDokoncena ? "var(--kiosk-muted)" : "#fff",
+              padding: "6px 16px",
+              borderRadius: 8,
+              fontSize: 18,
+              fontWeight: 700,
+            }}
           >
-            ● ŽIVĚ
+            {vysledky.trasaDokoncena ? "UKONČENO" : "● ŽIVĚ"}
           </span>
           <span className="mono kiosk-clock">{hodiny.toLocaleTimeString("cs-CZ")}</span>
           <TemaPrepinac tema={tema} onPrepnout={prepnoutTema} />
