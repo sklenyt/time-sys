@@ -690,10 +690,6 @@
   color: #fff;
 }
 
-.landing-footer-meta {
-  color: var(--steel-400);
-}
-
 @media (max-width: 700px) {
   .landing-footer-inner {
     justify-content: flex-start;

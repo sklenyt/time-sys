@@ -290,7 +290,6 @@ export function Landing() {
             <Link to="/zasady-ochrany-osobnich-udaju">Zásady ochrany osobních údajů</Link>
             <a href="mailto:gdpr@depotime.cz">gdpr@depotime.cz</a>
           </div>
-          <div className="landing-footer-meta">Tomáš Sklenář · IČO 06755071</div>
         </div>
       </footer>
 
