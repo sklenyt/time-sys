@@ -154,6 +154,32 @@ describe("ResultsService", () => {
       expect(dnf.casCelkem).toBeNull();
     });
 
+    it("stejný čas na setiny = stejné pořadí (1, 1, 3), celkově i v kategorii", async () => {
+      prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, udalost: { nazev: "Test akce" } });
+      prisma.prihlaska.findMany.mockResolvedValue([
+        prihlaska({ id: "a", startovniCislo: 1 }),
+        prihlaska({ id: "b", startovniCislo: 2 }),
+        prihlaska({ id: "c", startovniCislo: 3 }),
+        prihlaska({ id: "z", startovniCislo: 4, kategorieId: kategorieZeny.id, kategorie: kategorieZeny }),
+      ]);
+      const plusMs = (ms: number) => new Date(minutyOdStartu(40).getTime() + ms);
+      prisma.zaznamUdalosti.findMany.mockResolvedValue([
+        zaznam({ id: "z-a", prihlaskaId: "a", cas: plusMs(0) }),
+        // O 3 ms později — na setiny stejný čas jako A, proto sdílí 1. místo.
+        zaznam({ id: "z-b", prihlaskaId: "b", cas: plusMs(3) }),
+        zaznam({ id: "z-z", prihlaskaId: "z", cas: plusMs(500) }),
+        zaznam({ id: "z-c", prihlaskaId: "c", cas: plusMs(1000) }),
+      ]);
+
+      const vysledky = await service.getResults(TRASA_ID);
+      const podleId = Object.fromEntries(vysledky.klasifikovani.map((p) => [p.prihlaskaId, p]));
+
+      expect(podleId.a.casCelkem).toBe(podleId.b.casCelkem);
+      expect([podleId.a.poradiCelkove, podleId.b.poradiCelkove, podleId.z.poradiCelkove, podleId.c.poradiCelkove]).toEqual([1, 1, 3, 4]);
+      expect([podleId.a.poradiKategorie, podleId.b.poradiKategorie, podleId.c.poradiKategorie]).toEqual([1, 1, 3]);
+      expect(podleId.z.poradiKategorie).toBe(1);
+    });
+
     it("prefers the OPRAVA correction over the original DOJEZD it supersedes", async () => {
       prisma.trasa.findUnique.mockResolvedValue({ id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, udalost: { nazev: "Test akce" } });
       const runner = prihlaska({ id: "a", startovniCislo: 1 });

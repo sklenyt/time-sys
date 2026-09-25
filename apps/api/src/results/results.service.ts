@@ -21,6 +21,27 @@ import { formatDuration } from "../common/format-duration";
 
 type PrihlaskaSPrislusenstvim = Prihlaska & { kategorie: Kategorie; startVlna: StartVlna | null };
 
+/**
+ * Sportovní pořadí (1, 1, 3) nad seznamem seřazeným podle času — shoda se
+ * posuzuje na setiny, tj. na přesnost, kterou výsledky zobrazují
+ * (formatDuration); rozdíl v milisekundách by divák neviděl.
+ */
+export function priraditPoradi(
+  serazene: VysledekPolozka[],
+  nastavit: (p: VysledekPolozka, poradi: number) => void
+): void {
+  let poradi = 0;
+  let predchoziSetiny: number | null = null;
+  serazene.forEach((p, i) => {
+    const setiny = Math.round(p.casCelkemMs! / 10);
+    if (setiny !== predchoziSetiny) {
+      poradi = i + 1;
+      predchoziSetiny = setiny;
+    }
+    nastavit(p, poradi);
+  });
+}
+
 // Vestavěné fonty PDFKitu (Helvetica) umí jen WinAnsi kódování bez české
 // diakritiky (ř, č, ě, š, ž, ů…) — bez vlastního TTF fontu by výsledky
 // vytiskly zkomolený text. Liberation Sans (SIL OFL, viz assets/fonts/LICENSE-LiberationSans.txt)
@@ -58,8 +79,8 @@ export class ResultsService {
       .filter((p) => p.casCelkemMs !== null)
       .sort((a, b) => a.casCelkemMs! - b.casCelkemMs!);
 
-    klasifikovani.forEach((p, i) => {
-      p.poradiCelkove = i + 1;
+    priraditPoradi(klasifikovani, (p, poradi) => {
+      p.poradiCelkove = poradi;
     });
 
     const podleKategorie = new Map<string, VysledekPolozka[]>();
@@ -69,8 +90,8 @@ export class ResultsService {
       podleKategorie.set(p.kategorieId, skupina);
     }
     for (const skupina of podleKategorie.values()) {
-      skupina.forEach((p, i) => {
-        p.poradiKategorie = i + 1;
+      priraditPoradi(skupina, (p, poradi) => {
+        p.poradiKategorie = poradi;
       });
     }
 
