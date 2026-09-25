@@ -3,6 +3,19 @@ import { Link } from "react-router-dom";
 
 type LightboxImage = { src: string; alt: string };
 
+/**
+ * Z marketingové "/" (depotime.cz) musí přihlášení/registrace/správa vést
+ * na app.depotime.cz (§App.tsx Home()) — na app./vysledky. subdoméně a v
+ * dev/preview prostředí (localhost, *.pages.dev) zůstává odkaz relativní.
+ */
+function appHref(path: string) {
+  const host = window.location.hostname;
+  if (host === "depotime.cz" || host === "www.depotime.cz") {
+    return `https://app.depotime.cz${path}`;
+  }
+  return path;
+}
+
 function Screenshot({
   src,
   alt,
@@ -58,12 +71,12 @@ export function Landing() {
           <a href="https://vysledky.depotime.cz">Výsledky</a>
         </nav>
         <div className="landing-nav-cta">
-          <Link to="/login" className="btn-pill outline-light">
+          <a href={appHref("/login")} className="btn-pill outline-light">
             Přihlásit se
-          </Link>
-          <Link to="/dashboard" className="btn-pill accent">
+          </a>
+          <a href={appHref("/dashboard")} className="btn-pill accent">
             Vyzkoušet zdarma
-          </Link>
+          </a>
         </div>
       </header>
 
@@ -83,9 +96,9 @@ export function Landing() {
               doběhu — bez ruční synchronizace mezi stanovišti.
             </p>
             <div className="landing-hero-actions">
-              <Link to="/dashboard" className="btn-pill accent" style={{ padding: "12px 22px", fontSize: 14 }}>
+              <a href={appHref("/dashboard")} className="btn-pill accent" style={{ padding: "12px 22px", fontSize: 14 }}>
                 Založit první závod
-              </Link>
+              </a>
               <a href="#jak-to-funguje" className="btn-pill outline-light" style={{ padding: "12px 22px", fontSize: 14 }}>
                 Jak to funguje
               </a>
@@ -253,9 +266,9 @@ export function Landing() {
               <li className="yes">Živé výsledky + FTP/SFTP export na váš web</li>
               <li className="yes">RFID i ruční zápis, audit log, role a přístupy</li>
             </ul>
-            <Link to="/dashboard" className="btn-pill accent">
+            <a href={appHref("/dashboard")} className="btn-pill accent">
               Založit závod zdarma
-            </Link>
+            </a>
           </div>
           <div className="landing-pricing-support">
             <div>
@@ -275,9 +288,9 @@ export function Landing() {
           <h2>Vyzkoušejte Depo na příštím závodě</h2>
           <p>Stačí prohlížeč — žádná instalace, žádný účet navíc pro diváky.</p>
         </div>
-        <Link to="/dashboard" className="btn-pill accent" style={{ padding: "12px 22px", fontSize: 14 }}>
+        <a href={appHref("/dashboard")} className="btn-pill accent" style={{ padding: "12px 22px", fontSize: 14 }}>
           Založit závod
-        </Link>
+        </a>
       </section>
 
       <footer className="landing-footer">
