@@ -48,7 +48,7 @@ export function Landing() {
     <div className="landing">
       <header className="landing-nav">
         <div className="brand">
-          <img src="/depo-mark.svg" alt="" width={52} height={52} />
+          <img src="/depo-mark.svg" alt="" width={68} height={68} />
           Depo
         </div>
         <nav className="landing-nav-links">
@@ -279,6 +279,20 @@ export function Landing() {
           Založit závod
         </Link>
       </section>
+
+      <footer className="landing-footer">
+        <div className="landing-footer-inner">
+          <div className="landing-footer-brand">
+            <img src="/depo-mark.svg" alt="" width={28} height={28} />
+            Depo
+          </div>
+          <div className="landing-footer-links">
+            <Link to="/zasady-ochrany-osobnich-udaju">Zásady ochrany osobních údajů</Link>
+            <a href="mailto:gdpr@depotime.cz">gdpr@depotime.cz</a>
+          </div>
+          <div className="landing-footer-meta">Tomáš Sklenář · IČO 06755071</div>
+        </div>
+      </footer>
 
       {lightbox && (
         <div className="landing-lightbox" onClick={() => setLightbox(null)}>

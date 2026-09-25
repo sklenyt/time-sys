@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Landing } from "./pages/Landing";
+import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { Login } from "./pages/Login";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { ResetPassword } from "./pages/ResetPassword";
@@ -46,6 +47,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/zasady-ochrany-osobnich-udaju" element={<PrivacyPolicy />} />
       <Route path="/login" element={<Login />} />
       <Route path="/zapomenute-heslo" element={<ForgotPassword />} />
       <Route path="/reset-heslo" element={<ResetPassword />} />

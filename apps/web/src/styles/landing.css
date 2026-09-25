@@ -22,9 +22,9 @@
 .landing-nav .brand {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 14px;
   font-weight: 800;
-  font-size: 24px;
+  font-size: 30px;
   letter-spacing: -0.01em;
 }
 
@@ -642,4 +642,99 @@
 
 .btn-pill.outline-light:hover {
   border-color: #fff;
+}
+
+/* ---------- Patička ---------- */
+.landing-footer {
+  background: var(--navy-800);
+  color: var(--steel-400);
+  padding: 28px max(16px, calc((100% - 1100px) / 2));
+  border-top: 1px solid var(--navy-600);
+}
+
+.landing-footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.landing-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-weight: 800;
+}
+
+.landing-footer-brand img {
+  border-radius: 8px;
+}
+
+.landing-footer-links {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.landing-footer-links a {
+  color: var(--steel-400);
+  text-decoration: none;
+}
+
+.landing-footer-links a:hover {
+  color: #fff;
+}
+
+.landing-footer-meta {
+  color: var(--steel-400);
+}
+
+@media (max-width: 700px) {
+  .landing-footer-inner {
+    justify-content: flex-start;
+  }
+}
+
+/* ---------- Právní stránky (Zásady ochrany osobních údajů) ---------- */
+.legal-page-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.legal-page h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 6px;
+}
+
+.legal-updated {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 0 0 32px;
+}
+
+.legal-page h2 {
+  font-size: 17px;
+  margin: 30px 0 10px;
+}
+
+.legal-page p,
+.legal-page li {
+  color: var(--text-secondary);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.legal-page ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+
+.legal-page a {
+  color: var(--tape-500);
 }
