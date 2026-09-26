@@ -736,6 +736,22 @@
 }
 
 /* ---------- Veřejný adresář výsledků (ResultsDirectory) ---------- */
+.directory-sloupce {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .directory-sloupce {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
 .directory-skupina-nadpis {
   display: flex;
   align-items: center;
@@ -745,6 +761,32 @@
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  color: var(--navy-800);
+}
+
+.directory-ukoncene > summary.directory-skupina-nadpis {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.directory-ukoncene > summary.directory-skupina-nadpis::-webkit-details-marker {
+  display: none;
+}
+
+.directory-ukoncene > summary.directory-skupina-nadpis::after {
+  content: "▾";
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: 11px;
+  transition: transform 0.15s ease;
+}
+
+.directory-ukoncene[open] > summary.directory-skupina-nadpis::after {
+  transform: rotate(180deg);
+}
+
+.directory-ukoncene > summary.directory-skupina-nadpis:hover {
   color: var(--navy-800);
 }
 

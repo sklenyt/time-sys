@@ -190,29 +190,31 @@ export function ResultsDirectory() {
         )}
 
         {udalosti && udalosti.length > 0 && (
-          <div style={{ display: "grid", gap: 32, maxWidth: 640, margin: "0 auto" }}>
-            {probihajici.length > 0 && (
-              <div style={{ display: "grid", gap: 12 }}>
-                <h2 className="directory-skupina-nadpis">
-                  <span className="directory-tecka zive" aria-hidden="true" />
-                  Právě probíhající / nadcházející
-                </h2>
-                {probihajici.map((u) => (
-                  <UdalostKarta key={u.id} udalost={u} {...spolecneProps} />
-                ))}
-              </div>
-            )}
+          <div className="directory-sloupce">
+            <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
+              <h2 className="directory-skupina-nadpis">
+                <span className="directory-tecka zive" aria-hidden="true" />
+                Právě probíhající / nadcházející
+              </h2>
+              {probihajici.length === 0 ? (
+                <p style={{ color: "var(--text-secondary)", fontSize: 13.5 }}>Momentálně žádný.</p>
+              ) : (
+                probihajici.map((u) => <UdalostKarta key={u.id} udalost={u} {...spolecneProps} />)
+              )}
+            </div>
 
             {ukoncene.length > 0 && (
-              <div style={{ display: "grid", gap: 12 }}>
-                <h2 className="directory-skupina-nadpis muted">
+              <details className="directory-ukoncene" style={{ alignSelf: "start" }}>
+                <summary className="directory-skupina-nadpis muted">
                   <span className="directory-tecka" aria-hidden="true" />
-                  Ukončené
-                </h2>
-                {ukoncene.map((u) => (
-                  <UdalostKarta key={u.id} udalost={u} ukoncena {...spolecneProps} />
-                ))}
-              </div>
+                  Ukončené ({ukoncene.length})
+                </summary>
+                <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
+                  {ukoncene.map((u) => (
+                    <UdalostKarta key={u.id} udalost={u} ukoncena {...spolecneProps} />
+                  ))}
+                </div>
+              </details>
             )}
           </div>
         )}
