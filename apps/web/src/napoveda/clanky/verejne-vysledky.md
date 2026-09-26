@@ -3,14 +3,19 @@ titulek: Veřejné výsledky
 sekce: Výsledky
 poradi: 1
 popis: Živá stránka výsledků pro diváky a závodníky — bez přihlášení, bez instalace.
-klicova: vysledky verejne zive divaci hledat filtr export pdf xlsx prepinac tratí adresar probihajici ukoncene
+klicova: vysledky verejne zive divaci hledat filtr export pdf xlsx prepinac tratí adresar probihajici ukoncene automaticky autodetekce propadle datum
 ---
 
 Každá trať má vlastní veřejnou stránku výsledků na adrese `depotime.cz/vysledky/ID-trasy` (odkaz najdete ve Správě akcí u dané trasy tlačítkem **Registrace**, případně vám ho dá kolega, který trasu zakládal). Stránka nevyžaduje žádné přihlášení a funguje na telefonu i na počítači.
 
 ## Veřejný adresář všech závodů
 
-Na [vysledky.depotime.cz](https://vysledky.depotime.cz) je seznam všech veřejně vypsaných akcí — rozdělený na **Právě probíhající / nadcházející** (nahoře, zeleně) a **Ukončené** (dole, ztlumené). O to, do které skupiny akce patří, se stará tlačítko **Ukončit akci**/**Obnovit akci** ve Správě akcí — ukončené akce z adresáře nezmizí, jen se přesunou dolů, ať se stránka časem nezaplní starými závody.
+Na [vysledky.depotime.cz](https://vysledky.depotime.cz) je seznam všech veřejně vypsaných akcí ve dvou sloupcích — vlevo **Právě probíhající / nadcházející** (vždy celé rozbalené), vpravo **Ukončené** (sbalené, rozbalí se kliknutím na nadpis). Ukončené akce z adresáře nezmizí, jen se schovají za kliknutí, ať se stránka časem nezaplní starými závody.
+
+Do skupiny Ukončené se akce dostane dvěma způsoby:
+
+- organizátor ji ve Správě akcí ručně označí tlačítkem **Ukončit akci**,
+- nebo automaticky — pokud datum akce už uplynulo a žádná její trať vůbec neodstartovala (typicky se akce nekonala nebo se pořadatel zapomněl přihlásit a spustit start). Tohle se nikam natrvalo neukládá, jen se to při každém načtení stránky znovu vyhodnotí — pokud organizátor datum akce posune zpět do budoucna, adresář ji sám vrátí mezi probíhající.
 
 ## Co stránka ukazuje
 

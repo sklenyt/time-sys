@@ -470,7 +470,12 @@ export interface VerejnaUdalostDto {
   nazev: string;
   datum: string;
   vyzadujeHeslo: boolean;
-  /** Organizátor akci ve Správě akcí označil jako ukončenou — adresář ji zobrazuje odděleně od právě probíhajících. */
+  /**
+   * Efektivní stav pro veřejný adresář: true buď když ji organizátor ve
+   * Správě akcí ručně označil jako ukončenou, nebo automaticky, když datum
+   * akce už proplo a žádná trať vůbec neodstartovala. Nejde o trvalý stav
+   * v databázi — je to dopočítané při každém čtení (najitVerejneUdalosti).
+   */
   ukoncena: boolean;
   trasy: { id: string; nazev: string }[];
 }

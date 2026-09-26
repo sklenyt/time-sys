@@ -92,17 +92,33 @@ export class EventsService {
         datum: true,
         hesloVysledkuHash: true,
         ukoncena: true,
-        trasy: { select: { id: true, nazev: true } },
+        trasy: { select: { id: true, nazev: true, startVlny: { select: { casStartu: true } } } },
       },
     });
-    return udalosti.map((u) => ({
-      id: u.id,
-      nazev: u.nazev,
-      datum: u.datum,
-      vyzadujeHeslo: u.hesloVysledkuHash !== null,
-      ukoncena: u.ukoncena,
-      trasy: u.trasy,
-    }));
+
+    const dnesniPulnoc = new Date();
+    dnesniPulnoc.setHours(0, 0, 0, 0);
+
+    return udalosti.map((u) => {
+      // Autodetekce pro veřejný adresář (na žádost, chat 2026-09-26): datum
+      // akce je v minulosti a žádná trať vůbec neodstartovala — organizátor
+      // zjevně "Ukončit akci" nekliknul, ale akce evidentně proběhla/propadla.
+      // Nic se v databázi netrvale nemění (na rozdíl od u.ukoncena) — je to
+      // jen dopočítané při každém čtení, takže změna data akce zpět do
+      // budoucna nebo pozdější start ji z "ukončené" sama zase vrátí zpátky.
+      const datumProslo = u.datum.getTime() < dnesniPulnoc.getTime();
+      const zadnaTrasaOdstartovala = u.trasy.every((t) => t.startVlny.every((v) => v.casStartu === null));
+      const efektivneUkoncena = u.ukoncena || (datumProslo && zadnaTrasaOdstartovala);
+
+      return {
+        id: u.id,
+        nazev: u.nazev,
+        datum: u.datum,
+        vyzadujeHeslo: u.hesloVysledkuHash !== null,
+        ukoncena: efektivneUkoncena,
+        trasy: u.trasy.map((t) => ({ id: t.id, nazev: t.nazev })),
+      };
+    });
   }
 
   /**
