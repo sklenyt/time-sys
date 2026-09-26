@@ -11,9 +11,11 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
+import type { Response } from "express";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Role } from "@depo/shared";
 import { EntriesService } from "./entries.service";
@@ -21,6 +23,7 @@ import { CreateEntryDto } from "./dto/create-entry.dto";
 import { UpdateEntryDto } from "./dto/update-entry.dto";
 import { PublicRegisterDto } from "./dto/public-register.dto";
 import { PairChipDto } from "./dto/pair-chip.dto";
+import { AssignNumberDto } from "./dto/assign-number.dto";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { CurrentUser, AuthenticatedUser } from "../auth/decorators/current-user.decorator";
 import { Public } from "../auth/decorators/public.decorator";
@@ -101,6 +104,54 @@ export class EntriesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   unpairChip(@Param("routeId", ParseUUIDPipe) routeId: string, @Param("entryId", ParseUUIDPipe) entryId: string) {
     return this.entries.unpairChip(routeId, entryId);
+  }
+
+  /** Export celé startovní listiny (F30, chat 2026-09-26) — na rozdíl od F20 veřejného exportu obsahuje i kontakty. */
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Get("export.xlsx")
+  async exportXlsx(@Param("routeId", ParseUUIDPipe) routeId: string, @Res() res: Response) {
+    const buffer = await this.entries.buildEntriesXlsx(routeId);
+    res.set({
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "Content-Disposition": 'attachment; filename="startovni-listina.xlsx"',
+    });
+    res.send(buffer);
+  }
+}
+
+/**
+ * Čekající registrace (F30, chat 2026-09-26) — organizátor je vidí a
+ * ručně přidělí startovní číslo, případně zamítne. Odděleno od
+ * EntriesController, protože `Registrace` ještě není platná přihláška.
+ */
+@Controller("routes/:routeId/registrations")
+export class RegistrationsController {
+  constructor(private readonly entries: EntriesService) {}
+
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Get()
+  findAll(@Param("routeId", ParseUUIDPipe) routeId: string) {
+    return this.entries.findRegistrationsForRoute(routeId);
+  }
+
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Post(":registrationId/prideleni")
+  assignNumber(
+    @Param("routeId", ParseUUIDPipe) routeId: string,
+    @Param("registrationId", ParseUUIDPipe) registrationId: string,
+    @Body() dto: AssignNumberDto
+  ) {
+    return this.entries.prideliCislo(routeId, registrationId, dto);
+  }
+
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Delete(":registrationId")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  reject(
+    @Param("routeId", ParseUUIDPipe) routeId: string,
+    @Param("registrationId", ParseUUIDPipe) registrationId: string
+  ) {
+    return this.entries.zamitniRegistraci(routeId, registrationId);
   }
 }
 

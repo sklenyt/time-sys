@@ -76,6 +76,22 @@ async function request<T>(path: string, init?: RequestInit, retry = true): Promi
   return (await res.json()) as T;
 }
 
+/** Autentizované stažení binárního souboru (např. XLSX export) — na rozdíl od <a href> nese Authorization header. */
+async function requestBlob(path: string, retry = true): Promise<Blob> {
+  const { accessToken } = getTokens();
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+  });
+  if (res.status === 401 && retry && (await refreshAccessToken())) {
+    return requestBlob(path, false);
+  }
+  if (!res.ok) {
+    const body = await res.text();
+    throw new ApiError(res.status, body || res.statusText);
+  }
+  return res.blob();
+}
+
 async function requestForm<T>(path: string, formData: FormData): Promise<T> {
   const { accessToken } = getTokens();
   const res = await fetch(`${API_BASE}${path}`, {
@@ -99,6 +115,7 @@ export const api = {
   del: <T = void>(path: string) => request<T>(path, { method: "DELETE" }),
   /** Multipart upload — nikdy nenastavuje Content-Type ručně, prohlížeč doplní hranici (boundary). */
   postForm: <T>(path: string, formData: FormData) => requestForm<T>(path, formData),
+  getBlob: (path: string) => requestBlob(path),
 };
 
 /** Perzistentní ID zařízení pro Local Capture / offline sync (viz docs/03-architecture.md §3.9). */

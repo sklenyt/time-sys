@@ -47,6 +47,12 @@ export class RoutesService {
         dokoncena: dto.dokoncena,
         exportSouborNazev: dto.exportSouborNazev,
         registraceUzavrena: dto.registraceUzavrena,
+        // Prázdný řetězec = pole se ve formuláři smazalo → uložit jako
+        // null (na rozdíl od chybějícího klíče v DTO, který pole nechává
+        // beze změny — Prisma `undefined` hodnoty v update() ignoruje).
+        potvrzovaciEmailText: dto.potvrzovaciEmailText !== undefined ? dto.potvrzovaciEmailText || null : undefined,
+        platbaUcet: dto.platbaUcet !== undefined ? dto.platbaUcet || null : undefined,
+        platbaCastka: dto.platbaCastka,
       },
     });
   }

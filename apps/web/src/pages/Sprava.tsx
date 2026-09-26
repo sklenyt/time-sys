@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import type { AuthUserDto, Organizace, StartVlna, Trasa, Udalost } from "@depo/shared";
+import type { AuthUserDto, Organizace, StartVlna, Trasa, Udalost, UzivatelRoleDto } from "@depo/shared";
 import { Role, TypStartu } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
@@ -25,8 +25,16 @@ export function Sprava() {
   const [eventDatum, setEventDatum] = useState("");
   const [routeDrafts, setRouteDrafts] = useState<Record<string, string>>({});
   const [routeKolDrafts, setRouteKolDrafts] = useState<Record<string, string>>({});
+  const [otevrenaPlatba, setOtevrenaPlatba] = useState<Record<string, boolean>>({});
+  const [platbaDrafts, setPlatbaDrafts] = useState<
+    Record<string, { potvrzovaciEmailText: string; platbaUcet: string; platbaCastka: string }>
+  >({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [rolesByEvent, setRolesByEvent] = useState<Record<string, UzivatelRoleDto[]>>({});
+  const [otevreneRole, setOtevreneRole] = useState<Record<string, boolean>>({});
+  const [inviteEmail, setInviteEmail] = useState<Record<string, string>>({});
+  const [inviteRole, setInviteRole] = useState<Record<string, Role>>({});
 
   async function reload() {
     setError(null);
@@ -232,11 +240,77 @@ export function Sprava() {
     });
   }
 
+  function togglePlatba(trasa: Trasa) {
+    const otevrit = !otevrenaPlatba[trasa.id];
+    setOtevrenaPlatba((o) => ({ ...o, [trasa.id]: otevrit }));
+    if (otevrit && !platbaDrafts[trasa.id]) {
+      setPlatbaDrafts((d) => ({
+        ...d,
+        [trasa.id]: {
+          potvrzovaciEmailText: trasa.potvrzovaciEmailText ?? "",
+          platbaUcet: trasa.platbaUcet ?? "",
+          platbaCastka: trasa.platbaCastka ? String(trasa.platbaCastka) : "",
+        },
+      }));
+    }
+  }
+
+  /** Uložení textu potvrzovacího e-mailu a údajů pro QR platbu startovného (chat 2026-09-26). */
+  async function ulozitPlatbu(routeId: string) {
+    const draft = platbaDrafts[routeId];
+    if (!draft) return;
+    await sBusy("Ukládám…", async () => {
+      await api.patch(`/routes/${routeId}`, {
+        potvrzovaciEmailText: draft.potvrzovaciEmailText.trim(),
+        platbaUcet: draft.platbaUcet.trim(),
+        platbaCastka: draft.platbaCastka.trim() ? Number(draft.platbaCastka) : undefined,
+      });
+      await reload();
+    });
+  }
+
   async function deleteRoute(routeId: string, nazev: string) {
     if (!window.confirm(`Opravdu smazat trasu "${nazev}"? Tuto akci nelze vrátit zpět.`)) return;
     await sBusy("Mažu trasu…", async () => {
       await api.del(`/routes/${routeId}`);
       await reload();
+    });
+  }
+
+  async function nacistRole(eventId: string) {
+    try {
+      const role = await api.get<UzivatelRoleDto[]>(`/events/${eventId}/roles`);
+      setRolesByEvent((r) => ({ ...r, [eventId]: role }));
+    } catch (e) {
+      setError(chybaZeServeru(e, "Chyba načítání rolí"));
+    }
+  }
+
+  function toggleRole(eventId: string) {
+    const otevrit = !otevreneRole[eventId];
+    setOtevreneRole((o) => ({ ...o, [eventId]: otevrit }));
+    if (otevrit && !rolesByEvent[eventId]) {
+      nacistRole(eventId);
+    }
+  }
+
+  /** Pozvání dalšího člověka k akci podle e-mailu — musí už mít v Depu účet (chat 2026-09-26). */
+  async function pozvatKAkci(eventId: string) {
+    const email = (inviteEmail[eventId] ?? "").trim();
+    const role = inviteRole[eventId] ?? Role.ORGANIZATOR;
+    if (!email) return;
+    await sBusy("Zvu…", async () => {
+      await api.post(`/events/${eventId}/roles/pozvat`, { email, role });
+      setInviteEmail((e) => ({ ...e, [eventId]: "" }));
+      await nacistRole(eventId);
+    });
+  }
+
+  async function odebratRoli(eventId: string, roleId: string, email: string) {
+    if (!window.confirm(`Opravdu odebrat přístup uživateli "${email}" k této akci?`)) return;
+    await sBusy("Odebírám…", async () => {
+      await api.del(`/events/${eventId}/roles/${roleId}`);
+      await nacistRole(eventId);
     });
   }
 
@@ -373,6 +447,9 @@ export function Sprava() {
                   Kiosk (celá akce)
                 </button>
               )}
+              <button onClick={() => toggleRole(u.id)} className="btn-pill">
+                {otevreneRole[u.id] ? "Skrýt lidi s přístupem" : "Lidé s přístupem"}
+              </button>
               <button onClick={() => toggleUkoncena(u.id, !u.ukoncena)} className="btn-pill">
                 {u.ukoncena ? "Obnovit akci" : "Ukončit akci"}
               </button>
@@ -384,6 +461,77 @@ export function Sprava() {
           <p className="mono" style={{ color: "var(--text-secondary)", margin: "0 0 12px" }}>
             {formatDatum(u.datum)}
           </p>
+
+          {otevreneRole[u.id] && (
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
+                borderRadius: 8,
+                padding: 12,
+                margin: "0 0 12px",
+              }}
+            >
+              <h4 style={{ margin: "0 0 8px" }}>Lidé s přístupem k akci</h4>
+              {!rolesByEvent[u.id] && <p className="mono" style={{ fontSize: 12.5 }}>Načítám…</p>}
+              {rolesByEvent[u.id]?.length === 0 && (
+                <p style={{ color: "var(--text-secondary)", fontSize: 13, margin: 0 }}>Zatím jen vy.</p>
+              )}
+              {rolesByEvent[u.id] && rolesByEvent[u.id].length > 0 && (
+                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 10px" }}>
+                  {rolesByEvent[u.id].map((r) => (
+                    <li
+                      key={r.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 8,
+                        padding: "4px 0",
+                        fontSize: 13,
+                      }}
+                    >
+                      <span>
+                        {r.uzivatel.jmeno} ({r.uzivatel.email}) —{" "}
+                        <span className="mono" style={{ fontWeight: 700 }}>
+                          {ROLE_LABEL[r.role]}
+                        </span>
+                      </span>
+                      <button
+                        onClick={() => odebratRoli(u.id, r.id, r.uzivatel.email)}
+                        className="btn-pill danger"
+                        style={{ padding: "2px 8px", fontSize: 11 }}
+                      >
+                        Odebrat
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <input
+                  type="email"
+                  placeholder="E-mail kolegy (musí už mít účet v Depu)"
+                  value={inviteEmail[u.id] ?? ""}
+                  onChange={(e) => setInviteEmail((v) => ({ ...v, [u.id]: e.target.value }))}
+                  style={{ ...inputStyle, flex: 1, minWidth: 220 }}
+                />
+                <select
+                  value={inviteRole[u.id] ?? Role.ORGANIZATOR}
+                  onChange={(e) => setInviteRole((v) => ({ ...v, [u.id]: e.target.value as Role }))}
+                  style={inputStyle}
+                >
+                  <option value={Role.ADMIN}>{ROLE_LABEL[Role.ADMIN]}</option>
+                  <option value={Role.ORGANIZATOR}>{ROLE_LABEL[Role.ORGANIZATOR]}</option>
+                  <option value={Role.CASOMERIC}>{ROLE_LABEL[Role.CASOMERIC]}</option>
+                  <option value={Role.STANOVISTE}>{ROLE_LABEL[Role.STANOVISTE]}</option>
+                </select>
+                <button onClick={() => pozvatKAkci(u.id)} className="btn-pill primary">
+                  Pozvat
+                </button>
+              </div>
+            </div>
+          )}
 
           <ul style={{ listStyle: "none", padding: 0, margin: "0 0 12px" }}>
             {(trasyByEvent[u.id] ?? []).map((t) => (
@@ -416,6 +564,9 @@ export function Sprava() {
                       <button onClick={() => toggleRegistrace(t.id, !t.registraceUzavrena)} className="btn-pill">
                         {t.registraceUzavrena ? "Otevřít registraci" : "Uzavřít registraci"}
                       </button>
+                      <button onClick={() => togglePlatba(t)} className="btn-pill">
+                        {otevrenaPlatba[t.id] ? "Skrýt platbu" : "Potvrzovací e-mail / platba"}
+                      </button>
                       <button onClick={() => ukazatEmbedRegistrace(t.id)} className="btn-pill">
                         Embed registrace
                       </button>
@@ -432,6 +583,49 @@ export function Sprava() {
                   )}
                 </div>
                 {!u.ukoncena && <StartPlanovac routeId={t.id} vlna={vlnaByRoute[t.id]} onChanged={reload} />}
+                {!u.ukoncena && otevrenaPlatba[t.id] && platbaDrafts[t.id] && (
+                  <div
+                    style={{
+                      background: "var(--surface)",
+                      border: "1px solid var(--line)",
+                      borderRadius: 8,
+                      padding: 12,
+                      marginTop: 8,
+                    }}
+                  >
+                    <p style={{ color: "var(--text-secondary)", fontSize: 12.5, margin: "0 0 8px" }}>
+                      Text se přidá do potvrzovacího e-mailu po registraci. Vyplňte-li číslo účtu i částku, appka do
+                      e-mailu přidá i QR platbu (česká QR Platba, formát „předčíslí-číslo/kódBanky").
+                    </p>
+                    <textarea
+                      placeholder="Vlastní text do potvrzovacího e-mailu (volitelné)"
+                      value={platbaDrafts[t.id].potvrzovaciEmailText}
+                      onChange={(e) =>
+                        setPlatbaDrafts((d) => ({ ...d, [t.id]: { ...d[t.id], potvrzovaciEmailText: e.target.value } }))
+                      }
+                      rows={2}
+                      style={{ ...inputStyle, width: "100%", resize: "vertical", fontFamily: "inherit", marginBottom: 8 }}
+                    />
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <input
+                        placeholder="Číslo účtu, např. 19-2000145399/0800"
+                        value={platbaDrafts[t.id].platbaUcet}
+                        onChange={(e) => setPlatbaDrafts((d) => ({ ...d, [t.id]: { ...d[t.id], platbaUcet: e.target.value } }))}
+                        style={{ ...inputStyle, flex: 1, minWidth: 200 }}
+                      />
+                      <input
+                        placeholder="Startovné v Kč"
+                        inputMode="numeric"
+                        value={platbaDrafts[t.id].platbaCastka}
+                        onChange={(e) => setPlatbaDrafts((d) => ({ ...d, [t.id]: { ...d[t.id], platbaCastka: e.target.value } }))}
+                        style={{ ...inputStyle, width: 130 }}
+                      />
+                      <button onClick={() => ulozitPlatbu(t.id)} className="btn-pill primary">
+                        Uložit
+                      </button>
+                    </div>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -468,6 +662,14 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 8,
   border: "1px solid var(--line)",
   fontSize: 14,
+};
+
+const ROLE_LABEL: Record<Role, string> = {
+  [Role.ADMIN]: "Správce",
+  [Role.ORGANIZATOR]: "Organizátor",
+  [Role.CASOMERIC]: "Časoměřič",
+  [Role.STANOVISTE]: "Stanoviště",
+  [Role.VEREJNOST]: "Veřejnost",
 };
 
 function formatDatum(iso: string): string {

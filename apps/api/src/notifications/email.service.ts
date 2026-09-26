@@ -56,6 +56,62 @@ export class EmailService {
     }
   }
 
+  /**
+   * Potvrzovací e-mail po veřejné registraci (chat 2026-09-26). Startovní
+   * číslo se registrantovi ještě nepřiděluje (o tom rozhoduje ručně
+   * organizátor, viz EntriesService.prideliCislo) — e-mail proto jen
+   * potvrzuje přijetí registrace a případně přidá vlastní text organizátora
+   * a QR platbu na startovné. Bez SMTP i bez e-mailu registranta (nepovinné
+   * pole formuláře) se prostě nic neposílá — nekritická cesta, viz F32.
+   */
+  async posliPotvrzeniRegistrace(params: {
+    komu: string;
+    jmeno: string;
+    prijmeni: string;
+    trasaNazev: string;
+    udalostNazev: string;
+    vlastniText?: string | null;
+    platba?: { castkaKc: number; qrPng: Buffer };
+  }): Promise<void> {
+    const transporter = this.getTransporter();
+    if (!transporter) {
+      this.logger.debug(`SMTP nenakonfigurováno — přeskakuji potvrzení registrace pro ${params.komu}`);
+      return;
+    }
+
+    const radkyText = [
+      `Ahoj ${params.jmeno} ${params.prijmeni},`,
+      "",
+      `zaregistrovali jste se na trať "${params.trasaNazev}" (${params.udalostNazev}). Startovní číslo vám přidělí pořadatel, dozvíte se ho na místě nebo v další zprávě.`,
+    ];
+    let radkyHtml = `<p>Ahoj ${escapeHtml(params.jmeno)} ${escapeHtml(params.prijmeni)},</p><p>zaregistrovali jste se na trať „${escapeHtml(params.trasaNazev)}“ (${escapeHtml(params.udalostNazev)}). Startovní číslo vám přidělí pořadatel, dozvíte se ho na místě nebo v další zprávě.</p>`;
+
+    if (params.vlastniText?.trim()) {
+      radkyText.push("", params.vlastniText.trim());
+      radkyHtml += `<p>${escapeHtml(params.vlastniText.trim()).replace(/\n/g, "<br>")}</p>`;
+    }
+
+    const attachments: NonNullable<Parameters<Transporter["sendMail"]>[0]>["attachments"] = [];
+    if (params.platba) {
+      radkyText.push("", `Startovné: ${params.platba.castkaKc} Kč — QR platbu najdete v příloze tohoto e-mailu.`);
+      radkyHtml += `<p><strong>Startovné: ${params.platba.castkaKc} Kč</strong></p><p><img src="cid:qr-platba" alt="QR platba" width="220" height="220"></p>`;
+      attachments.push({ filename: "qr-platba.png", content: params.platba.qrPng, cid: "qr-platba" });
+    }
+
+    try {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM ?? "vysledky@depo.app",
+        to: params.komu,
+        subject: `Registrace přijata — ${params.trasaNazev}`,
+        text: radkyText.join("\n"),
+        html: radkyHtml,
+        attachments,
+      });
+    } catch (err) {
+      this.logger.warn(`Odeslání potvrzení registrace na ${params.komu} selhalo: ${err}`);
+    }
+  }
+
   async posliOdkazNaResetHesla(params: { komu: string; jmeno: string; odkaz: string }): Promise<void> {
     const transporter = this.getTransporter();
     if (!transporter) {
@@ -76,4 +132,9 @@ export class EmailService {
       this.logger.warn(`Odeslání odkazu na reset hesla na ${params.komu} selhalo: ${err}`);
     }
   }
+}
+
+/** Vlastní text organizátora jde do HTML e-mailu — musí se escapovat, ať v něm nejde propašovat značky. */
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }

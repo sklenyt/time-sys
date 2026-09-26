@@ -78,12 +78,12 @@ export function EmbedRegister() {
 
       {info && hotovo && (
         <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontWeight: 800, fontSize: 19, margin: "0 0 4px" }}>Registrace dokončena</h1>
+          <h1 style={{ fontWeight: 800, fontSize: 19, margin: "0 0 4px" }}>Registrace přijata</h1>
           <p style={{ fontSize: 13.5 }}>
-            {hotovo.jmeno} {hotovo.prijmeni}, vaše startovní číslo je:
+            {hotovo.jmeno} {hotovo.prijmeni}, vaše registrace čeká na potvrzení organizátorem.
           </p>
-          <p className="mono" style={{ fontSize: 48, fontWeight: 800, color: "var(--tape-500)", margin: "4px 0 0" }}>
-            {hotovo.startovniCislo}
+          <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "4px 0 0" }}>
+            Startovní číslo přidělí organizátor ručně.
           </p>
         </div>
       )}

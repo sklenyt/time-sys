@@ -5,27 +5,32 @@ import { EntriesService } from "./entries.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { StartVlnyService } from "../start-vlny/start-vlny.service";
 import { CategoriesService } from "../categories/categories.service";
+import { EmailService } from "../notifications/email.service";
 
 describe("EntriesService", () => {
   let service: EntriesService;
   let prisma: {
     prihlaska: { findFirst: jest.Mock; create: jest.Mock; update: jest.Mock };
+    registrace: { create: jest.Mock; findFirst: jest.Mock; findMany: jest.Mock; delete: jest.Mock };
     kategorie: { findMany: jest.Mock };
     trasa: { findUnique: jest.Mock };
     auditLog: { create: jest.Mock };
     $transaction: jest.Mock;
   };
   let categories: { navrhniKategorii: jest.Mock };
+  let email: { posliPotvrzeniRegistrace: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
       prihlaska: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn() },
+      registrace: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), delete: jest.fn() },
       kategorie: { findMany: jest.fn().mockResolvedValue([]) },
       trasa: { findUnique: jest.fn().mockResolvedValue({ typStartu: "VLNOVY" }) },
       auditLog: { create: jest.fn().mockResolvedValue({}) },
       $transaction: jest.fn(),
     };
     categories = { navrhniKategorii: jest.fn() };
+    email = { posliPotvrzeniRegistrace: jest.fn() };
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -33,6 +38,7 @@ describe("EntriesService", () => {
         { provide: PrismaService, useValue: prisma },
         { provide: StartVlnyService, useValue: {} },
         { provide: CategoriesService, useValue: categories },
+        { provide: EmailService, useValue: email },
       ],
     }).compile();
 
@@ -166,6 +172,97 @@ describe("EntriesService", () => {
         { prijmeni: "Svoboda", jmeno: "Jan", rocnik: 1985, klub: null },
         { prijmeni: "Dvořák", jmeno: "Karel", rocnik: null, klub: null },
       ]);
+    });
+  });
+
+  describe("registerPublic (F23 — od 2026-09-26 bez automatického čísla)", () => {
+    it("creates a pending Registrace instead of a Prihlaska and doesn't return a startovniCislo", async () => {
+      prisma.trasa.findUnique.mockResolvedValue({
+        id: "trasa-1",
+        dokoncena: false,
+        registraceUzavrena: false,
+        platbaUcet: null,
+        platbaCastka: null,
+        udalost: { nazev: "Podzimní běh" },
+      });
+      prisma.registrace.create.mockResolvedValue({ id: "reg-1", prijmeni: "Novák", jmeno: "Petr" });
+
+      const vysledek = await service.registerPublic("trasa-1", {
+        prijmeni: "Novák",
+        jmeno: "Petr",
+        kategorieId: "kat-1",
+      } as never);
+
+      expect(vysledek).toEqual({ prijmeni: "Novák", jmeno: "Petr" });
+      expect(prisma.prihlaska.create).not.toHaveBeenCalled();
+      expect(prisma.registrace.create).toHaveBeenCalled();
+    });
+
+    it("sends a confirmation e-mail when the registrant gave an address", async () => {
+      prisma.trasa.findUnique.mockResolvedValue({
+        id: "trasa-1",
+        dokoncena: false,
+        registraceUzavrena: false,
+        platbaUcet: null,
+        platbaCastka: null,
+        potvrzovaciEmailText: null,
+        nazev: "Trasa A",
+        udalost: { nazev: "Podzimní běh" },
+      });
+      prisma.registrace.create.mockResolvedValue({ id: "reg-1", prijmeni: "Novák", jmeno: "Petr" });
+
+      await service.registerPublic("trasa-1", {
+        prijmeni: "Novák",
+        jmeno: "Petr",
+        kategorieId: "kat-1",
+        email: "petr@example.com",
+      } as never);
+
+      expect(email.posliPotvrzeniRegistrace).toHaveBeenCalledWith(
+        expect.objectContaining({ komu: "petr@example.com", jmeno: "Petr", prijmeni: "Novák" })
+      );
+    });
+  });
+
+  describe("prideliCislo / zamitniRegistraci (organizátor rozhoduje o čekajících registracích)", () => {
+    it("throws NotFoundException when the pending registration isn't on this route", async () => {
+      prisma.registrace.findFirst.mockResolvedValue(null);
+      await expect(service.prideliCislo("trasa-1", "reg-1", { startovniCislo: 5 })).rejects.toBeInstanceOf(
+        NotFoundException
+      );
+    });
+
+    it("creates a Prihlaska from the pending registration and deletes it on success", async () => {
+      prisma.registrace.findFirst.mockResolvedValue({
+        id: "reg-1",
+        prijmeni: "Novák",
+        jmeno: "Petr",
+        rocnik: null,
+        pohlavi: null,
+        klub: null,
+        kategorieId: "kat-1",
+        email: null,
+        telefon: null,
+        oznamovaciEmail: null,
+        nouzovyKontakt: null,
+        zdravotniPoznamka: null,
+        clenoveDruzstva: null,
+      });
+      prisma.prihlaska.create.mockResolvedValue({ id: "p1", startovniCislo: 5 });
+
+      const vysledek = await service.prideliCislo("trasa-1", "reg-1", { startovniCislo: 5 });
+
+      expect(vysledek.startovniCislo).toBe(5);
+      expect(prisma.registrace.delete).toHaveBeenCalledWith({ where: { id: "reg-1" } });
+    });
+
+    it("zamitniRegistraci deletes the pending registration without creating a Prihlaska", async () => {
+      prisma.registrace.findFirst.mockResolvedValue({ id: "reg-1" });
+
+      await service.zamitniRegistraci("trasa-1", "reg-1");
+
+      expect(prisma.registrace.delete).toHaveBeenCalledWith({ where: { id: "reg-1" } });
+      expect(prisma.prihlaska.create).not.toHaveBeenCalled();
     });
   });
 });

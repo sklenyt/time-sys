@@ -84,12 +84,12 @@ export function Register() {
       <div style={pageStyle}>
         <div className="dash-card" style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
           <PublicHeader />
-          <h1 style={{ fontWeight: 800, fontSize: 22 }}>Registrace dokončena</h1>
+          <h1 style={{ fontWeight: 800, fontSize: 22 }}>Registrace přijata</h1>
           <p>
-            {hotovo.jmeno} {hotovo.prijmeni}, vaše startovní číslo je:
+            {hotovo.jmeno} {hotovo.prijmeni}, vaše registrace čeká na potvrzení organizátorem.
           </p>
-          <p className="mono" style={{ fontSize: 64, fontWeight: 800, color: "var(--tape-500)", margin: "8px 0 0" }}>
-            {hotovo.startovniCislo}
+          <p style={{ color: "var(--text-secondary)" }}>
+            Startovní číslo vám přidělí organizátor ručně — pokud jste vyplnili e-mail, přijde vám na něj potvrzení.
           </p>
         </div>
       </div>

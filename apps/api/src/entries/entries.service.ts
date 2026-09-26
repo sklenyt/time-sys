@@ -1,7 +1,15 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
-import { Prisma, type Prihlaska } from "@prisma/client";
+import { Prisma, type Prihlaska, type Registrace } from "@prisma/client";
 import { parse } from "csv-parse/sync";
-import { ImportEntriesResponseDto, Pohlavi, RegistrationInfoDto, RegistrationResponseDto, TypStartu } from "@depo/shared";
+import ExcelJS from "exceljs";
+import {
+  AssignNumberDto,
+  ImportEntriesResponseDto,
+  Pohlavi,
+  RegistrationInfoDto,
+  RegistrationResponseDto,
+  TypStartu,
+} from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateEntryDto } from "./dto/create-entry.dto";
 import { UpdateEntryDto } from "./dto/update-entry.dto";
@@ -9,15 +17,16 @@ import { PublicRegisterDto } from "./dto/public-register.dto";
 import { StartVlnyService } from "../start-vlny/start-vlny.service";
 import { CategoriesService } from "../categories/categories.service";
 import { decryptSecret, encryptSecret } from "../common/secret-crypto";
-
-const MAX_POKUSU_O_CISLO = 5;
+import { EmailService } from "../notifications/email.service";
+import { NeplatnyUcetError, vygenerujQrPlatbuPng } from "../common/cz-qr-platba";
 
 @Injectable()
 export class EntriesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly startVlny: StartVlnyService,
-    private readonly categories: CategoriesService
+    private readonly categories: CategoriesService,
+    private readonly email: EmailService
   ) {}
 
   async create(trasaId: string, dto: CreateEntryDto) {
@@ -170,6 +179,11 @@ export class EntriesService {
       puvodniHodnota.stavUkonceni = prihlaska.stavUkonceni;
       novaHodnota.stavUkonceni = dto.stavUkonceni;
     }
+    if (dto.zaplaceno !== undefined && dto.zaplaceno !== prihlaska.zaplaceno) {
+      zmeny.zaplaceno = dto.zaplaceno;
+      puvodniHodnota.zaplaceno = prihlaska.zaplaceno;
+      novaHodnota.zaplaceno = dto.zaplaceno;
+    }
     if (dto.clenoveDruzstva !== undefined) {
       zmeny.clenoveDruzstva = dto.clenoveDruzstva?.length
         ? (dto.clenoveDruzstva.map((c) => ({ prijmeni: c.prijmeni, jmeno: c.jmeno, rocnik: c.rocnik ?? null, klub: c.klub ?? null })) as Prisma.InputJsonValue)
@@ -235,14 +249,16 @@ export class EntriesService {
   }
 
   /**
-   * Veřejná sebe-registrace (F23, Fáze 4) — na rozdíl od organizátorského
-   * `create()` si závodník nevolí startovní číslo, přiřadí se automaticky
-   * (nejnižší volné), aby nešlo obsadit/zablokovat cizí číslo. Při souběhu
-   * dvou registrací ve stejnou chvíli se pokus o kolidující číslo tiše
-   * zopakuje s dalším volným.
+   * Veřejná sebe-registrace (F23, Fáze 4). Od 2026-09-26 (na žádost
+   * organizátorů) se startovní číslo NEPŘIDĚLUJE automaticky — vzniká jen
+   * čekající `Registrace`, číslo jí ručně přidělí organizátor přes
+   * `prideliCislo`. Pokud registrant vyplnil e-mail, pošle se potvrzení
+   * (EmailService.posliPotvrzeniRegistrace), volitelně s QR platbou podle
+   * nastavení trati — chyba odeslání e-mailu samotnou registraci nesmí
+   * zmařit, proto se jen zaloguje uvnitř EmailService, ne tady.
    */
   async registerPublic(trasaId: string, dto: PublicRegisterDto): Promise<RegistrationResponseDto> {
-    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId } });
+    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId }, include: { udalost: true } });
     if (!trasa) {
       throw new NotFoundException("Trasa nenalezena");
     }
@@ -250,24 +266,172 @@ export class EntriesService {
       throw new BadRequestException("Registrace na tuto trasu už je uzavřená");
     }
 
-    for (let pokus = 0; pokus < MAX_POKUSU_O_CISLO; pokus += 1) {
-      const posledni = await this.prisma.prihlaska.aggregate({
-        where: { trasaId },
-        _max: { startovniCislo: true },
-      });
-      const dalsiCislo = (posledni._max.startovniCislo ?? 0) + 1 + pokus;
+    const registrace = await this.prisma.registrace.create({
+      data: {
+        trasaId,
+        prijmeni: dto.prijmeni,
+        jmeno: dto.jmeno,
+        rocnik: dto.rocnik,
+        pohlavi: dto.pohlavi,
+        klub: dto.klub,
+        kategorieId: dto.kategorieId,
+        email: dto.email,
+        telefon: dto.telefon,
+        oznamovaciEmail: dto.oznamovaciEmail,
+        nouzovyKontakt: dto.nouzovyKontakt ? encryptSecret(dto.nouzovyKontakt) : undefined,
+        zdravotniPoznamka: dto.zdravotniPoznamka ? encryptSecret(dto.zdravotniPoznamka) : undefined,
+        clenoveDruzstva: dto.clenoveDruzstva?.length
+          ? (dto.clenoveDruzstva.map((c) => ({ prijmeni: c.prijmeni, jmeno: c.jmeno, rocnik: c.rocnik ?? null, klub: c.klub ?? null })) as Prisma.InputJsonValue)
+          : undefined,
+      },
+    });
 
-      try {
-        const prihlaska = await this.create(trasaId, { ...dto, startovniCislo: dalsiCislo });
-        return { startovniCislo: prihlaska.startovniCislo, prijmeni: prihlaska.prijmeni, jmeno: prihlaska.jmeno };
-      } catch (err) {
-        if (err instanceof ConflictException && pokus < MAX_POKUSU_O_CISLO - 1) {
-          continue; // souběh dvou registrací — zkusí další volné číslo
+    if (dto.email) {
+      let platba: { castkaKc: number; qrPng: Buffer } | undefined;
+      if (trasa.platbaUcet && trasa.platbaCastka) {
+        try {
+          const qrPng = await vygenerujQrPlatbuPng({
+            ucet: trasa.platbaUcet,
+            castkaKc: trasa.platbaCastka,
+            zprava: `Startovne ${dto.jmeno} ${dto.prijmeni}`,
+          });
+          platba = { castkaKc: trasa.platbaCastka, qrPng };
+        } catch (err) {
+          if (!(err instanceof NeplatnyUcetError)) throw err;
+          // Špatně vyplněné číslo účtu u trati nesmí zablokovat registraci
+          // samotnou — e-mail se pošle jen bez QR platby.
         }
-        throw err;
       }
+      await this.email.posliPotvrzeniRegistrace({
+        komu: dto.email,
+        jmeno: dto.jmeno,
+        prijmeni: dto.prijmeni,
+        trasaNazev: trasa.nazev,
+        udalostNazev: trasa.udalost.nazev,
+        vlastniText: trasa.potvrzovaciEmailText,
+        platba,
+      });
     }
-    throw new ConflictException("Registraci se nepodařilo dokončit, zkuste to prosím znovu");
+
+    return { prijmeni: registrace.prijmeni, jmeno: registrace.jmeno };
+  }
+
+  /** Čekající registrace této trati (Startovní listina, sekce "K přidělení") — nejstarší první. */
+  async findRegistrationsForRoute(trasaId: string) {
+    const registrace = await this.prisma.registrace.findMany({
+      where: { trasaId },
+      include: { kategorie: true },
+      orderBy: { vytvorenoAt: "asc" },
+    });
+    return registrace.map((r) => ({
+      ...odsifrovatRegistraci(r),
+      kategorieKod: r.kategorie.kod,
+      vytvorenoAt: r.vytvorenoAt.toISOString(),
+    }));
+  }
+
+  /**
+   * Organizátor ručně přidělí startovní číslo čekající registraci (chat
+   * 2026-09-26) — teprve tímhle krokem vznikne skutečná `Prihlaska`, která
+   * se počítá do startovní listiny/měření/výsledků. Čekající záznam se při
+   * úspěchu smaže; při kolizi čísla (P2002 v `create()`) zůstává beze
+   * změny, ať to organizátor může zkusit znovu s jiným číslem.
+   */
+  async prideliCislo(trasaId: string, registraceId: string, dto: AssignNumberDto) {
+    const registrace = await this.prisma.registrace.findFirst({ where: { id: registraceId, trasaId } });
+    if (!registrace) {
+      throw new NotFoundException("Čekající registrace nenalezena na této trati");
+    }
+
+    const prihlaska = await this.create(trasaId, {
+      startovniCislo: dto.startovniCislo,
+      prijmeni: registrace.prijmeni,
+      jmeno: registrace.jmeno,
+      rocnik: registrace.rocnik ?? undefined,
+      pohlavi: (registrace.pohlavi as Pohlavi | null) ?? undefined,
+      klub: registrace.klub ?? undefined,
+      kategorieId: registrace.kategorieId,
+      email: registrace.email ?? undefined,
+      telefon: registrace.telefon ?? undefined,
+      oznamovaciEmail: registrace.oznamovaciEmail ?? undefined,
+      // Zašifrovaná v Registrace stejně jako v Prihlaska (F31) — create()
+      // by je jinak zašifroval podruhé, proto se dešifrují až tady na
+      // hranici mezi tabulkami, ne přes odsifrovatRegistraci (ten je pro
+      // vracení ven z API, ne pro předání dalšímu create()).
+      nouzovyKontakt: registrace.nouzovyKontakt ? bezpecneDesifrovat(registrace.nouzovyKontakt) : undefined,
+      zdravotniPoznamka: registrace.zdravotniPoznamka ? bezpecneDesifrovat(registrace.zdravotniPoznamka) : undefined,
+      clenoveDruzstva: (registrace.clenoveDruzstva as { prijmeni: string; jmeno: string; rocnik?: number; klub?: string }[] | null) ?? undefined,
+    });
+
+    await this.prisma.registrace.delete({ where: { id: registraceId } });
+    return prihlaska;
+  }
+
+  /** Zamítnutí/smazání čekající registrace (např. duplicita nebo spam) — na rozdíl od prideliCislo nikdy nezaloží Prihlaska. */
+  async zamitniRegistraci(trasaId: string, registraceId: string): Promise<void> {
+    const registrace = await this.prisma.registrace.findFirst({ where: { id: registraceId, trasaId } });
+    if (!registrace) {
+      throw new NotFoundException("Čekající registrace nenalezena na této trati");
+    }
+    await this.prisma.registrace.delete({ where: { id: registraceId } });
+  }
+
+  /**
+   * Export celé startovní listiny (organizátor, přihlášeno) — na rozdíl od
+   * veřejného exportu výsledků (ResultsService.buildResultsXlsx) obsahuje
+   * i kontaktní údaje a stav platby, proto smí jen za přihlášením, nikdy
+   * veřejně (§8.7 minimalizace se týká jen veřejných dat, ne tohohle).
+   */
+  async buildEntriesXlsx(trasaId: string): Promise<Buffer> {
+    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId } });
+    if (!trasa) {
+      throw new NotFoundException("Trasa nenalezena");
+    }
+    const prihlasky = await this.findAllForRoute(trasaId);
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet(trasa.nazev.slice(0, 31));
+    sheet.columns = [
+      { header: "Číslo", key: "startovniCislo", width: 8 },
+      { header: "Příjmení", key: "prijmeni", width: 18 },
+      { header: "Jméno", key: "jmeno", width: 16 },
+      { header: "Ročník", key: "rocnik", width: 9 },
+      { header: "Pohlaví", key: "pohlavi", width: 9 },
+      { header: "Klub", key: "klub", width: 18 },
+      { header: "Kategorie", key: "kategorieKod", width: 12 },
+      { header: "E-mail", key: "email", width: 24 },
+      { header: "Telefon", key: "telefon", width: 14 },
+      { header: "Nouzový kontakt", key: "nouzovyKontakt", width: 24 },
+      { header: "Zdravotní poznámka", key: "zdravotniPoznamka", width: 28 },
+      { header: "Zaplaceno", key: "zaplaceno", width: 11 },
+      { header: "Stav", key: "stavUkonceni", width: 8 },
+      { header: "Družstvo", key: "druzstvo", width: 30 },
+    ];
+    sheet.getRow(1).font = { bold: true };
+
+    for (const p of prihlasky as (Prihlaska & { kategorie: { kod: string } })[]) {
+      sheet.addRow({
+        startovniCislo: p.startovniCislo,
+        prijmeni: p.prijmeni,
+        jmeno: p.jmeno,
+        rocnik: p.rocnik,
+        pohlavi: p.pohlavi,
+        klub: p.klub,
+        kategorieKod: p.kategorie.kod,
+        email: p.email,
+        telefon: p.telefon,
+        nouzovyKontakt: p.nouzovyKontakt,
+        zdravotniPoznamka: p.zdravotniPoznamka,
+        zaplaceno: p.zaplaceno ? "Ano" : "Ne",
+        stavUkonceni: p.stavUkonceni ?? "",
+        druzstvo: Array.isArray(p.clenoveDruzstva)
+          ? (p.clenoveDruzstva as { prijmeni: string; jmeno: string }[]).map((c) => `${c.prijmeni} ${c.jmeno}`).join(", ")
+          : "",
+      });
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
   }
 
   /**
@@ -345,10 +509,19 @@ function parseClenoveDruzstvaZRadku(radek: Record<string, string>): { prijmeni: 
 
 /** Rozšifruje citlivé osobní údaje (F31) před vrácením z API — v DB zůstávají jen šifrované. */
 function odsifrovatPrihlasku<T extends Pick<Prihlaska, "nouzovyKontakt" | "zdravotniPoznamka">>(prihlaska: T): T {
+  return odsifrovatCitliveUdaje(prihlaska);
+}
+
+/** Stejné šifrování (F31) platí i pro čekající Registrace, ne jen Prihlaska — sdílený helper. */
+function odsifrovatRegistraci<T extends Pick<Registrace, "nouzovyKontakt" | "zdravotniPoznamka">>(registrace: T): T {
+  return odsifrovatCitliveUdaje(registrace);
+}
+
+function odsifrovatCitliveUdaje<T extends { nouzovyKontakt: string | null; zdravotniPoznamka: string | null }>(zaznam: T): T {
   return {
-    ...prihlaska,
-    nouzovyKontakt: prihlaska.nouzovyKontakt ? bezpecneDesifrovat(prihlaska.nouzovyKontakt) : prihlaska.nouzovyKontakt,
-    zdravotniPoznamka: prihlaska.zdravotniPoznamka ? bezpecneDesifrovat(prihlaska.zdravotniPoznamka) : prihlaska.zdravotniPoznamka,
+    ...zaznam,
+    nouzovyKontakt: zaznam.nouzovyKontakt ? bezpecneDesifrovat(zaznam.nouzovyKontakt) : zaznam.nouzovyKontakt,
+    zdravotniPoznamka: zaznam.zdravotniPoznamka ? bezpecneDesifrovat(zaznam.zdravotniPoznamka) : zaznam.zdravotniPoznamka,
   };
 }
 

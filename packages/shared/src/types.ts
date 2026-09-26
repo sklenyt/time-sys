@@ -38,6 +38,12 @@ export interface Trasa {
   dokoncena: boolean;
   exportSouborNazev?: string | null;
   registraceUzavrena: boolean;
+  /** Vlastní text v potvrzovacím e-mailu po registraci (chat 2026-09-26). */
+  potvrzovaciEmailText?: string | null;
+  /** Číslo účtu pro QR platbu startovného, český formát "předčíslí-číslo/kódBanky". */
+  platbaUcet?: string | null;
+  /** Výše startovného v Kč — bez tohoto pole (nebo 0) appka QR platbu do e-mailu nepřidá. */
+  platbaCastka?: number | null;
 }
 
 export interface Kategorie {
@@ -86,12 +92,44 @@ export interface Prihlaska {
   oznamovaciEmail?: string | null;
   stavUkonceni?: StavUkonceni | null;
   clenoveDruzstva?: DruzstvoClen[] | null;
+  zaplaceno: boolean;
 }
 
-/** PATCH /routes/:id/entries/:entryId — ruční stav ukončení (F11) a/nebo členové družstva. */
+/** PATCH /routes/:id/entries/:entryId — ruční stav ukončení (F11), zaplaceno a/nebo členové družstva. */
 export interface UpdateEntryDto {
   stavUkonceni?: StavUkonceni | null;
   clenoveDruzstva?: DruzstvoClen[] | null;
+  zaplaceno?: boolean;
+}
+
+/**
+ * Čekající veřejná registrace (chat 2026-09-26) — dokud organizátor
+ * nepřidělí startovní číslo (POST .../registrations/:id/prideleni), do
+ * startovní listiny/výsledků/měření se nepočítá. Viz Prisma model
+ * `Registrace`.
+ */
+export interface RegistraceDto {
+  id: string;
+  trasaId: string;
+  prijmeni: string;
+  jmeno: string;
+  rocnik?: number | null;
+  pohlavi?: Pohlavi | null;
+  klub?: string | null;
+  email?: string | null;
+  telefon?: string | null;
+  kategorieId: string;
+  kategorieKod?: string;
+  nouzovyKontakt?: string | null;
+  zdravotniPoznamka?: string | null;
+  oznamovaciEmail?: string | null;
+  clenoveDruzstva?: DruzstvoClen[] | null;
+  vytvorenoAt: string;
+}
+
+/** POST .../registrations/:id/prideleni — organizátor ručně přidělí startovní číslo čekající registraci. */
+export interface AssignNumberDto {
+  startovniCislo: number;
 }
 
 /** POST /routes/:id/entries/import — CSV import startovní listiny (F04). */
@@ -220,6 +258,17 @@ export interface UzivatelRole {
   id: string;
   uzivatelId: string;
   udalostId: string;
+  role: Role;
+}
+
+/** GET /events/:id/roles — kdo má k akci přístup a s jakou rolí (chat 2026-09-26, sdílení akce). */
+export interface UzivatelRoleDto extends UzivatelRole {
+  uzivatel: { id: string; email: string; jmeno: string };
+}
+
+/** POST /events/:id/roles/pozvat — přiřadí roli podle e-mailu (musí už mít účet); jinak chyba. */
+export interface InviteRoleDto {
+  email: string;
   role: Role;
 }
 
@@ -370,8 +419,12 @@ export interface RegistrationInfoDto {
   kategorie: Kategorie[];
 }
 
+/**
+ * Startovní číslo se od 2026-09-26 nepřiděluje automaticky (na žádost
+ * organizátorů) — registrant vidí jen potvrzení, číslo mu přidělí
+ * organizátor ručně ve Startovní listině (viz RegistraceDto).
+ */
 export interface RegistrationResponseDto {
-  startovniCislo: number;
   prijmeni: string;
   jmeno: string;
 }

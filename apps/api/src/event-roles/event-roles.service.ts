@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { Role } from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { AssignRoleDto } from "./dto/assign-role.dto";
+import { InviteRoleDto } from "./dto/invite-role.dto";
 
 @Injectable()
 export class EventRolesService {
@@ -36,16 +37,7 @@ export class EventRolesService {
         );
       }
     } else {
-      const requesterIsAdmin = await this.prisma.uzivatelRole.findFirst({
-        where: {
-          uzivatelId: requesterId,
-          role: Role.ADMIN,
-          udalost: { organizaceId: udalost.organizaceId },
-        },
-      });
-      if (!requesterIsAdmin) {
-        throw new ForbiddenException("Jen ADMIN může přiřazovat role");
-      }
+      await this.overitAdmina(udalost.organizaceId, requesterId);
     }
 
     return this.prisma.uzivatelRole.upsert({
@@ -53,5 +45,58 @@ export class EventRolesService {
       create: { uzivatelId: dto.uzivatelId, udalostId, role: dto.role },
       update: {},
     });
+  }
+
+  /**
+   * Pozvání dalšího člena k akci podle e-mailu (F19, chat 2026-09-26) —
+   * na rozdíl od `assign` (které čeká hotové `uzivatelId`) tady organizátor
+   * zadává e-mail kolegy; ten musí mít v appce už účet, appka žádné
+   * "pozvánkové" e-maily zatím nerozesílá.
+   */
+  async invite(udalostId: string, dto: InviteRoleDto, requesterId: string) {
+    const udalost = await this.prisma.udalost.findUnique({ where: { id: udalostId } });
+    if (!udalost) {
+      throw new NotFoundException("Událost nenalezena");
+    }
+    await this.overitAdmina(udalost.organizaceId, requesterId);
+
+    const uzivatel = await this.prisma.uzivatel.findUnique({ where: { email: dto.email } });
+    if (!uzivatel) {
+      throw new NotFoundException(`Uživatel s e-mailem ${dto.email} v appce ještě nemá účet — musí se nejdřív zaregistrovat`);
+    }
+
+    return this.prisma.uzivatelRole.upsert({
+      where: { uzivatelId_udalostId_role: { uzivatelId: uzivatel.id, udalostId, role: dto.role } },
+      create: { uzivatelId: uzivatel.id, udalostId, role: dto.role },
+      update: {},
+    });
+  }
+
+  /** Odebrání přístupu (F19) — jen ADMIN stejné organizace, stejně jako přiřazení. */
+  async remove(udalostId: string, roleId: string, requesterId: string) {
+    const udalost = await this.prisma.udalost.findUnique({ where: { id: udalostId } });
+    if (!udalost) {
+      throw new NotFoundException("Událost nenalezena");
+    }
+    await this.overitAdmina(udalost.organizaceId, requesterId);
+
+    const role = await this.prisma.uzivatelRole.findFirst({ where: { id: roleId, udalostId } });
+    if (!role) {
+      throw new NotFoundException("Role nenalezena na této události");
+    }
+    await this.prisma.uzivatelRole.delete({ where: { id: roleId } });
+  }
+
+  private async overitAdmina(organizaceId: string, requesterId: string): Promise<void> {
+    const requesterIsAdmin = await this.prisma.uzivatelRole.findFirst({
+      where: {
+        uzivatelId: requesterId,
+        role: Role.ADMIN,
+        udalost: { organizaceId },
+      },
+    });
+    if (!requesterIsAdmin) {
+      throw new ForbiddenException("Jen ADMIN může přiřazovat nebo odebírat role");
+    }
   }
 }

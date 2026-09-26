@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import type { Cip, DruzstvoClen, ImportEntriesResponseDto, Kategorie, Prihlaska, Trasa, Udalost } from "@depo/shared";
+import type {
+  Cip,
+  DruzstvoClen,
+  ImportEntriesResponseDto,
+  Kategorie,
+  Prihlaska,
+  RegistraceDto,
+  Trasa,
+  Udalost,
+} from "@depo/shared";
 import { Pohlavi, StavCipu, StavUkonceni } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
@@ -202,6 +211,69 @@ function ChipBunka({
   );
 }
 
+function PridelitCisloRadek({
+  routeId,
+  registrace,
+  onAssigned,
+  onRejected,
+}: {
+  routeId: string;
+  registrace: RegistraceDto;
+  onAssigned: () => void;
+  onRejected: (id: string, jmeno: string) => void;
+}) {
+  const [cislo, setCislo] = useState("");
+  const [odesilam, setOdesilam] = useState(false);
+  const [chyba, setChyba] = useState<string | null>(null);
+
+  async function prideleni() {
+    if (!cislo) return;
+    setOdesilam(true);
+    setChyba(null);
+    try {
+      await api.post(`/routes/${routeId}/registrations/${registrace.id}/prideleni`, { startovniCislo: Number(cislo) });
+      onAssigned();
+    } catch (e) {
+      setChyba(chybaZeServeru(e, "Přidělení čísla se nezdařilo"));
+    } finally {
+      setOdesilam(false);
+    }
+  }
+
+  return (
+    <tr style={{ borderBottom: "1px solid var(--line)" }}>
+      <td style={{ fontFamily: "var(--font-ui)" }}>
+        {registrace.prijmeni} {registrace.jmeno}
+      </td>
+      <td style={{ fontFamily: "var(--font-ui)" }}>{registrace.kategorieKod ?? "—"}</td>
+      <td style={{ fontFamily: "var(--font-ui)" }}>{registrace.email ?? "—"}</td>
+      <td>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <input
+            placeholder="Číslo"
+            value={cislo}
+            onChange={(e) => setCislo(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && prideleni()}
+            style={{ ...inputStyle, width: 80, padding: "4px 8px" }}
+          />
+          <button onClick={prideleni} disabled={odesilam || !cislo} className="btn-pill primary" style={{ padding: "3px 10px", fontSize: 11.5 }}>
+            Přidělit
+          </button>
+          <button
+            onClick={() => onRejected(registrace.id, `${registrace.prijmeni} ${registrace.jmeno}`)}
+            disabled={odesilam}
+            className="btn-pill danger"
+            style={{ padding: "3px 10px", fontSize: 11.5 }}
+          >
+            Zamítnout
+          </button>
+          {chyba && <span style={{ color: "var(--color-danger)", fontSize: 11 }}>{chyba}</span>}
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 const STAV_LABEL: Record<StavUkonceni, string> = {
   [StavUkonceni.DNS]: "DNS",
   [StavUkonceni.DNF]: "DNF",
@@ -215,6 +287,7 @@ export function StartList() {
   const [trasa, setTrasa] = useState<(Trasa & { kategorie: Kategorie[] }) | null>(null);
   const [udalost, setUdalost] = useState<Udalost | null>(null);
   const [entries, setEntries] = useState<(Prihlaska & { kategorie?: Kategorie; cip?: Cip | null })[]>([]);
+  const [registrace, setRegistrace] = useState<RegistraceDto[]>([]);
   const [catKod, setCatKod] = useState("");
   const [catNazev, setCatNazev] = useState("");
   const [catPohlavi, setCatPohlavi] = useState<Pohlavi>(Pohlavi.M);
@@ -248,6 +321,8 @@ export function StartList() {
         `/routes/${routeId}/entries`
       );
       setEntries(e);
+      const r = await api.get<RegistraceDto[]>(`/routes/${routeId}/registrations`);
+      setRegistrace(r);
     } catch (e) {
       setError(chybaZeServeru(e, "Chyba načítání"));
     }
@@ -383,6 +458,45 @@ export function StartList() {
       reload();
     } catch (e) {
       setError(chybaZeServeru(e, "Nastavení stavu se nezdařilo"));
+    }
+  }
+
+  async function nastavitZaplaceno(entryId: string, zaplaceno: boolean) {
+    if (!routeId) return;
+    try {
+      await api.patch(`/routes/${routeId}/entries/${entryId}`, { zaplaceno });
+      reload();
+    } catch (e) {
+      setError(chybaZeServeru(e, "Nastavení platby se nezdařilo"));
+    }
+  }
+
+  async function zamitnoutRegistraci(registraceId: string, jmeno: string) {
+    if (!routeId) return;
+    if (!window.confirm(`Opravdu zamítnout registraci "${jmeno}"? Nevznikne z ní přihláška.`)) return;
+    try {
+      await api.del(`/routes/${routeId}/registrations/${registraceId}`);
+      reload();
+    } catch (e) {
+      setError(chybaZeServeru(e, "Zamítnutí se nezdařilo"));
+    }
+  }
+
+  async function exportovatXlsx() {
+    if (!routeId) return;
+    setBusy("Připravuji export…");
+    try {
+      const blob = await api.getBlob(`/routes/${routeId}/entries/export.xlsx`);
+      const url = URL.createObjectURL(blob);
+      const odkaz = document.createElement("a");
+      odkaz.href = url;
+      odkaz.download = "startovni-listina.xlsx";
+      odkaz.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setError(chybaZeServeru(e, "Export se nezdařil"));
+    } finally {
+      setBusy(null);
     }
   }
 
@@ -637,6 +751,48 @@ export function StartList() {
         </section>
       )}
 
+      {registrace.length > 0 && (
+        <section className="dash-card" style={{ marginBottom: 24 }}>
+          <div className="dash-card-head">
+            <h2>K přidělení ({registrace.length})</h2>
+          </div>
+          <p style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 0 }}>
+            Veřejné registrace čekající na ruční přidělení startovního čísla — dokud se číslo nepřidělí, závodník se
+            nepočítá do listiny ani do výsledků.
+          </p>
+          <div className="table-scroll">
+            <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
+                  <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
+                  <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
+                  <th style={{ fontFamily: "var(--font-ui)" }}>E-mail</th>
+                  <th style={{ fontFamily: "var(--font-ui)" }}>Startovní číslo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {registrace.map((r) => (
+                  <PridelitCisloRadek
+                    key={r.id}
+                    routeId={routeId!}
+                    registrace={r}
+                    onAssigned={reload}
+                    onRejected={zamitnoutRegistraci}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      <div className="dash-card-head" style={{ marginBottom: 8 }}>
+        <h2 style={{ margin: 0 }}>Startovní listina</h2>
+        <button type="button" onClick={exportovatXlsx} className="btn-pill">
+          Export do XLSX
+        </button>
+      </div>
+
       <div className="table-scroll">
         <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -646,6 +802,7 @@ export function StartList() {
               <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Družstvo</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Čip</th>
+              <th style={{ fontFamily: "var(--font-ui)" }}>Zaplaceno</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Stav</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>GDPR</th>
             </tr>
@@ -665,6 +822,15 @@ export function StartList() {
                 </td>
                 <td>
                   <ChipBunka routeId={routeId!} entry={e} onChanged={reload} />
+                </td>
+                <td>
+                  <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={e.zaplaceno}
+                      onChange={(ev) => nastavitZaplaceno(e.id, ev.target.checked)}
+                    />
+                  </label>
                 </td>
                 <td>
                   <select

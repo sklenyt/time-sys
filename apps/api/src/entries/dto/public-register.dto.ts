@@ -1,5 +1,7 @@
-import { IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
+import { Type } from "class-transformer";
+import { ArrayMaxSize, IsArray, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from "class-validator";
 import { Pohlavi } from "@depo/shared";
+import { TeamMemberDto } from "./team-member.dto";
 
 /**
  * Vlastní veřejný registrační formulář (F23, Fáze 4) — na rozdíl od
@@ -51,4 +53,12 @@ export class PublicRegisterDto {
   @IsOptional()
   @IsEmail()
   oznamovaciEmail?: string;
+
+  /** Štafeta/družstvo (max 4 členové, legacy vzor viz TeamMemberDto) — nepovinné. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(4)
+  @ValidateNested({ each: true })
+  @Type(() => TeamMemberDto)
+  clenoveDruzstva?: TeamMemberDto[];
 }
