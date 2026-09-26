@@ -208,6 +208,22 @@ export function Sprava() {
     });
   }
 
+  /**
+   * Upozornění (ne automatické ukončení!) na akci, jejíž datum už proběhlo
+   * a žádná trať vůbec neodstartovala — typicky se zapomnělo kliknout na
+   * Ukončit akci, nebo se závod nekonal. Organizátorovi to jen zvýrazníme,
+   * ať se sám rozhodne (ukončit, nebo pozdě odstartovat) — appka mu sama
+   * od sebe žádné tlačítko nezakazuje, viz stejná autodetekce na veřejném
+   * adresáři (events.service.ts najitVerejneUdalosti, 2026-09-26).
+   */
+  function jePropadla(u: Udalost): boolean {
+    if (u.ukoncena) return false;
+    const dnesniPulnoc = new Date();
+    dnesniPulnoc.setHours(0, 0, 0, 0);
+    if (new Date(u.datum).getTime() >= dnesniPulnoc.getTime()) return false;
+    return !(trasyByEvent[u.id] ?? []).some((t) => vlnaByRoute[t.id]?.casStartu);
+  }
+
   async function deleteEvent(eventId: string, nazev: string) {
     if (!window.confirm(`Opravdu smazat akci "${nazev}"? Tuto akci nelze vrátit zpět.`)) return;
     await sBusy("Mažu akci…", async () => {
@@ -319,6 +335,25 @@ export function Sprava() {
                   }}
                 >
                   Ukončeno
+                </span>
+              )}
+              {jePropadla(u) && (
+                <span
+                  className="mono"
+                  title="Datum akce už proběhlo a žádná trať neodstartovala — zapomnělo se kliknout na Ukončit akci?"
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: "1px 7px",
+                    borderRadius: 999,
+                    background: "#fff7ec",
+                    border: "1px solid #f1dcb0",
+                    color: "var(--color-attention)",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  ⚠ Datum proběhlo
                 </span>
               )}
             </div>

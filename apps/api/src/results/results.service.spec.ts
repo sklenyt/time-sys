@@ -181,12 +181,14 @@ describe("ResultsService", () => {
     });
 
     it("trasaOdstartovana je false, dokud žádná startovní vlna neodstartovala — 'ŽIVĚ' před startem nemá svítit", async () => {
+      const zitra = new Date();
+      zitra.setDate(zitra.getDate() + 1);
       prisma.trasa.findUnique.mockResolvedValue({
         id: TRASA_ID,
         nazev: "Test trasa",
         pocetKol: 1,
         dokoncena: false,
-        udalost: { nazev: "Test akce", trasy: [] },
+        udalost: { nazev: "Test akce", trasy: [], datum: zitra },
         startVlny: [{ casStartu: null }],
       });
       prisma.prihlaska.findMany.mockResolvedValue([]);
@@ -195,6 +197,27 @@ describe("ResultsService", () => {
       const vysledky = await service.getResults(TRASA_ID);
 
       expect(vysledky.trasaOdstartovana).toBe(false);
+      expect(vysledky.trasaDokoncena).toBe(false);
+    });
+
+    it("propadlá trať (datum akce v minulosti, nikdy neodstartovala) se sama počítá jako dokončená — 'UKONČENO', ne zavádějící 'PŘED STARTEM'", async () => {
+      const vcera = new Date();
+      vcera.setDate(vcera.getDate() - 1);
+      prisma.trasa.findUnique.mockResolvedValue({
+        id: TRASA_ID,
+        nazev: "Test trasa",
+        pocetKol: 1,
+        dokoncena: false,
+        udalost: { nazev: "Test akce", trasy: [], datum: vcera },
+        startVlny: [{ casStartu: null }],
+      });
+      prisma.prihlaska.findMany.mockResolvedValue([]);
+      prisma.zaznamUdalosti.findMany.mockResolvedValue([]);
+
+      const vysledky = await service.getResults(TRASA_ID);
+
+      expect(vysledky.trasaOdstartovana).toBe(false);
+      expect(vysledky.trasaDokoncena).toBe(true);
     });
 
     it("stejný čas na setiny = stejné pořadí (1, 1, 3), celkově i v kategorii", async () => {

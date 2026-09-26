@@ -2,6 +2,7 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException, U
 import { Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../prisma/prisma.service";
+import { jeDatumVMinulosti } from "../common/datum-v-minulosti";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { UpdateEventDto } from "./dto/update-event.dto";
 
@@ -96,9 +97,6 @@ export class EventsService {
       },
     });
 
-    const dnesniPulnoc = new Date();
-    dnesniPulnoc.setHours(0, 0, 0, 0);
-
     return udalosti.map((u) => {
       // Autodetekce pro veřejný adresář (na žádost, chat 2026-09-26): datum
       // akce je v minulosti a žádná trať vůbec neodstartovala — organizátor
@@ -106,9 +104,8 @@ export class EventsService {
       // Nic se v databázi netrvale nemění (na rozdíl od u.ukoncena) — je to
       // jen dopočítané při každém čtení, takže změna data akce zpět do
       // budoucna nebo pozdější start ji z "ukončené" sama zase vrátí zpátky.
-      const datumProslo = u.datum.getTime() < dnesniPulnoc.getTime();
       const zadnaTrasaOdstartovala = u.trasy.every((t) => t.startVlny.every((v) => v.casStartu === null));
-      const efektivneUkoncena = u.ukoncena || (datumProslo && zadnaTrasaOdstartovala);
+      const efektivneUkoncena = u.ukoncena || (jeDatumVMinulosti(u.datum) && zadnaTrasaOdstartovala);
 
       return {
         id: u.id,

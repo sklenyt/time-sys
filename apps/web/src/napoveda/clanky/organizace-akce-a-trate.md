@@ -3,7 +3,7 @@ titulek: Organizace, akce a tratě
 sekce: Příprava závodu
 poradi: 1
 popis: Jak je struktura Depa poskládaná a co všechno jde nastavit ve Správě akcí.
-klicova: sprava akci zalozit zavod trasa smazat prejmenovat ukoncit
+klicova: sprava akci zalozit zavod trasa smazat prejmenovat ukoncit datum probehlo propadla autodetekce
 ---
 
 ## Struktura dat v Depu
@@ -46,3 +46,7 @@ U jednotlivé trati (v seznamu pod akcí) máte:
 ## Aktivní vs. ukončená akce
 
 Startovní listina, měření a další pracovní obrazovky jdou otevřít jen pro **aktivní** (neukončenou) akci — je to záměrná pojistka, ať vám omylem nepřijde na obrazovku ukončeného, dávno hotového závodu při procházení přes poslední navštívenou trať. Pokud otevřete odkaz na trať z ukončené akce, appka vás vyzve k výběru jiné aktivní akce.
+
+## Upozornění „Datum proběhlo“
+
+Pokud datum akce už uplynulo a žádná její trať vůbec neodstartovala, appka u akce ve Správě zobrazí oranžové upozornění **⚠ Datum proběhlo** — typicky se zapomnělo kliknout na Ukončit akci, nebo se závod nakonec nekonal. Je to jen upozornění, appka sama od sebe nic neskrývá ani nezamyká — pokud se závod jen zpozdil, klidně ho i tak spusťte tlačítkem **Start**. Totéž se automaticky promítne i do veřejných [Výsledků](/napoveda/verejne-vysledky) a [Kiosku](/napoveda/kiosk) (ukážou „UKONČENO“ místo zavádějícího „PŘED STARTEM“) a do [veřejného adresáře](/napoveda/verejne-vysledky#verejny-adresar-vsech-zavodu) na `vysledky.depotime.cz`.

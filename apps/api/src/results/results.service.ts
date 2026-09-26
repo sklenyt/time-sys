@@ -18,6 +18,7 @@ import {
 } from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { formatDuration } from "../common/format-duration";
+import { jeDatumVMinulosti } from "../common/datum-v-minulosti";
 
 type PrihlaskaSPrislusenstvim = Prihlaska & { kategorie: Kategorie; startVlna: StartVlna | null };
 
@@ -111,16 +112,23 @@ export class ResultsService {
 
     const neklasifikovani = polozky.filter((p) => p.casCelkemMs === null);
 
+    // Aspoň jedna startovní vlna musí být odstartovaná — dokud nikdo
+    // neodstartoval, štítek "ŽIVĚ" by lhal (SSE spojení samo o sobě nic
+    // neříká o tom, jestli závod vůbec začal).
+    const trasaOdstartovana = trasa.startVlny.some((v) => v.casStartu !== null);
+    // Stejná autodetekce jako ve veřejném adresáři (events.service.ts,
+    // 2026-09-26): datum akce proplo a tahle trať vůbec neodstartovala —
+    // veřejné Výsledky/Kiosk pak ukazují "UKONČENO" místo zavádějícího
+    // "PŘED STARTEM", i když organizátor nikdy neklikl na Dokončit.
+    const automatickyDokoncena = !trasaOdstartovana && jeDatumVMinulosti(trasa.udalost.datum);
+
     return {
       trasaId,
       trasaNazev: trasa.nazev,
       udalostNazev: trasa.udalost.nazev,
       trasy: trasa.udalost.trasy,
-      trasaDokoncena: trasa.dokoncena,
-      // Aspoň jedna startovní vlna musí být odstartovaná — dokud nikdo
-      // neodstartoval, štítek "ŽIVĚ" by lhal (SSE spojení samo o sobě nic
-      // neříká o tom, jestli závod vůbec začal).
-      trasaOdstartovana: trasa.startVlny.some((v) => v.casStartu !== null),
+      trasaDokoncena: trasa.dokoncena || automatickyDokoncena,
+      trasaOdstartovana,
       klasifikovani,
       neklasifikovani,
     };
