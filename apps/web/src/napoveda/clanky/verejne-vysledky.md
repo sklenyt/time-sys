@@ -3,10 +3,14 @@ titulek: Veřejné výsledky
 sekce: Výsledky
 poradi: 1
 popis: Živá stránka výsledků pro diváky a závodníky — bez přihlášení, bez instalace.
-klicova: vysledky verejne zive divaci hledat filtr export pdf xlsx prepinac tratí
+klicova: vysledky verejne zive divaci hledat filtr export pdf xlsx prepinac tratí adresar probihajici ukoncene
 ---
 
 Každá trať má vlastní veřejnou stránku výsledků na adrese `depotime.cz/vysledky/ID-trasy` (odkaz najdete ve Správě akcí u dané trasy tlačítkem **Registrace**, případně vám ho dá kolega, který trasu zakládal). Stránka nevyžaduje žádné přihlášení a funguje na telefonu i na počítači.
+
+## Veřejný adresář všech závodů
+
+Na [vysledky.depotime.cz](https://vysledky.depotime.cz) je seznam všech veřejně vypsaných akcí — rozdělený na **Právě probíhající / nadcházející** (nahoře, zeleně) a **Ukončené** (dole, ztlumené). O to, do které skupiny akce patří, se stará tlačítko **Ukončit akci**/**Obnovit akci** ve Správě akcí — ukončené akce z adresáře nezmizí, jen se přesunou dolů, ať se stránka časem nezaplní starými závody.
 
 ## Co stránka ukazuje
 

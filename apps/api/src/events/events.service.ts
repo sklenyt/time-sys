@@ -86,13 +86,21 @@ export class EventsService {
     const udalosti = await this.prisma.udalost.findMany({
       where: { verejnyVypis: true },
       orderBy: { datum: "desc" },
-      select: { id: true, nazev: true, datum: true, hesloVysledkuHash: true, trasy: { select: { id: true, nazev: true } } },
+      select: {
+        id: true,
+        nazev: true,
+        datum: true,
+        hesloVysledkuHash: true,
+        ukoncena: true,
+        trasy: { select: { id: true, nazev: true } },
+      },
     });
     return udalosti.map((u) => ({
       id: u.id,
       nazev: u.nazev,
       datum: u.datum,
       vyzadujeHeslo: u.hesloVysledkuHash !== null,
+      ukoncena: u.ukoncena,
       trasy: u.trasy,
     }));
   }

@@ -734,3 +734,45 @@
 .legal-page a {
   color: var(--tape-500);
 }
+
+/* ---------- Veřejný adresář výsledků (ResultsDirectory) ---------- */
+.directory-skupina-nadpis {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--navy-800);
+}
+
+.directory-skupina-nadpis.muted {
+  color: var(--text-secondary);
+}
+
+.directory-tecka {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+  flex: none;
+}
+
+.directory-tecka.zive {
+  background: var(--color-live);
+  box-shadow: 0 0 0 3px rgba(14, 159, 110, 0.18);
+}
+
+.directory-stav-pill {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  flex: none;
+}

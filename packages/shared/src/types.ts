@@ -470,6 +470,8 @@ export interface VerejnaUdalostDto {
   nazev: string;
   datum: string;
   vyzadujeHeslo: boolean;
+  /** Organizátor akci ve Správě akcí označil jako ukončenou — adresář ji zobrazuje odděleně od právě probíhajících. */
+  ukoncena: boolean;
   trasy: { id: string; nazev: string }[];
 }
 
