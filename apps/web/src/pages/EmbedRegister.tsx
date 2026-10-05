@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { RegistrationInfoDto, RegistrationResponseDto } from "@depo/shared";
 import { Pohlavi } from "@depo/shared";
-import { api, API_BASE } from "../lib/api";
+import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
+
+const WEB_URL = "https://depotime.cz";
 
 /**
  * Vložitelný registrační widget (F23 embed) — bezhlavá varianta
@@ -160,7 +162,7 @@ export function EmbedRegister() {
 
       <p style={{ margin: "16px 0 0", fontSize: 10.5, color: "var(--text-secondary)", textAlign: "center" }}>
         Registrace probíhá přes platformu{" "}
-        <a href={API_BASE.replace(/\/api\/v1$/, "")} target="_blank" rel="noreferrer">
+        <a href={WEB_URL} target="_blank" rel="noreferrer">
           Depo
         </a>{" "}
         — závodní časomíra.
@@ -173,7 +175,7 @@ export function EmbedRegister() {
 function EmbedBrandBar() {
   return (
     <a
-      href={API_BASE.replace(/\/api\/v1$/, "")}
+      href={WEB_URL}
       target="_blank"
       rel="noreferrer"
       style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14, textDecoration: "none" }}

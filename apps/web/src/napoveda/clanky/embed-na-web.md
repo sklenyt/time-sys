@@ -19,9 +19,19 @@ Appka kód zobrazí v dialogovém okně, odkud ho zkopírujete (Ctrl+C / Cmd+C) 
 
 ## Jak kód vypadá
 
+Výsledky:
+
 ```html
-<iframe src="https://depotime.cz/embed/vysledky/ID-trasy" width="360" height="480" style="border:0"></iframe>
+<iframe src="https://app.depotime.cz/embed/vysledky/ID-trasy" width="360" height="480" style="border:0"></iframe>
 ```
+
+Registrace (formulář je vyšší, proto výška 640):
+
+```html
+<iframe src="https://app.depotime.cz/embed/registrace/ID-trasy" width="360" height="640" style="border:0"></iframe>
+```
+
+Appka vám kód vygeneruje s vaším konkrétním `ID-trasy`, nemusíte ho psát ručně. Embed registrace ukazuje formulář jen u tratě s otevřenou registrací, jinak návštěvník uvidí hlášku, že je registrace uzavřená. Odkaz „Depo" v embedu vede na depotime.cz.
 
 Šířku a výšku (`width`, `height`) můžete v kódu libovolně upravit podle místa, které máte na svém webu k dispozici — appka uvnitř sama scrolluje, pokud se obsah nevejde.
 

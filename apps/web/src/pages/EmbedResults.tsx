@@ -77,7 +77,7 @@ export function EmbedResults() {
         </p>
       )}
       <p style={{ margin: "8px 6px 0", fontSize: 10, color: "var(--text-secondary)" }}>
-        Živě z <a href={`${API_BASE.replace(/\/api\/v1$/, "")}`}>Depo</a>
+        Živě z <a href="https://depotime.cz">Depo</a>
       </p>
     </div>
   );
