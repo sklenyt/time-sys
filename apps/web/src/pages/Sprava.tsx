@@ -711,6 +711,16 @@ function EmailNahled(props: {
     udalostNazev: props.udalostNazev,
     vlastniText: props.vlastniText,
     platbaCastkaKc: sQr ? castka : null,
+    udaje: {
+      rocnik: 1990,
+      pohlavi: "M",
+      kategorie: "M — Muži",
+      klub: "SK Příklad",
+      email: "jan.novak@example.cz",
+      telefon: "+420 123 456 789",
+      nouzovyKontakt: "Marie Nováková, +420 987 654 321",
+      zdravotniPoznamkaUvedena: true,
+    },
   });
   const srcDoc = `<body style="font-family:sans-serif;font-size:14px;margin:12px">${html.replace("cid:qr-platba", QR_ZASTUPNY)}</body>`;
   return (
@@ -718,9 +728,9 @@ function EmailNahled(props: {
       <div style={{ fontSize: 12.5, marginBottom: 6 }}>
         <strong>Předmět:</strong> {predmet}
       </div>
-      <iframe title="Náhled e-mailu" sandbox="" srcDoc={srcDoc} style={{ width: "100%", height: sQr ? 460 : 220, border: "1px solid var(--line)", borderRadius: 8, background: "#fff" }} />
+      <iframe title="Náhled e-mailu" sandbox="" srcDoc={srcDoc} style={{ width: "100%", height: sQr ? 900 : 660, border: "1px solid var(--line)", borderRadius: 8, background: "#fff" }} />
       <p style={{ color: "var(--text-secondary)", fontSize: 11.5, margin: "4px 0 0" }}>
-        Ukázka s fiktivním jménem. Skutečný QR kód se vygeneruje při odeslání.
+        Ukázka s fiktivními údaji závodníka. Skutečný QR kód se vygeneruje při odeslání.
       </p>
     </div>
   );

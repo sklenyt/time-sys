@@ -251,6 +251,7 @@ model Prihlaska {
   casovaPenalizace  Int?          @map("casova_penalizace_s")
   clenoveDruzstva   Json?         @map("clenove_druzstva")
   zaplaceno         Boolean       @default(false)
+  potvrzeniPlatbyOdeslanoAt DateTime? @map("potvrzeni_platby_odeslano_at")
 
   trasa     Trasa            @relation(fields: [trasaId], references: [id], onDelete: Restrict)
   kategorie Kategorie        @relation(fields: [kategorieId], references: [id], onDelete: Restrict)

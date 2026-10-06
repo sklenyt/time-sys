@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException, ServiceUnavailableException } from "@nestjs/common";
 import { Prisma, type Prihlaska, type Registrace } from "@prisma/client";
 import { parse } from "csv-parse/sync";
 import ExcelJS from "exceljs";
@@ -208,6 +208,42 @@ export class EntriesService {
         },
       }),
     ]);
+
+    return odsifrovatPrihlasku(aktualizovana);
+  }
+
+  /** Ruční odeslání potvrzení platby se startovním číslem (tlačítko ve Startovní listině); čas odeslání se ukládá, odeslat jde opakovaně. */
+  async posliPotvrzeniPlatby(trasaId: string, entryId: string) {
+    const prihlaska = await this.prisma.prihlaska.findFirst({ where: { id: entryId, trasaId } });
+    if (!prihlaska) {
+      throw new NotFoundException("Přihláška nenalezena na této trati");
+    }
+    if (!prihlaska.email) {
+      throw new BadRequestException("Závodník nemá vyplněný e-mail");
+    }
+    if (!prihlaska.zaplaceno) {
+      throw new BadRequestException("Nejdřív označte závodníka jako zaplaceného");
+    }
+    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId }, include: { udalost: true } });
+    if (!trasa) {
+      throw new NotFoundException("Trasa nenalezena");
+    }
+    const odeslano = await this.email.posliPotvrzeniPlatby({
+      komu: prihlaska.email,
+      jmeno: prihlaska.jmeno,
+      prijmeni: prihlaska.prijmeni,
+      startovniCislo: prihlaska.startovniCislo,
+      trasaNazev: trasa.nazev,
+      udalostNazev: trasa.udalost.nazev,
+      platbaCastkaKc: trasa.platbaCastka,
+    });
+    if (!odeslano) {
+      throw new ServiceUnavailableException("E-mail se nepodařilo odeslat (zkontrolujte nastavení SMTP)");
+    }
+    const aktualizovana = await this.prisma.prihlaska.update({
+      where: { id: entryId },
+      data: { potvrzeniPlatbyOdeslanoAt: new Date() },
+    });
     return odsifrovatPrihlasku(aktualizovana);
   }
 
@@ -302,6 +338,7 @@ export class EntriesService {
           // samotnou — e-mail se pošle jen bez QR platby.
         }
       }
+      const kategorie = await this.prisma.kategorie.findUnique({ where: { id: dto.kategorieId } });
       await this.email.posliPotvrzeniRegistrace({
         komu: dto.email,
         jmeno: dto.jmeno,
@@ -309,6 +346,18 @@ export class EntriesService {
         trasaNazev: trasa.nazev,
         udalostNazev: trasa.udalost.nazev,
         vlastniText: trasa.potvrzovaciEmailText,
+        udaje: {
+          rocnik: dto.rocnik,
+          pohlavi: dto.pohlavi,
+          kategorie: kategorie ? `${kategorie.kod} — ${kategorie.nazev}` : null,
+          klub: dto.klub,
+          email: dto.email,
+          telefon: dto.telefon,
+          nouzovyKontakt: dto.nouzovyKontakt,
+          zdravotniPoznamkaUvedena: !!dto.zdravotniPoznamka?.trim(),
+          oznamovaciEmail: dto.oznamovaciEmail,
+          clenoveDruzstva: dto.clenoveDruzstva?.map((c) => `${c.jmeno} ${c.prijmeni}`),
+        },
         platba,
       });
     }

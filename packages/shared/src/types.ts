@@ -93,6 +93,8 @@ export interface Prihlaska {
   stavUkonceni?: StavUkonceni | null;
   clenoveDruzstva?: DruzstvoClen[] | null;
   zaplaceno: boolean;
+  /** Kdy bylo odesláno potvrzení platby se startovním číslem (ISO), jinak null. */
+  potvrzeniPlatbyOdeslanoAt?: string | null;
 }
 
 /** PATCH /routes/:id/entries/:entryId — ruční stav ukončení (F11), zaplaceno a/nebo členové družstva. */

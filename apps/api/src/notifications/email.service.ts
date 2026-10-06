@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { createTransport, Transporter } from "nodemailer";
-import { sestavPotvrzeniRegistrace } from "@depo/shared";
+import { sestavPotvrzeniPlatby, sestavPotvrzeniRegistrace, type UdajeRegistrace } from "@depo/shared";
 
 /**
  * F32 — automatický e-mail rodině/blízké osobě při doběhu závodníka do
@@ -72,6 +72,7 @@ export class EmailService {
     trasaNazev: string;
     udalostNazev: string;
     vlastniText?: string | null;
+    udaje?: UdajeRegistrace;
     platba?: { castkaKc: number; qrPng: Buffer };
   }): Promise<void> {
     const transporter = this.getTransporter();
@@ -86,6 +87,7 @@ export class EmailService {
       trasaNazev: params.trasaNazev,
       udalostNazev: params.udalostNazev,
       vlastniText: params.vlastniText,
+      udaje: params.udaje,
       platbaCastkaKc: params.platba?.castkaKc,
     });
     const attachments: NonNullable<Parameters<Transporter["sendMail"]>[0]>["attachments"] = [];
@@ -104,6 +106,37 @@ export class EmailService {
       });
     } catch (err) {
       this.logger.warn(`Odeslání potvrzení registrace na ${params.komu} selhalo: ${err}`);
+    }
+  }
+
+  /** E-mail s potvrzením platby a startovním číslem — odesílá ho organizátor tlačítkem ve Startovní listině. Vrací, zda se opravdu odeslal. */
+  async posliPotvrzeniPlatby(params: {
+    komu: string;
+    jmeno: string;
+    prijmeni: string;
+    startovniCislo: number;
+    trasaNazev: string;
+    udalostNazev: string;
+    platbaCastkaKc?: number | null;
+  }): Promise<boolean> {
+    const transporter = this.getTransporter();
+    if (!transporter) {
+      this.logger.warn(`SMTP nenakonfigurováno — potvrzení platby pro ${params.komu} nebylo odesláno`);
+      return false;
+    }
+    const potvrzeni = sestavPotvrzeniPlatby(params);
+    try {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM ?? "vysledky@depo.app",
+        to: params.komu,
+        subject: potvrzeni.predmet,
+        text: potvrzeni.text,
+        html: potvrzeni.html,
+      });
+      return true;
+    } catch (err) {
+      this.logger.warn(`Odeslání potvrzení platby na ${params.komu} selhalo: ${err}`);
+      return false;
     }
   }
 

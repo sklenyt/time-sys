@@ -12,6 +12,10 @@ Startovní listina obsahuje osobní údaje (jméno, ročník, e-mail, telefon, k
 
 Ve veřejných výsledcích (i v kiosku a exportech) se vždy zobrazuje jen jméno, klub, kategorie a čas — **e-mail, telefon, nouzový kontakt ani zdravotní poznámka se nikdy nezveřejňují**.
 
+## Souhlas při online registraci
+
+Veřejný [registrační formulář](/napoveda/online-registrace) vyžaduje zaškrtnutí souhlasu se zpracováním osobních údajů s odkazem na zásady. Bez něj nejde registraci odeslat, ani přímým voláním API. Appka si zatím neukládá, kdy byl souhlas udělen — jen zajišťuje, že se bez něj registrace nevytvoří.
+
 ## Právo na výmaz
 
 Pokud po vás závodník požádá o smazání svých osobních údajů, otevřete [Startovní listinu](/napoveda/startovni-listina) dané trati a u jeho jména klikněte na **Smazat údaje** (sloupec GDPR úplně vpravo v tabulce). Appka se zeptá na potvrzení a poté trvale smaže jméno, kontakty i zdravotní poznámku. Naměřený čas v historii zůstává, ale jako anonymní záznam bez vazby na jméno — výsledky a audit log tím neztratí integritu (pořadí ostatních se nezmění).

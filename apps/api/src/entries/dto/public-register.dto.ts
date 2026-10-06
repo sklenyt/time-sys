@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, IsArray, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from "class-validator";
+import { ArrayMaxSize, Equals, IsArray, IsBoolean, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Max, Min, ValidateNested } from "class-validator";
 import { Pohlavi } from "@depo/shared";
 import { TeamMemberDto } from "./team-member.dto";
 
@@ -18,13 +18,13 @@ export class PublicRegisterDto {
   @IsNotEmpty()
   jmeno!: string;
 
-  @IsOptional()
   @IsInt()
-  rocnik?: number;
+  @Min(1900)
+  @Max(new Date().getFullYear())
+  rocnik!: number;
 
-  @IsOptional()
   @IsEnum(Pohlavi)
-  pohlavi?: Pohlavi;
+  pohlavi!: Pohlavi;
 
   @IsOptional()
   @IsString()
@@ -33,9 +33,8 @@ export class PublicRegisterDto {
   @IsUUID()
   kategorieId!: string;
 
-  @IsOptional()
-  @IsString()
-  email?: string;
+  @IsEmail()
+  email!: string;
 
   @IsOptional()
   @IsString()
@@ -53,6 +52,11 @@ export class PublicRegisterDto {
   @IsOptional()
   @IsEmail()
   oznamovaciEmail?: string;
+
+  /** Souhlas se zpracováním osobních údajů — registrace bez něj se nepřijme. */
+  @IsBoolean()
+  @Equals(true, { message: "Pro registraci je nutný souhlas se zpracováním osobních údajů" })
+  souhlasSeZpracovanim!: boolean;
 
   /** Štafeta/družstvo (max 4 členové, legacy vzor viz TeamMemberDto) — nepovinné. */
   @IsOptional()

@@ -31,7 +31,7 @@ Tabulka pod formulářem ukazuje všechny zapsané závodníky — číslo, jmé
 
 ## Zaplaceno
 
-Sloupec **Zaplaceno** je ruční zaškrtávátko pro evidenci úhrady startovného — appka žádnou platbu sama nezpracovává, jen si tu poznamenáte, kdo už zaplatil. Nastavení platby a QR kódu do potvrzovacího e-mailu najdete v [Online registraci](/napoveda/online-registrace#potvrzovaci-e-mail-a-platba-startovneho).
+Sloupec **Zaplaceno** je ruční zaškrtávátko pro evidenci úhrady startovného — appka žádnou platbu sama nezpracovává, jen si tu poznamenáte, kdo už zaplatil. U zaplaceného závodníka s vyplněným e-mailem se pod zaškrtávátkem objeví tlačítko **Odeslat potvrzení** — appka mu pošle e-mail „Platba přijata" s jeho **startovním číslem** (a případně částkou startovného). E-mail se neposílá automaticky při zaškrtnutí, odešle ho až vaše kliknutí. Po odeslání u závodníka uvidíte **datum a čas odeslání** a tlačítko se změní na **Odeslat znovu** (před opakovaným odesláním se appka zeptá). Pokud odeslání selže (např. není nastavený SMTP), appka to ohlásí a čas odeslání se nezapíše. U závodníka bez e-mailu je jen poznámka „bez e-mailu". Nastavení platby a QR kódu do potvrzovacího e-mailu najdete v [Online registraci](/napoveda/online-registrace#potvrzovaci-e-mail-a-platba-startovneho).
 
 ## Export do XLSX
 

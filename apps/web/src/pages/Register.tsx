@@ -29,6 +29,7 @@ export function Register() {
   const [nouzovyKontakt, setNouzovyKontakt] = useState("");
   const [zdravotniPoznamka, setZdravotniPoznamka] = useState("");
   const [oznamovaciEmail, setOznamovaciEmail] = useState("");
+  const [souhlas, setSouhlas] = useState(false);
 
   useEffect(() => {
     if (!routeId) return;
@@ -40,8 +41,12 @@ export function Register() {
 
   async function odeslat(e: React.FormEvent) {
     e.preventDefault();
-    if (!routeId || !prijmeni.trim() || !jmeno.trim() || !kategorieId) {
-      setError("Jméno, příjmení a kategorie jsou povinné.");
+    if (!routeId || !prijmeni.trim() || !jmeno.trim() || !kategorieId || !rocnik || !pohlavi || !email.trim()) {
+      setError("Jméno, příjmení, ročník, pohlaví, kategorie a e-mail jsou povinné.");
+      return;
+    }
+    if (!souhlas) {
+      setError("Pro registraci je nutný souhlas se zpracováním osobních údajů.");
       return;
     }
     setOdesilam(true);
@@ -54,11 +59,12 @@ export function Register() {
         pohlavi: pohlavi || undefined,
         klub: klub.trim() || undefined,
         kategorieId,
-        email: email.trim() || undefined,
+        email: email.trim(),
         telefon: telefon.trim() || undefined,
         nouzovyKontakt: nouzovyKontakt.trim() || undefined,
         zdravotniPoznamka: zdravotniPoznamka.trim() || undefined,
         oznamovaciEmail: oznamovaciEmail.trim() || undefined,
+        souhlasSeZpracovanim: souhlas,
       });
       setHotovo(vysledek);
     } catch (e) {
@@ -118,18 +124,18 @@ export function Register() {
 
       <form onSubmit={odeslat} style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <input placeholder="Jméno" value={jmeno} onChange={(e) => setJmeno(e.target.value)} required style={{ ...inputStyle, flex: 1, minWidth: 140 }} />
-          <input placeholder="Příjmení" value={prijmeni} onChange={(e) => setPrijmeni(e.target.value)} required style={{ ...inputStyle, flex: 1, minWidth: 140 }} />
+          <input placeholder="Jméno *" value={jmeno} onChange={(e) => setJmeno(e.target.value)} required style={{ ...inputStyle, flex: 1, minWidth: 140 }} />
+          <input placeholder="Příjmení *" value={prijmeni} onChange={(e) => setPrijmeni(e.target.value)} required style={{ ...inputStyle, flex: 1, minWidth: 140 }} />
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <input placeholder="Ročník narození" value={rocnik} onChange={(e) => setRocnik(e.target.value)} style={{ ...inputStyle, width: 140 }} />
-          <select value={pohlavi} onChange={(e) => setPohlavi(e.target.value as Pohlavi)} style={{ ...inputStyle, width: 100 }}>
-            <option value="">Pohlaví</option>
+          <input placeholder="Ročník narození *" inputMode="numeric" pattern="(19|20)[0-9]{2}" title="Čtyřmístný rok, např. 1990" required value={rocnik} onChange={(e) => setRocnik(e.target.value)} style={{ ...inputStyle, width: 140 }} />
+          <select value={pohlavi} onChange={(e) => setPohlavi(e.target.value as Pohlavi)} required style={{ ...inputStyle, width: 100 }}>
+            <option value="">Pohlaví *</option>
             <option value={Pohlavi.M}>M</option>
             <option value={Pohlavi.Z}>Ž</option>
           </select>
           <select value={kategorieId} onChange={(e) => setKategorieId(e.target.value)} required style={{ ...inputStyle, flex: 1, minWidth: 160 }}>
-            <option value="">Kategorie (povinné)</option>
+            <option value="">Kategorie *</option>
             {info.kategorie.map((k) => (
               <option key={k.id} value={k.id}>
                 {k.kod} — {k.nazev}
@@ -137,9 +143,9 @@ export function Register() {
             ))}
           </select>
         </div>
-        <input placeholder="Klub (volitelné)" value={klub} onChange={(e) => setKlub(e.target.value)} style={inputStyle} />
+        <input placeholder="Klub" value={klub} onChange={(e) => setKlub(e.target.value)} style={inputStyle} />
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <input placeholder="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: 160 }} />
+          <input placeholder="E-mail *" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: 160 }} />
           <input placeholder="Telefon" value={telefon} onChange={(e) => setTelefon(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: 140 }} />
         </div>
         <input
@@ -149,7 +155,7 @@ export function Register() {
           style={inputStyle}
         />
         <textarea
-          placeholder="Zdravotní poznámka (alergie, léky…) — volitelné"
+          placeholder="Zdravotní poznámka (alergie, léky…)"
           value={zdravotniPoznamka}
           onChange={(e) => setZdravotniPoznamka(e.target.value)}
           rows={2}
@@ -162,6 +168,17 @@ export function Register() {
           onChange={(e) => setOznamovaciEmail(e.target.value)}
           style={inputStyle}
         />
+        <label style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, lineHeight: 1.4 }}>
+          <input type="checkbox" required checked={souhlas} onChange={(e) => setSouhlas(e.target.checked)} style={{ marginTop: 3 }} />
+          <span>
+            Souhlasím se zpracováním osobních údajů za účelem organizace závodu a zveřejnění výsledků (jméno, klub, kategorie, čas). Nouzový kontakt a zdravotní údaje, pokud je uvedu, slouží jen pro mou bezpečnost na trati. Podrobnosti v{" "}
+            <a href="https://depotime.cz/zasady-ochrany-osobnich-udaju" target="_blank" rel="noreferrer">
+              zásadách ochrany osobních údajů
+            </a>
+            . *
+          </span>
+        </label>
+        <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "0 0 2px" }}>* povinné údaje</p>
         <button type="submit" disabled={odesilam} className="btn-pill primary" style={{ padding: "12px 16px", fontSize: 15, justifyContent: "center" }}>
           {odesilam ? "Odesílám…" : "Registrovat se"}
         </button>

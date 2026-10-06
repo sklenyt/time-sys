@@ -72,6 +72,14 @@ export class EntriesController {
     return this.entries.update(routeId, entryId, dto, user.id);
   }
 
+  /** Odeslání e-mailu s potvrzením platby a startovním číslem — vědomě ručně, ne automaticky při zaškrtnutí. */
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Post(":entryId/potvrzeni-platby")
+  @HttpCode(HttpStatus.OK)
+  posliPotvrzeniPlatby(@Param("routeId", ParseUUIDPipe) routeId: string, @Param("entryId", ParseUUIDPipe) entryId: string) {
+    return this.entries.posliPotvrzeniPlatby(routeId, entryId);
+  }
+
   /**
    * Právo na výmaz (GDPR, docs/08-security.md §8.7) — přihláška se smaže
    * celá, ale `zaznam_udalosti` zůstává (jen se odpojí `prihlaska_id`),

@@ -471,6 +471,21 @@ export function StartList() {
     }
   }
 
+  async function poslatPotvrzeniPlatby(entry: { id: string; jmeno: string; prijmeni: string; email?: string | null; potvrzeniPlatbyOdeslanoAt?: string | null }) {
+    if (!routeId) return;
+    const znovu = !!entry.potvrzeniPlatbyOdeslanoAt;
+    const otazka = znovu
+      ? `Potvrzení už bylo odesláno. Odeslat ${entry.jmeno} ${entry.prijmeni} (${entry.email}) znovu?`
+      : `Odeslat ${entry.jmeno} ${entry.prijmeni} (${entry.email}) potvrzení platby se startovním číslem?`;
+    if (!window.confirm(otazka)) return;
+    try {
+      await api.post(`/routes/${routeId}/entries/${entry.id}/potvrzeni-platby`, {});
+      reload();
+    } catch (e) {
+      setError(chybaZeServeru(e, "E-mail se nepodařilo odeslat"));
+    }
+  }
+
   async function zamitnoutRegistraci(registraceId: string, jmeno: string) {
     if (!routeId) return;
     if (!window.confirm(`Opravdu zamítnout registraci "${jmeno}"? Nevznikne z ní přihláška.`)) return;
@@ -831,6 +846,21 @@ export function StartList() {
                       onChange={(ev) => nastavitZaplaceno(e.id, ev.target.checked)}
                     />
                   </label>
+                  {e.zaplaceno && !e.email && (
+                    <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>bez e-mailu</div>
+                  )}
+                  {e.zaplaceno && e.email && (
+                    <div style={{ fontSize: 11.5, marginTop: 4 }}>
+                      {e.potvrzeniPlatbyOdeslanoAt && (
+                        <div style={{ color: "var(--text-secondary)" }}>
+                          ✓ Odesláno {new Date(e.potvrzeniPlatbyOdeslanoAt).toLocaleString("cs-CZ", { dateStyle: "short", timeStyle: "short" })}
+                        </div>
+                      )}
+                      <button onClick={() => poslatPotvrzeniPlatby(e)} className="btn-pill" style={{ padding: "3px 8px", fontSize: 11.5 }}>
+                        {e.potvrzeniPlatbyOdeslanoAt ? "Odeslat znovu" : "Odeslat potvrzení"}
+                      </button>
+                    </div>
+                  )}
                 </td>
                 <td>
                   <select

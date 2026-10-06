@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { NotFoundException } from "@nestjs/common";
+import { BadRequestException, NotFoundException, ServiceUnavailableException } from "@nestjs/common";
 import { Pohlavi, StavUkonceni } from "@depo/shared";
 import { EntriesService } from "./entries.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -12,25 +12,25 @@ describe("EntriesService", () => {
   let prisma: {
     prihlaska: { findFirst: jest.Mock; create: jest.Mock; update: jest.Mock };
     registrace: { create: jest.Mock; findFirst: jest.Mock; findMany: jest.Mock; delete: jest.Mock };
-    kategorie: { findMany: jest.Mock };
+    kategorie: { findMany: jest.Mock; findUnique: jest.Mock };
     trasa: { findUnique: jest.Mock };
     auditLog: { create: jest.Mock };
     $transaction: jest.Mock;
   };
   let categories: { navrhniKategorii: jest.Mock };
-  let email: { posliPotvrzeniRegistrace: jest.Mock };
+  let email: { posliPotvrzeniRegistrace: jest.Mock; posliPotvrzeniPlatby: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
       prihlaska: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn() },
       registrace: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), delete: jest.fn() },
-      kategorie: { findMany: jest.fn().mockResolvedValue([]) },
+      kategorie: { findMany: jest.fn().mockResolvedValue([]), findUnique: jest.fn().mockResolvedValue({ kod: "MUZ", nazev: "Muži" }) },
       trasa: { findUnique: jest.fn().mockResolvedValue({ typStartu: "VLNOVY" }) },
       auditLog: { create: jest.fn().mockResolvedValue({}) },
       $transaction: jest.fn(),
     };
     categories = { navrhniKategorii: jest.fn() };
-    email = { posliPotvrzeniRegistrace: jest.fn() };
+    email = { posliPotvrzeniRegistrace: jest.fn(), posliPotvrzeniPlatby: jest.fn() };
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -95,6 +95,13 @@ describe("EntriesService", () => {
 
       const [{ data }] = prisma.auditLog.create.mock.calls[0];
       expect(data.puvodniHodnota).toMatchObject({ trasaId: "trasa-42" });
+    });
+
+    it("does not e-mail anything when Zaplaceno is ticked (the e-mail is sent only by the explicit button)", async () => {
+      prisma.prihlaska.findFirst.mockResolvedValue({ id: "p1", zaplaceno: false, email: "a@b.cz", clenoveDruzstva: null });
+      prisma.$transaction.mockResolvedValue([{ id: "p1", zaplaceno: true }, {}]);
+      await service.update("trasa-1", "p1", { zaplaceno: true }, "user-1");
+      expect(email.posliPotvrzeniPlatby).not.toHaveBeenCalled();
     });
 
     it("is a no-op (no transaction) when nothing actually changes", async () => {
@@ -219,7 +226,12 @@ describe("EntriesService", () => {
       } as never);
 
       expect(email.posliPotvrzeniRegistrace).toHaveBeenCalledWith(
-        expect.objectContaining({ komu: "petr@example.com", jmeno: "Petr", prijmeni: "Novák" })
+        expect.objectContaining({
+          komu: "petr@example.com",
+          jmeno: "Petr",
+          prijmeni: "Novák",
+          udaje: expect.objectContaining({ kategorie: "MUZ — Muži", zdravotniPoznamkaUvedena: false }),
+        })
       );
     });
   });
@@ -263,6 +275,46 @@ describe("EntriesService", () => {
 
       expect(prisma.registrace.delete).toHaveBeenCalledWith({ where: { id: "reg-1" } });
       expect(prisma.prihlaska.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("posliPotvrzeniPlatby (ruční odeslání potvrzení platby)", () => {
+    const prihlaska = { id: "p1", zaplaceno: true, email: "petr@example.com", jmeno: "Petr", prijmeni: "Novák", startovniCislo: 42 };
+
+    beforeEach(() => {
+      prisma.trasa.findUnique.mockResolvedValue({ nazev: "Trasa A", platbaCastka: 300, udalost: { nazev: "Podzimní běh" } });
+      prisma.prihlaska.update.mockResolvedValue({ ...prihlaska, potvrzeniPlatbyOdeslanoAt: new Date() });
+    });
+
+    it("sends the e-mail with the start number and stores the time of sending", async () => {
+      prisma.prihlaska.findFirst.mockResolvedValue(prihlaska);
+      email.posliPotvrzeniPlatby.mockResolvedValue(true);
+
+      await service.posliPotvrzeniPlatby("trasa-1", "p1");
+
+      expect(email.posliPotvrzeniPlatby).toHaveBeenCalledWith(
+        expect.objectContaining({ komu: "petr@example.com", startovniCislo: 42, platbaCastkaKc: 300 })
+      );
+      expect(prisma.prihlaska.update).toHaveBeenCalledWith({
+        where: { id: "p1" },
+        data: { potvrzeniPlatbyOdeslanoAt: expect.any(Date) },
+      });
+    });
+
+    it("rejects an entry without e-mail or not marked as paid", async () => {
+      prisma.prihlaska.findFirst.mockResolvedValue({ ...prihlaska, email: null });
+      await expect(service.posliPotvrzeniPlatby("trasa-1", "p1")).rejects.toBeInstanceOf(BadRequestException);
+      prisma.prihlaska.findFirst.mockResolvedValue({ ...prihlaska, zaplaceno: false });
+      await expect(service.posliPotvrzeniPlatby("trasa-1", "p1")).rejects.toBeInstanceOf(BadRequestException);
+      expect(email.posliPotvrzeniPlatby).not.toHaveBeenCalled();
+    });
+
+    it("does not store a sending time when the e-mail could not be sent", async () => {
+      prisma.prihlaska.findFirst.mockResolvedValue(prihlaska);
+      email.posliPotvrzeniPlatby.mockResolvedValue(false);
+
+      await expect(service.posliPotvrzeniPlatby("trasa-1", "p1")).rejects.toBeInstanceOf(ServiceUnavailableException);
+      expect(prisma.prihlaska.update).not.toHaveBeenCalled();
     });
   });
 });
