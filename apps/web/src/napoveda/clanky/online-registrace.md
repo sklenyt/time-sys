@@ -20,7 +20,7 @@ Ve **Správě akcí** u dané trati klikněte na **Registrace** — appka ukáž
 - E-mail, telefon — volitelné kontaktní údaje.
 - Nouzový kontakt — jméno a telefon osoby pro případ nouze na trati.
 - Zdravotní poznámka — volitelné (alergie, léky apod.).
-- E-mail pro oznámení o doběhu — pokud ho závodník vyplní, přijde na něj automatický e-mail ve chvíli, kdy proběhne cílem (hodí se pro rodinu/blízké, kteří čekají doma).
+- E-mail pro oznámení o dojezdu — pokud ho závodník vyplní, přijde na něj automatický e-mail ve chvíli, kdy proběhne cílem (hodí se pro rodinu/blízké, kteří čekají doma).
 
 Startovní číslo se nepřiděluje automaticky — odeslaný formulář vytvoří jen **čekající registraci**. Číslo jí musíte ručně přidělit ve [Startovní listině](/napoveda/startovni-listina) v sekci „K přidělení", teprve pak se závodník počítá do listiny, měření i výsledků. Díky tomu máte plnou kontrolu nad číslováním a můžete registraci před přidělením čísla i zamítnout (např. u duplicit nebo spamu).
 

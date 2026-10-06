@@ -156,7 +156,7 @@ export function Register() {
           style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
         />
         <input
-          placeholder="E-mail pro oznámení o doběhu"
+          placeholder="E-mail pro oznámení o dojezdu"
           type="email"
           value={oznamovaciEmail}
           onChange={(e) => setOznamovaciEmail(e.target.value)}
