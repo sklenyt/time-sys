@@ -23,7 +23,7 @@ Bez alespoň jedné kategorie nejde zapsat závodníka do listiny. Otevřete **S
 
 ## 3. Zapište závodníky
 
-Ve stejné sekci **Zápis na místě** vyplňte startovní číslo, jméno, příjmení, případně ročník a pohlaví (kategorie se pak navrhne sama) a klikněte na **Přidat do listiny**. Máte-li seznam v Excelu, rychlejší je [Import z CSV](/napoveda/import-csv) — stáhnete si šablonu, doplníte řádky a nahrajete celý soubor najednou.
+V sekci **Zapsat závodníka** vyplňte povinné údaje označené hvězdičkou (startovní číslo, jméno, příjmení, ročník, pohlaví, kategorie a e-mail; kategorie se po zadání ročníku a pohlaví navrhne sama) a klikněte na **Přidat do listiny**. Máte-li seznam v Excelu, rychlejší je [Import z CSV](/napoveda/import-csv) — stáhnete si šablonu, doplníte řádky a nahrajete celý soubor najednou.
 
 ## 4. Spusťte start
 

@@ -144,13 +144,13 @@ describe("Depo API (e2e)", () => {
       await api()
         .post(`/api/v1/routes/${routeId}/entries`)
         .set("Authorization", `Bearer ${accessToken}`)
-        .send({ startovniCislo: 1, prijmeni: "Novák", jmeno: "Petr", kategorieId })
+        .send({ startovniCislo: 1, prijmeni: "Novák", jmeno: "Petr", kategorieId, rocnik: 1990, pohlavi: "M", email: "test@example.com" })
         .expect(201);
 
       await api()
         .post(`/api/v1/routes/${routeId}/entries`)
         .set("Authorization", `Bearer ${accessToken}`)
-        .send({ startovniCislo: 2, prijmeni: "Svoboda", jmeno: "Jiří", kategorieId })
+        .send({ startovniCislo: 2, prijmeni: "Svoboda", jmeno: "Jiří", kategorieId, rocnik: 1990, pohlavi: "M", email: "test@example.com" })
         .expect(201);
     });
 
@@ -258,7 +258,7 @@ describe("Depo API (e2e)", () => {
           const entry = await api()
             .post(`/api/v1/routes/${routeId}/entries`)
             .set("Authorization", `Bearer ${accessToken}`)
-            .send({ startovniCislo: 90, prijmeni: "Diskvalifikovaný", jmeno: "Karel", kategorieId })
+            .send({ startovniCislo: 90, prijmeni: "Diskvalifikovaný", jmeno: "Karel", kategorieId, rocnik: 1990, pohlavi: "M", email: "test@example.com" })
             .expect(201);
 
           const aktualizovana = await api()
@@ -300,7 +300,7 @@ describe("Depo API (e2e)", () => {
           const entry = await api()
             .post(`/api/v1/routes/${routeId}/entries`)
             .set("Authorization", `Bearer ${accessToken}`)
-            .send({ startovniCislo: 91, prijmeni: "Štafeta", jmeno: "Testovací", kategorieId, clenoveDruzstva })
+            .send({ startovniCislo: 91, prijmeni: "Štafeta", jmeno: "Testovací", kategorieId, rocnik: 1990, pohlavi: "M", email: "test@example.com", clenoveDruzstva })
             .expect(201);
           expect(entry.body.clenoveDruzstva).toHaveLength(2);
 

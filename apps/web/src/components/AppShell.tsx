@@ -31,7 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "prehled", label: "Přehled akce", href: () => "/dashboard" },
   { key: "sprava", label: "Správa akcí", href: () => "/sprava" },
   { key: "mereni", label: "Měření", needsRoute: true, href: (routeId) => `/mereni/${routeId}` },
-  { key: "listina", label: "Startovní listina", needsRoute: true, href: (routeId) => `/startovni-listina/${routeId}` },
+  { key: "listina", label: "Startovní listina", needsEvent: true, href: (_r, eventId) => `/startovni-listina/akce/${eventId}` },
   { key: "cipy", label: "Čipy", needsRoute: true, href: (routeId) => `/cipy/${routeId}` },
   { key: "bezi", label: "Kdo ještě běží", needsRoute: true, href: (routeId) => `/kdo-bezi/${routeId}` },
   {
@@ -161,15 +161,25 @@ interface AppShellProps {
   active: NavKey;
   routeId?: string;
   eventId?: string;
+  /** Pohled na celou akci (záložka „Všechny tratě") — routeId se pak nepoužívá. */
+  vsechnyTrate?: boolean;
   children: React.ReactNode;
 }
+
+/** Odkaz záložky konkrétní trati — Startovní listina má vlastní adresu pro trať, ostatní obrazovky berou href z menu. */
+function hrefZalozkyTrate(key: NavKey, trasaId: string, eventId: string): string {
+  return key === "listina" ? `/startovni-listina/${trasaId}` : NAV_BY_KEY.get(key)!.href(trasaId, eventId);
+}
+
+/** Obrazovky vázané na trať, kde se nad obsahem zobrazují záložky tratí akce. */
+const NAV_SE_ZALOZKAMI: NavKey[] = ["listina", "cipy", "bezi", "kolize", "audit"];
 
 /**
  * Sdílený shell organizátorských obrazovek — tmavý postranní nav podle
  * docs/07-ui-mockups.md §7.12. Měření a Kiosek si drží vlastní shell bez
  * téhle navigace (§7.3), tam se AppShell nepoužívá.
  */
-export function AppShell({ active, routeId, eventId, children }: AppShellProps) {
+export function AppShell({ active, routeId, eventId, vsechnyTrate, children }: AppShellProps) {
   const navigate = useNavigate();
   const [user, setUser] = useState<AuthUserDto | null>(sdilenyUzivatel);
   const [poradi, setPoradi] = useState<NavKey[]>(
@@ -207,17 +217,27 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
   // bez fallbacku na naposledy navštívenou by z nich nešlo proklikat menu
   // a uživatel by se musel pokaždé vracet na Přehled akce.
   const posledniKontext = nacistPosledniKontext();
-  const efektivniRouteId = routeId ?? posledniKontext.routeId;
   const efektivniEventId = eventId ?? posledniKontext.eventId;
+  const skupinaAkce =
+    prehledTrati?.find((g) => g.trasy.some((t) => t.id === routeId)) ??
+    prehledTrati?.find((g) => g.udalost.id === efektivniEventId);
+  // Uložená trať z jiné akce by v menu vedla na cizí trať — vezme se první trať aktuální akce.
+  const ulozenaRouteId = posledniKontext.routeId;
+  const efektivniRouteId =
+    routeId ??
+    (skupinaAkce && !skupinaAkce.trasy.some((t) => t.id === ulozenaRouteId) ? skupinaAkce.trasy[0]?.id : ulozenaRouteId);
 
-  /** Přepnutí trati: zapamatuje ji jako aktuální kontext a stránku vázanou na trať otevře pro novou trať. */
-  function prepnoutTrat(novaRouteId: string) {
-    const skupina = prehledTrati?.find((g) => g.trasy.some((t) => t.id === novaRouteId));
+  /** Přepnutí akce: zapamatuje ji a stránku vázanou na trať otevře pro novou akci (listina rovnou pro celou akci). */
+  function prepnoutAkci(novaEventId: string) {
+    const skupina = prehledTrati?.find((g) => g.udalost.id === novaEventId);
     if (!skupina) return;
-    ulozitPosledniKontext(novaRouteId, skupina.udalost.id);
+    const prvniTrasa = skupina.trasy[0];
+    ulozitPosledniKontext(prvniTrasa?.id, novaEventId);
     const aktivniPolozka = NAV_BY_KEY.get(active);
-    if (aktivniPolozka?.needsRoute && !aktivniPolozka.external) {
-      navigate(aktivniPolozka.href(novaRouteId, skupina.udalost.id));
+    if (active === "listina") {
+      navigate(`/startovni-listina/akce/${novaEventId}`);
+    } else if (aktivniPolozka?.needsRoute && !aktivniPolozka.external && prvniTrasa) {
+      navigate(aktivniPolozka.href(prvniTrasa.id, novaEventId));
     } else {
       setVerzeKontextu((v) => v + 1);
     }
@@ -264,29 +284,20 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
           <img src="/depo-mark.svg" alt="" width={26} height={26} />
           <span className="app-sidebar-brand-name">Depo</span>
         </div>
-        {prehledTrati && prehledTrati.some((g) => g.trasy.length > 0) && (
+        {prehledTrati && prehledTrati.length > 1 && (
           <div className="app-trasa-prepinac">
-            <label htmlFor="app-trasa-select">Akce a trať</label>
+            <label htmlFor="app-akce-select">Akce</label>
             <select
-              id="app-trasa-select"
-              value={efektivniRouteId ?? ""}
-              onChange={(e) => prepnoutTrat(e.target.value)}
+              id="app-akce-select"
+              value={skupinaAkce?.udalost.id ?? ""}
+              onChange={(e) => prepnoutAkci(e.target.value)}
             >
-              {!efektivniRouteId && <option value="">Vyberte trať…</option>}
-              {efektivniRouteId && !prehledTrati.some((g) => g.trasy.some((t) => t.id === efektivniRouteId)) && (
-                <option value={efektivniRouteId}>(trať z ukončené akce)</option>
-              )}
-              {prehledTrati
-                .filter((g) => g.trasy.length > 0)
-                .map((g) => (
-                  <optgroup key={g.udalost.id} label={g.udalost.nazev}>
-                    {g.trasy.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.nazev}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
+              {!skupinaAkce && <option value="">Vyberte akci…</option>}
+              {prehledTrati.map((g) => (
+                <option key={g.udalost.id} value={g.udalost.id}>
+                  {g.udalost.nazev}
+                </option>
+              ))}
             </select>
           </div>
         )}
@@ -354,7 +365,38 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
           </button>
         </div>
       </aside>
-      <main className="app-main">{children}</main>
+      <main className="app-main">
+        {NAV_SE_ZALOZKAMI.includes(active) && skupinaAkce && skupinaAkce.trasy.length > 0 && (
+          <div className="app-trat-zalozky" role="tablist" aria-label={`Tratě akce ${skupinaAkce.udalost.nazev}`}>
+            <span className="app-trat-akce">{skupinaAkce.udalost.nazev}</span>
+            {active === "listina" && (
+              <Link
+                role="tab"
+                aria-selected={!!vsechnyTrate}
+                className={`app-trat-zalozka${vsechnyTrate ? " active" : ""}`}
+                to={`/startovni-listina/akce/${skupinaAkce.udalost.id}`}
+              >
+                Všechny tratě
+              </Link>
+            )}
+            {skupinaAkce.trasy.map((t) => {
+              const jeAktivni = !vsechnyTrate && t.id === routeId;
+              return (
+                <Link
+                  key={t.id}
+                  role="tab"
+                  aria-selected={jeAktivni}
+                  className={`app-trat-zalozka${jeAktivni ? " active" : ""}`}
+                  to={hrefZalozkyTrate(active, t.id, skupinaAkce.udalost.id)}
+                >
+                  {t.nazev}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+        {children}
+      </main>
     </div>
   );
 }

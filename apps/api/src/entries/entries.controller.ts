@@ -19,7 +19,7 @@ import type { Response } from "express";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Role } from "@depo/shared";
 import { EntriesService } from "./entries.service";
-import { CreateEntryDto } from "./dto/create-entry.dto";
+import { CreateEntryManualDto } from "./dto/create-entry.dto";
 import { UpdateEntryDto } from "./dto/update-entry.dto";
 import { PublicRegisterDto } from "./dto/public-register.dto";
 import { PairChipDto } from "./dto/pair-chip.dto";
@@ -38,7 +38,7 @@ export class EntriesController {
 
   @Roles(Role.ADMIN, Role.ORGANIZATOR)
   @Post()
-  create(@Param("routeId", ParseUUIDPipe) routeId: string, @Body() dto: CreateEntryDto) {
+  create(@Param("routeId", ParseUUIDPipe) routeId: string, @Body() dto: CreateEntryManualDto) {
     return this.entries.create(routeId, dto);
   }
 

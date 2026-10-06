@@ -213,11 +213,13 @@ function ChipBunka({
 
 function PridelitCisloRadek({
   routeId,
+  trasaNazev,
   registrace,
   onAssigned,
   onRejected,
 }: {
   routeId: string;
+  trasaNazev?: string;
   registrace: RegistraceDto;
   onAssigned: () => void;
   onRejected: (id: string, jmeno: string) => void;
@@ -242,6 +244,11 @@ function PridelitCisloRadek({
 
   return (
     <tr style={{ borderBottom: "1px solid var(--line)" }}>
+      {trasaNazev && (
+        <td style={{ fontFamily: "var(--font-ui)" }}>
+          <span className="zapis-trat-stitek">{trasaNazev}</span>
+        </td>
+      )}
       <td style={{ fontFamily: "var(--font-ui)" }}>
         {registrace.prijmeni} {registrace.jmeno}
       </td>
@@ -283,22 +290,30 @@ const STAV_LABEL: Record<StavUkonceni, string> = {
 const PRAZDNY_CLEN: DruzstvoClen = { prijmeni: "", jmeno: "", rocnik: undefined, klub: undefined };
 
 export function StartList() {
-  const { routeId } = useParams<{ routeId: string }>();
-  const [trasa, setTrasa] = useState<(Trasa & { kategorie: Kategorie[] }) | null>(null);
+  const { routeId, eventId: eventIdParam } = useParams<{ routeId?: string; eventId?: string }>();
+  const [trasy, setTrasy] = useState<(Trasa & { kategorie: Kategorie[] })[]>([]);
   const [udalost, setUdalost] = useState<Udalost | null>(null);
   const [entries, setEntries] = useState<(Prihlaska & { kategorie?: Kategorie; cip?: Cip | null })[]>([]);
   const [registrace, setRegistrace] = useState<RegistraceDto[]>([]);
+  const [nacteno, setNacteno] = useState(false);
   const [catKod, setCatKod] = useState("");
   const [catNazev, setCatNazev] = useState("");
   const [catPohlavi, setCatPohlavi] = useState<Pohlavi>(Pohlavi.M);
   const [catRocnikOd, setCatRocnikOd] = useState("");
   const [catRocnikDo, setCatRocnikDo] = useState("");
+  const [formTrasaId, setFormTrasaId] = useState(routeId ?? "");
   const [cislo, setCislo] = useState("");
   const [prijmeni, setPrijmeni] = useState("");
   const [jmeno, setJmeno] = useState("");
   const [rocnik, setRocnik] = useState("");
   const [pohlavi, setPohlavi] = useState<Pohlavi | "">("");
   const [kategorieId, setKategorieId] = useState("");
+  const [klub, setKlub] = useState("");
+  const [email, setEmail] = useState("");
+  const [telefon, setTelefon] = useState("");
+  const [nouzovyKontakt, setNouzovyKontakt] = useState("");
+  const [zdravotniPoznamka, setZdravotniPoznamka] = useState("");
+  const [oznamovaciEmail, setOznamovaciEmail] = useState("");
   const [navrzenaKategorieId, setNavrzenaKategorieId] = useState<string | null>(null);
   const [druzstvo, setDruzstvo] = useState(false);
   const [clenove, setClenove] = useState<DruzstvoClen[]>([{ ...PRAZDNY_CLEN }]);
@@ -308,36 +323,63 @@ export function StartList() {
   const [pridatKategorii, setPridatKategorii] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const vsechny = !routeId;
+  const trasa = routeId ? trasy.find((t) => t.id === routeId) ?? null : null;
+  const trasaPodleId = (id: string) => trasy.find((t) => t.id === id);
+  const nazevTrase = (id: string) => trasaPodleId(id)?.nazev ?? "—";
+  const formTrasa = trasaPodleId(formTrasaId) ?? null;
+
   async function reload() {
-    if (!routeId) return;
     setError(null);
     try {
-      const t = await api.get<Trasa & { kategorie: Kategorie[] }>(`/routes/${routeId}`);
-      setTrasa(t);
-      const u = await api.get<Udalost>(`/events/${t.udalostId}`);
+      let udalostId = eventIdParam;
+      if (routeId) {
+        const t = await api.get<Trasa>(`/routes/${routeId}`);
+        udalostId = t.udalostId;
+      }
+      if (!udalostId) return;
+      const u = await api.get<Udalost>(`/events/${udalostId}`);
       setUdalost(u);
-      if (u.ukoncena) return; // ukončená akce — listina se nenačítá, viz VyberAktivniAkce níže
-      const e = await api.get<(Prihlaska & { kategorie?: Kategorie; cip?: Cip | null })[]>(
-        `/routes/${routeId}/entries`
+      if (u.ukoncena) {
+        setNacteno(true);
+        return; // ukončená akce — listina se nenačítá, viz VyberAktivniAkce níže
+      }
+      const seznam = await api.get<Trasa[]>(`/events/${udalostId}/routes`);
+      const podrobnosti = await Promise.all(seznam.map((t) => api.get<Trasa & { kategorie: Kategorie[] }>(`/routes/${t.id}`)));
+      setTrasy(podrobnosti);
+      const cile = routeId ? [routeId] : seznam.map((t) => t.id);
+      const data = await Promise.all(
+        cile.map(async (id) => ({
+          prihlasky: await api.get<(Prihlaska & { kategorie?: Kategorie; cip?: Cip | null })[]>(`/routes/${id}/entries`),
+          cekajici: await api.get<RegistraceDto[]>(`/routes/${id}/registrations`),
+        }))
       );
-      setEntries(e);
-      const r = await api.get<RegistraceDto[]>(`/routes/${routeId}/registrations`);
-      setRegistrace(r);
+      setEntries(data.flatMap((d) => d.prihlasky));
+      setRegistrace(data.flatMap((d) => d.cekajici));
+      setNacteno(true);
     } catch (e) {
       setError(chybaZeServeru(e, "Chyba načítání"));
     }
   }
 
   useEffect(() => {
+    setNacteno(false);
+    setFormTrasaId(routeId ?? "");
+    setKategorieId("");
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeId]);
+  }, [routeId, eventIdParam]);
+
+  // Akce s jedinou tratí: v pohledu "Všechny tratě" není co vybírat.
+  useEffect(() => {
+    if (!routeId && !formTrasaId && trasy.length === 1) setFormTrasaId(trasy[0].id);
+  }, [routeId, formTrasaId, trasy]);
 
   // F03 — automatický návrh kategorie podle ročníku/pohlaví. Jen našeptává:
   // kategorii přednastaví, ale pole zůstává editovatelné a organizátor musí
   // zápis vždy sám odeslat, nic se neuloží potichu.
   useEffect(() => {
-    if (!routeId || !rocnik || !pohlavi) {
+    if (!formTrasaId || !rocnik || !pohlavi) {
       setNavrzenaKategorieId(null);
       return;
     }
@@ -345,7 +387,7 @@ export function StartList() {
     if (Number.isNaN(rocnikCislo)) return;
     let zruseno = false;
     api
-      .get<Kategorie | null>(`/routes/${routeId}/categories/suggest?rocnik=${rocnikCislo}&pohlavi=${pohlavi}`)
+      .get<Kategorie | null>(`/routes/${formTrasaId}/categories/suggest?rocnik=${rocnikCislo}&pohlavi=${pohlavi}`)
       .then((navrh) => {
         if (zruseno || !navrh) return;
         setNavrzenaKategorieId(navrh.id);
@@ -357,7 +399,7 @@ export function StartList() {
     return () => {
       zruseno = true;
     };
-  }, [routeId, rocnik, pohlavi]);
+  }, [formTrasaId, rocnik, pohlavi]);
 
   async function createCategory() {
     if (!routeId || !catKod.trim() || !catNazev.trim()) return;
@@ -419,21 +461,27 @@ export function StartList() {
   }
 
   async function createEntry() {
-    if (!routeId || !cislo || !prijmeni.trim() || !jmeno.trim() || !kategorieId) {
-      setError("Startovní číslo, jméno, příjmení a kategorie jsou povinné.");
+    if (!formTrasaId || !cislo || !prijmeni.trim() || !jmeno.trim() || !rocnik || !pohlavi || !kategorieId || !email.trim()) {
+      setError("Trať, startovní číslo, jméno, příjmení, ročník, pohlaví, kategorie a e-mail jsou povinné.");
       return;
     }
     const platniClenove = druzstvo
       ? clenove.filter((c) => c.prijmeni.trim() && c.jmeno.trim()).map((c) => ({ ...c, prijmeni: c.prijmeni.trim(), jmeno: c.jmeno.trim() }))
       : undefined;
     try {
-      await api.post(`/routes/${routeId}/entries`, {
+      await api.post(`/routes/${formTrasaId}/entries`, {
         startovniCislo: Number(cislo),
-        prijmeni,
-        jmeno,
+        prijmeni: prijmeni.trim(),
+        jmeno: jmeno.trim(),
         kategorieId,
-        rocnik: rocnik ? Number(rocnik) : undefined,
-        pohlavi: pohlavi || undefined,
+        rocnik: Number(rocnik),
+        pohlavi,
+        klub: klub.trim() || undefined,
+        email: email.trim(),
+        telefon: telefon.trim() || undefined,
+        nouzovyKontakt: nouzovyKontakt.trim() || undefined,
+        zdravotniPoznamka: zdravotniPoznamka.trim() || undefined,
+        oznamovaciEmail: oznamovaciEmail.trim() || undefined,
         clenoveDruzstva: platniClenove?.length ? platniClenove : undefined,
       });
       setCislo("");
@@ -442,6 +490,12 @@ export function StartList() {
       setRocnik("");
       setPohlavi("");
       setKategorieId("");
+      setKlub("");
+      setEmail("");
+      setTelefon("");
+      setNouzovyKontakt("");
+      setZdravotniPoznamka("");
+      setOznamovaciEmail("");
       setNavrzenaKategorieId(null);
       setDruzstvo(false);
       setClenove([{ ...PRAZDNY_CLEN }]);
@@ -451,46 +505,42 @@ export function StartList() {
     }
   }
 
-  async function nastavitStav(entryId: string, stav: StavUkonceni | null) {
-    if (!routeId) return;
+  async function nastavitStav(trasaId: string, entryId: string, stav: StavUkonceni | null) {
     try {
-      await api.patch(`/routes/${routeId}/entries/${entryId}`, { stavUkonceni: stav });
+      await api.patch(`/routes/${trasaId}/entries/${entryId}`, { stavUkonceni: stav });
       reload();
     } catch (e) {
       setError(chybaZeServeru(e, "Nastavení stavu se nezdařilo"));
     }
   }
 
-  async function nastavitZaplaceno(entryId: string, zaplaceno: boolean) {
-    if (!routeId) return;
+  async function nastavitZaplaceno(trasaId: string, entryId: string, zaplaceno: boolean) {
     try {
-      await api.patch(`/routes/${routeId}/entries/${entryId}`, { zaplaceno });
+      await api.patch(`/routes/${trasaId}/entries/${entryId}`, { zaplaceno });
       reload();
     } catch (e) {
       setError(chybaZeServeru(e, "Nastavení platby se nezdařilo"));
     }
   }
 
-  async function poslatPotvrzeniPlatby(entry: { id: string; jmeno: string; prijmeni: string; email?: string | null; potvrzeniPlatbyOdeslanoAt?: string | null }) {
-    if (!routeId) return;
+  async function poslatPotvrzeniPlatby(entry: { id: string; trasaId: string; jmeno: string; prijmeni: string; email?: string | null; potvrzeniPlatbyOdeslanoAt?: string | null }) {
     const znovu = !!entry.potvrzeniPlatbyOdeslanoAt;
     const otazka = znovu
       ? `Potvrzení už bylo odesláno. Odeslat ${entry.jmeno} ${entry.prijmeni} (${entry.email}) znovu?`
       : `Odeslat ${entry.jmeno} ${entry.prijmeni} (${entry.email}) potvrzení platby se startovním číslem?`;
     if (!window.confirm(otazka)) return;
     try {
-      await api.post(`/routes/${routeId}/entries/${entry.id}/potvrzeni-platby`, {});
+      await api.post(`/routes/${entry.trasaId}/entries/${entry.id}/potvrzeni-platby`, {});
       reload();
     } catch (e) {
       setError(chybaZeServeru(e, "E-mail se nepodařilo odeslat"));
     }
   }
 
-  async function zamitnoutRegistraci(registraceId: string, jmeno: string) {
-    if (!routeId) return;
+  async function zamitnoutRegistraci(trasaId: string, registraceId: string, jmeno: string) {
     if (!window.confirm(`Opravdu zamítnout registraci "${jmeno}"? Nevznikne z ní přihláška.`)) return;
     try {
-      await api.del(`/routes/${routeId}/registrations/${registraceId}`);
+      await api.del(`/routes/${trasaId}/registrations/${registraceId}`);
       reload();
     } catch (e) {
       setError(chybaZeServeru(e, "Zamítnutí se nezdařilo"));
@@ -520,8 +570,7 @@ export function StartList() {
    * závodníka. Naměřené časy zůstávají (jen anonymně), ať výsledky a
    * audit log neztratí integritu — viz zásady ochrany osobních údajů.
    */
-  async function anonymizovatZavodnika(entryId: string, jmeno: string) {
-    if (!routeId) return;
+  async function anonymizovatZavodnika(trasaId: string, entryId: string, jmeno: string) {
     if (
       !window.confirm(
         `Opravdu trvale smazat osobní údaje závodníka "${jmeno}" (jméno, kontakty, zdravotní poznámka)? Naměřený čas zůstane ve výsledcích jako anonymní. Tuto akci nelze vrátit zpět.`
@@ -530,7 +579,7 @@ export function StartList() {
       return;
     }
     try {
-      await api.del(`/routes/${routeId}/entries/${entryId}`);
+      await api.del(`/routes/${trasaId}/entries/${entryId}`);
       reload();
     } catch (e) {
       setError(chybaZeServeru(e, "Smazání údajů se nezdařilo"));
@@ -560,36 +609,56 @@ export function StartList() {
     setClenove((c) => c.map((clen, i) => (i === index ? { ...clen, ...zmena } : clen)));
   }
 
-  if (!trasa) {
-    return (
-      <AppShell active="listina" routeId={routeId}>
-        {error ?? "Načítám…"}
-      </AppShell>
-    );
+  const shellProps = { active: "listina" as const, routeId, eventId: udalost?.id ?? eventIdParam, vsechnyTrate: vsechny };
+
+  if (!nacteno && !udalost) {
+    return <AppShell {...shellProps}>{error ?? "Načítám…"}</AppShell>;
   }
 
   if (udalost?.ukoncena) {
     return (
-      <AppShell active="listina" routeId={routeId} eventId={trasa.udalostId}>
+      <AppShell {...shellProps}>
         <VyberAktivniAkce />
       </AppShell>
     );
   }
 
+  if (routeId && !trasa) {
+    return <AppShell {...shellProps}>{error ?? "Načítám…"}</AppShell>;
+  }
+
+  const kategorieFormulare = formTrasa?.kategorie ?? [];
+  const poctyNaTrasu = (id: string) => entries.filter((e) => e.trasaId === id).length;
+
   return (
-    <AppShell active="listina" routeId={routeId} eventId={trasa.udalostId}>
+    <AppShell {...shellProps}>
       <BusyOverlay active={busy !== null} label={busy ?? undefined} />
-      <div style={{ maxWidth: 760 }}>
+      <div style={{ maxWidth: 900 }}>
       <div className="dash-header" style={{ marginBottom: 20 }}>
         <div>
           <h1>Startovní listina</h1>
           <div className="meta mono">
-            {trasa.nazev} · {entries.length} {entries.length === 1 ? "závodník" : "závodníků"}
+            {udalost?.nazev} · {vsechny ? "všechny tratě" : trasa?.nazev} · {entries.length}{" "}
+            {entries.length === 1 ? "závodník" : "závodníků"}
           </div>
         </div>
       </div>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
+      {vsechny && trasy.length > 0 && (
+        <p style={{ color: "var(--text-secondary)", fontSize: 13, margin: "0 0 16px" }}>
+          Pohled na celou akci.{" "}
+          {trasy.map((t, i) => (
+            <span key={t.id}>
+              {i > 0 && " · "}
+              {t.nazev}: {poctyNaTrasu(t.id)}
+            </span>
+          ))}
+          . Kategorie, import CSV a export spravujete na záložce konkrétní trati.
+        </p>
+      )}
+
+      {trasa && (
       <section className="dash-card" style={{ marginBottom: 24 }}>
         <div className="dash-card-head">
           <h2>Kategorie</h2>
@@ -645,99 +714,190 @@ export function StartList() {
           </div>
         )}
       </section>
+      )}
 
-      {trasa.kategorie.length > 0 && (
-        <section className="dash-card" style={{ marginBottom: 24 }}>
-          <div className="dash-card-head">
-            <h2>Zápis na místě</h2>
-          </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input placeholder="Číslo" value={cislo} onChange={(e) => setCislo(e.target.value)} style={{ ...inputStyle, width: 80 }} />
-            <input placeholder="Příjmení" value={prijmeni} onChange={(e) => setPrijmeni(e.target.value)} style={inputStyle} />
-            <input placeholder="Jméno" value={jmeno} onChange={(e) => setJmeno(e.target.value)} style={inputStyle} />
-            <input
-              placeholder="Ročník"
-              value={rocnik}
-              onChange={(e) => setRocnik(e.target.value)}
-              style={{ ...inputStyle, width: 90 }}
-            />
-            <select value={pohlavi} onChange={(e) => setPohlavi(e.target.value as Pohlavi | "")} style={inputStyle}>
-              <option value="">Pohlaví</option>
-              <option value={Pohlavi.M}>M</option>
-              <option value={Pohlavi.Z}>Z</option>
-            </select>
+      <section className="dash-card" style={{ marginBottom: 24 }}>
+        <div className="dash-card-head">
+          <h2>Zapsat závodníka</h2>
+          {formTrasa && !vsechny && <span className="zapis-trat-stitek">{formTrasa.nazev}</span>}
+        </div>
+        <p style={{ color: "var(--text-secondary)", fontSize: 12.5, margin: "0 0 12px" }}>* povinné údaje</p>
+
+        {vsechny && (
+          <div className="zapis-pole" style={{ maxWidth: 320, marginBottom: 12 }}>
+            <label htmlFor="zapis-trat">Trať *</label>
             <select
-              value={kategorieId}
-              onChange={(e) => setKategorieId(e.target.value)}
-              style={{ ...inputStyle, borderColor: kategorieId ? "var(--line)" : "var(--color-danger)" }}
+              id="zapis-trat"
+              value={formTrasaId}
+              onChange={(e) => {
+                setFormTrasaId(e.target.value);
+                setKategorieId("");
+                setNavrzenaKategorieId(null);
+              }}
+              style={{ ...inputStyle, borderColor: formTrasaId ? "var(--line)" : "var(--color-attention)" }}
             >
-              <option value="">Kategorie (povinné)</option>
-              {trasa.kategorie.map((k) => (
-                <option key={k.id} value={k.id}>
-                  {k.kod} — {k.nazev}
+              <option value="">Vyberte trať…</option>
+              {trasy.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.nazev}
                 </option>
               ))}
             </select>
-            <button onClick={createEntry} className="btn-pill primary">
-              Přidat do listiny
-            </button>
           </div>
-          {navrzenaKategorieId && kategorieId === navrzenaKategorieId && (
-            <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "6px 0 0" }}>
-              Kategorie navržena automaticky podle ročníku a pohlaví — klidně ji přepiš, pokud nesedí.
-            </p>
-          )}
+        )}
 
-          <div style={{ marginTop: 14 }}>
-            <label style={{ fontSize: 13, display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
-              <input type="checkbox" checked={druzstvo} onChange={(e) => setDruzstvo(e.target.checked)} />
-              Štafeta / družstvo (max 4 další členové pod tímto startovním číslem)
-            </label>
-            {druzstvo && (
-              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
-                {clenove.map((clen, i) => (
-                  <div key={i} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <input
-                      placeholder={`Člen ${i + 1} — příjmení`}
-                      value={clen.prijmeni}
-                      onChange={(e) => upravitClena(i, { prijmeni: e.target.value })}
-                      style={inputStyle}
-                    />
-                    <input
-                      placeholder="Jméno"
-                      value={clen.jmeno}
-                      onChange={(e) => upravitClena(i, { jmeno: e.target.value })}
-                      style={inputStyle}
-                    />
-                    <input
-                      placeholder="Ročník"
-                      value={clen.rocnik ?? ""}
-                      onChange={(e) => upravitClena(i, { rocnik: e.target.value ? Number(e.target.value) : undefined })}
-                      style={{ ...inputStyle, width: 90 }}
-                    />
-                    <input
-                      placeholder="Klub"
-                      value={clen.klub ?? ""}
-                      onChange={(e) => upravitClena(i, { klub: e.target.value || undefined })}
-                      style={inputStyle}
-                    />
-                  </div>
-                ))}
-                {clenove.length < 4 && (
-                  <button
-                    type="button"
-                    className="btn-pill"
-                    style={{ alignSelf: "flex-start" }}
-                    onClick={() => setClenove((c) => [...c, { ...PRAZDNY_CLEN }])}
-                  >
-                    + Další člen
-                  </button>
-                )}
+        {formTrasa && kategorieFormulare.length === 0 && (
+          <p style={{ color: "var(--text-secondary)", fontSize: 13.5, margin: 0 }}>
+            Trať „{formTrasa.nazev}" zatím nemá žádnou kategorii — přidejte ji na záložce této tratě, jinak nejde zapsat
+            závodníka.
+          </p>
+        )}
+
+        {formTrasa && kategorieFormulare.length > 0 && (
+          <>
+            <div className="zapis-mrizka">
+              <div className="zapis-pole" style={{ maxWidth: 110 }}>
+                <label htmlFor="zapis-cislo">Startovní číslo *</label>
+                <input id="zapis-cislo" value={cislo} inputMode="numeric" onChange={(e) => setCislo(e.target.value)} style={inputStyle} />
               </div>
+              <div className="zapis-pole">
+                <label htmlFor="zapis-jmeno">Jméno *</label>
+                <input id="zapis-jmeno" value={jmeno} onChange={(e) => setJmeno(e.target.value)} style={inputStyle} />
+              </div>
+              <div className="zapis-pole">
+                <label htmlFor="zapis-prijmeni">Příjmení *</label>
+                <input id="zapis-prijmeni" value={prijmeni} onChange={(e) => setPrijmeni(e.target.value)} style={inputStyle} />
+              </div>
+              <div className="zapis-pole" style={{ maxWidth: 130 }}>
+                <label htmlFor="zapis-rocnik">Ročník narození *</label>
+                <input id="zapis-rocnik" value={rocnik} inputMode="numeric" onChange={(e) => setRocnik(e.target.value)} style={inputStyle} />
+              </div>
+              <div className="zapis-pole" style={{ maxWidth: 110 }}>
+                <label htmlFor="zapis-pohlavi">Pohlaví *</label>
+                <select id="zapis-pohlavi" value={pohlavi} onChange={(e) => setPohlavi(e.target.value as Pohlavi | "")} style={inputStyle}>
+                  <option value="">—</option>
+                  <option value={Pohlavi.M}>M</option>
+                  <option value={Pohlavi.Z}>Ž</option>
+                </select>
+              </div>
+              <div className="zapis-pole">
+                <label htmlFor="zapis-kategorie">Kategorie *</label>
+                <select
+                  id="zapis-kategorie"
+                  value={kategorieId}
+                  onChange={(e) => setKategorieId(e.target.value)}
+                  style={inputStyle}
+                >
+                  <option value="">Vyberte…</option>
+                  {kategorieFormulare.map((k) => (
+                    <option key={k.id} value={k.id}>
+                      {k.kod} — {k.nazev}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="zapis-pole">
+                <label htmlFor="zapis-email">E-mail *</label>
+                <input id="zapis-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+              </div>
+            </div>
+            {navrzenaKategorieId && kategorieId === navrzenaKategorieId && (
+              <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "6px 0 0" }}>
+                Kategorie navržena automaticky podle ročníku a pohlaví — klidně ji přepiš, pokud nesedí.
+              </p>
             )}
-          </div>
 
-          <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <details className="zapis-dalsi" style={{ marginTop: 14 }}>
+              <summary>Další údaje (nepovinné)</summary>
+              <div className="zapis-mrizka" style={{ marginTop: 10 }}>
+                <div className="zapis-pole">
+                  <label htmlFor="zapis-klub">Klub</label>
+                  <input id="zapis-klub" value={klub} onChange={(e) => setKlub(e.target.value)} style={inputStyle} />
+                </div>
+                <div className="zapis-pole">
+                  <label htmlFor="zapis-telefon">Telefon</label>
+                  <input id="zapis-telefon" value={telefon} onChange={(e) => setTelefon(e.target.value)} style={inputStyle} />
+                </div>
+                <div className="zapis-pole">
+                  <label htmlFor="zapis-nouzovy">Nouzový kontakt (jméno + telefon)</label>
+                  <input id="zapis-nouzovy" value={nouzovyKontakt} onChange={(e) => setNouzovyKontakt(e.target.value)} style={inputStyle} />
+                </div>
+                <div className="zapis-pole">
+                  <label htmlFor="zapis-oznameni">E-mail pro oznámení o dojezdu</label>
+                  <input id="zapis-oznameni" type="email" value={oznamovaciEmail} onChange={(e) => setOznamovaciEmail(e.target.value)} style={inputStyle} />
+                </div>
+                <div className="zapis-pole" style={{ flexBasis: "100%" }}>
+                  <label htmlFor="zapis-zdravi">Zdravotní poznámka (alergie, léky…)</label>
+                  <textarea
+                    id="zapis-zdravi"
+                    value={zdravotniPoznamka}
+                    onChange={(e) => setZdravotniPoznamka(e.target.value)}
+                    rows={2}
+                    style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
+                  />
+                </div>
+              </div>
+            </details>
+
+            <div style={{ marginTop: 14 }}>
+              <label style={{ fontSize: 13, display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                <input type="checkbox" checked={druzstvo} onChange={(e) => setDruzstvo(e.target.checked)} />
+                Štafeta / družstvo (max 4 další členové pod tímto startovním číslem)
+              </label>
+              {druzstvo && (
+                <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+                  {clenove.map((clen, i) => (
+                    <div key={i} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <input
+                        placeholder={`Člen ${i + 1} — příjmení`}
+                        value={clen.prijmeni}
+                        onChange={(e) => upravitClena(i, { prijmeni: e.target.value })}
+                        style={inputStyle}
+                      />
+                      <input
+                        placeholder="Jméno"
+                        value={clen.jmeno}
+                        onChange={(e) => upravitClena(i, { jmeno: e.target.value })}
+                        style={inputStyle}
+                      />
+                      <input
+                        placeholder="Ročník"
+                        value={clen.rocnik ?? ""}
+                        onChange={(e) => upravitClena(i, { rocnik: e.target.value ? Number(e.target.value) : undefined })}
+                        style={{ ...inputStyle, width: 90 }}
+                      />
+                      <input
+                        placeholder="Klub"
+                        value={clen.klub ?? ""}
+                        onChange={(e) => upravitClena(i, { klub: e.target.value || undefined })}
+                        style={inputStyle}
+                      />
+                    </div>
+                  ))}
+                  {clenove.length < 4 && (
+                    <button
+                      type="button"
+                      className="btn-pill"
+                      style={{ alignSelf: "flex-start" }}
+                      onClick={() => setClenove((c) => [...c, { ...PRAZDNY_CLEN }])}
+                    >
+                      + Další člen
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div style={{ marginTop: 16 }}>
+              <button onClick={createEntry} className="btn-pill primary" style={{ padding: "10px 20px", fontSize: 14 }}>
+                Přidat do listiny
+              </button>
+            </div>
+          </>
+        )}
+
+        {trasa && (
+          <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <label className="mono" style={{ fontSize: 13, color: "var(--text-secondary)" }}>
               Import z CSV (cislo, prijmeni, jmeno, kategorie — nepovinné rocnik, pohlavi, klub; bez kategorie se
               dopočítá z ročníku/pohlaví; clen1_prijmeni…clen4_klub pro štafety)
@@ -752,19 +912,19 @@ export function StartList() {
               onChange={(e) => e.target.files?.[0] && importCsv(e.target.files[0])}
             />
           </div>
-          {importVysledek && (
-            <p className="mono" style={{ fontSize: 13, marginTop: 8 }}>
-              Importováno {importVysledek.importovano}.
-              {importVysledek.chyby.length > 0 && (
-                <span style={{ color: "var(--color-danger)" }}>
-                  {" "}
-                  Chyby: {importVysledek.chyby.map((c) => `řádek ${c.radek}: ${c.zprava}`).join("; ")}
-                </span>
-              )}
-            </p>
-          )}
-        </section>
-      )}
+        )}
+        {importVysledek && (
+          <p className="mono" style={{ fontSize: 13, marginTop: 8 }}>
+            Importováno {importVysledek.importovano}.
+            {importVysledek.chyby.length > 0 && (
+              <span style={{ color: "var(--color-danger)" }}>
+                {" "}
+                Chyby: {importVysledek.chyby.map((c) => `řádek ${c.radek}: ${c.zprava}`).join("; ")}
+              </span>
+            )}
+          </p>
+        )}
+      </section>
 
       {registrace.length > 0 && (
         <section className="dash-card" style={{ marginBottom: 24 }}>
@@ -779,6 +939,7 @@ export function StartList() {
             <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
+                  {vsechny && <th style={{ fontFamily: "var(--font-ui)" }}>Trať</th>}
                   <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
                   <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
                   <th style={{ fontFamily: "var(--font-ui)" }}>E-mail</th>
@@ -789,10 +950,11 @@ export function StartList() {
                 {registrace.map((r) => (
                   <PridelitCisloRadek
                     key={r.id}
-                    routeId={routeId!}
+                    routeId={r.trasaId}
+                    trasaNazev={vsechny ? nazevTrase(r.trasaId) : undefined}
                     registrace={r}
                     onAssigned={reload}
-                    onRejected={zamitnoutRegistraci}
+                    onRejected={(id, jmeno) => zamitnoutRegistraci(r.trasaId, id, jmeno)}
                   />
                 ))}
               </tbody>
@@ -803,15 +965,18 @@ export function StartList() {
 
       <div className="dash-card-head" style={{ marginBottom: 8 }}>
         <h2 style={{ margin: 0 }}>Startovní listina</h2>
-        <button type="button" onClick={exportovatXlsx} className="btn-pill">
-          Export do XLSX
-        </button>
+        {trasa && (
+          <button type="button" onClick={exportovatXlsx} className="btn-pill">
+            Export do XLSX
+          </button>
+        )}
       </div>
 
       <div className="table-scroll">
         <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
+              {vsechny && <th style={{ fontFamily: "var(--font-ui)" }}>Trať</th>}
               <th>Č.</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
@@ -823,8 +988,15 @@ export function StartList() {
             </tr>
           </thead>
           <tbody>
-            {entries.map((e) => (
+            {[...entries]
+              .sort((a, b) => (vsechny ? nazevTrase(a.trasaId).localeCompare(nazevTrase(b.trasaId), "cs", { numeric: true }) : 0) || a.startovniCislo - b.startovniCislo)
+              .map((e) => (
               <tr key={e.id} style={{ borderBottom: "1px solid var(--line)" }}>
+                {vsechny && (
+                  <td style={{ fontFamily: "var(--font-ui)" }}>
+                    <span className="zapis-trat-stitek">{nazevTrase(e.trasaId)}</span>
+                  </td>
+                )}
                 <td>{e.startovniCislo}</td>
                 <td style={{ fontFamily: "var(--font-ui)" }}>
                   {e.prijmeni} {e.jmeno}
@@ -836,14 +1008,14 @@ export function StartList() {
                     : "—"}
                 </td>
                 <td>
-                  <ChipBunka routeId={routeId!} entry={e} onChanged={reload} />
+                  <ChipBunka routeId={e.trasaId} entry={e} onChanged={reload} />
                 </td>
                 <td>
                   <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
                     <input
                       type="checkbox"
                       checked={e.zaplaceno}
-                      onChange={(ev) => nastavitZaplaceno(e.id, ev.target.checked)}
+                      onChange={(ev) => nastavitZaplaceno(e.trasaId, e.id, ev.target.checked)}
                     />
                   </label>
                   {e.zaplaceno && !e.email && (
@@ -865,7 +1037,7 @@ export function StartList() {
                 <td>
                   <select
                     value={e.stavUkonceni ?? ""}
-                    onChange={(ev) => nastavitStav(e.id, (ev.target.value as StavUkonceni) || null)}
+                    onChange={(ev) => nastavitStav(e.trasaId, e.id, (ev.target.value as StavUkonceni) || null)}
                     style={{
                       ...inputStyle,
                       padding: "4px 8px",
@@ -885,7 +1057,7 @@ export function StartList() {
                 <td>
                   <button
                     type="button"
-                    onClick={() => anonymizovatZavodnika(e.id, `${e.prijmeni} ${e.jmeno}`)}
+                    onClick={() => anonymizovatZavodnika(e.trasaId, e.id, `${e.prijmeni} ${e.jmeno}`)}
                     className="btn-pill danger"
                     style={{ padding: "3px 8px", fontSize: 11 }}
                     title="Trvale smazat jméno, kontakty a zdravotní poznámku (naměřený čas zůstane anonymně)"

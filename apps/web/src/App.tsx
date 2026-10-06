@@ -101,6 +101,14 @@ export function App() {
         }
       />
       <Route
+        path="/startovni-listina/akce/:eventId"
+        element={
+          <RequireAuth>
+            <StartList />
+          </RequireAuth>
+        }
+      />
+      <Route
         path="/startovni-listina/:routeId"
         element={
           <RequireAuth>

@@ -1,7 +1,72 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, IsArray, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from "class-validator";
+import { ArrayMaxSize, IsArray, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Max, Min, ValidateNested } from "class-validator";
 import { Pohlavi } from "@depo/shared";
 import { TeamMemberDto } from "./team-member.dto";
+
+/**
+ * Ruční zápis závodníka v UI (Startovní listina) — stejná povinná pole jako
+ * veřejná registrace (jméno, příjmení, ročník, pohlaví, kategorie, e-mail).
+ * Samostatná třída, ne potomek CreateEntryDto: zděděné @IsOptional by
+ * povinnost zrušilo. CSV import a interní volání dál používají volnější
+ * CreateEntryDto.
+ */
+export class CreateEntryManualDto {
+  @IsInt()
+  startovniCislo!: number;
+
+  @IsString()
+  @IsNotEmpty()
+  prijmeni!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  jmeno!: string;
+
+  @IsInt()
+  @Min(1900)
+  @Max(new Date().getFullYear())
+  rocnik!: number;
+
+  @IsEnum(Pohlavi)
+  pohlavi!: Pohlavi;
+
+  @IsOptional()
+  @IsString()
+  klub?: string;
+
+  @IsUUID()
+  kategorieId!: string;
+
+  @IsOptional()
+  @IsUUID()
+  startVlnaId?: string;
+
+  @IsEmail()
+  email!: string;
+
+  @IsOptional()
+  @IsString()
+  telefon?: string;
+
+  @IsOptional()
+  @IsString()
+  nouzovyKontakt?: string;
+
+  @IsOptional()
+  @IsString()
+  zdravotniPoznamka?: string;
+
+  @IsOptional()
+  @IsEmail()
+  oznamovaciEmail?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(4)
+  @ValidateNested({ each: true })
+  @Type(() => TeamMemberDto)
+  clenoveDruzstva?: TeamMemberDto[];
+}
 
 /**
  * Trasa je dána cestou (POST /routes/:routeId/entries), kategorie je zde

@@ -6,16 +6,22 @@ popis: Ruční zápis závodníků, přehled listiny, přidělování čísel, p
 klicova: startovka prihlasky zavodnici zapsat export xlsx zaplaceno
 ---
 
-Startovní listinu najdete v levém menu pod položkou **Startovní listina**. Pro kterou trať se zobrazí, vyberete v rozbalovacím poli **Akce a trať** nahoře v levém menu (tratě jsou seskupené podle akcí). Stejný výběr platí i pro Měření, Čipy, Kdo ještě běží, Výsledky, Kolize a Audit log.
+Startovní listinu najdete v levém menu pod položkou **Startovní listina**. Otevře se pohled na **celou akci**; nad obsahem jsou záložky **Všechny tratě | 20km | 38km | …** (aktuální záložka je zvýrazněná). Ve všech tratích vidíte u každého řádku štítek tratě, na záložce konkrétní tratě pak jen její závodníky. Stejné záložky jsou nahoře i u Čipů, Kdo ještě běží, Kolizí a Audit logu. Máte-li víc aktivních akcí, přepnete akci polem **Akce** nahoře v levém menu.
 
-## Ruční zápis na místě
+Kategorie, import z CSV a export do XLSX se spravují na záložce konkrétní tratě (kategorie i soubory patří vždy jedné trati).
 
-V sekci **Zápis na místě** vyplňte:
+## Ruční zápis
 
-- **Číslo** — startovní číslo (povinné, musí být na trati unikátní).
-- **Příjmení**, **Jméno** — povinné.
-- **Ročník**, **Pohlaví** — volitelné, ale díky nim Depo [navrhne kategorii](/napoveda/kategorie) automaticky.
-- **Kategorie** — povinná. Pokud ji Depo navrhlo samo, pole se předvyplní a pod formulářem se objeví poznámka; klidně ji přepište, pokud nesedí.
+V sekci **Zapsat závodníka** jsou povinné údaje označené hvězdičkou (*) — stejné jako ve [veřejné registraci](/napoveda/online-registrace):
+
+- **Trať** — vybíráte jen v pohledu „Všechny tratě"; na záložce tratě je dána záložkou a vidíte ji v nadpisu formuláře.
+- **Startovní číslo** — musí být na trati unikátní.
+- **Jméno**, **Příjmení**.
+- **Ročník narození** a **Pohlaví**.
+- **Kategorie** — vybíráte z kategorií zvolené tratě. Pokud ji Depo podle ročníku a pohlaví [navrhlo](/napoveda/kategorie), pole se předvyplní a pod formulářem se objeví poznámka; klidně ji přepište, pokud nesedí.
+- **E-mail**.
+
+V rozbalovací části **Další údaje (nepovinné)** je klub, telefon, nouzový kontakt, e-mail pro oznámení o dojezdu a zdravotní poznámka.
 
 Klikněte na **Přidat do listiny**. Pokud chcete zapsat víc lidí najednou, rychlejší je [Import z CSV](/napoveda/import-csv).
 
@@ -27,7 +33,7 @@ Pokud používáte [online registraci](/napoveda/online-registrace), objeví se 
 
 ## Přehled listiny
 
-Tabulka pod formulářem ukazuje všechny zapsané závodníky — číslo, jméno, kategorii, členy družstva (pokud jde o štafetu), přiřazený RFID čip, zaplaceno a stav.
+Tabulka pod formulářem ukazuje všechny zapsané závodníky (v pohledu „Všechny tratě" i s tratí) — číslo, jméno, kategorii, členy družstva (pokud jde o štafetu), přiřazený RFID čip, zaplaceno a stav.
 
 ## Zaplaceno
 
