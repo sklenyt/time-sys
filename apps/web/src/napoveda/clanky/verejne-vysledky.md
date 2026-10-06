@@ -42,7 +42,7 @@ Vpravo nahoře jsou tlačítka **Stáhnout XLSX** a **Stáhnout PDF** — stáhn
 
 ## Otevření z appky
 
-Z aplikace (`app.depotime.cz`) vede položka **Výsledky** v levém menu rovnou na tuhle veřejnou stránku — otevře se v nové záložce na doméně `vysledky.depotime.cz`, ať organizátor neztratí rozdělanou práci v appce.
+Z aplikace (`app.depotime.cz`) vede položka **Výsledky** v levém menu na veřejnou stránku **celé akce** (té, kterou máte nahoře v menu vybranou v poli **Akce a trať**) — otevře se v nové záložce na doméně `vysledky.depotime.cz`, ať organizátor neztratí rozdělanou práci v appce. Na ní si teprve vyberete trať (u akce s jedinou tratí se rovnou otevřou její výsledky po kliknutí na akci); u akce chráněné heslem appka nejdřív požádá o heslo. Na stránce výsledků trati pak jde trať i kategorii přepínat tlačítky nad tabulkou.
 
 ## Pořadí v kategorii — jak se počítá
 

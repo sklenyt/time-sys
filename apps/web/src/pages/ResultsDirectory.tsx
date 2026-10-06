@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, type NavigateFunction } from "react-router-dom";
+import { useNavigate, useSearchParams, type NavigateFunction } from "react-router-dom";
 import type { VerejnaUdalostDto, OveritPristupResponseDto } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
@@ -100,6 +100,9 @@ function UdalostKarta({
  */
 export function ResultsDirectory() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const akceId = searchParams.get("akce");
+  const [jednaUdalost, setJednaUdalost] = useState<VerejnaUdalostDto | null>(null);
   const [udalosti, setUdalosti] = useState<VerejnaUdalostDto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [otevrenaId, setOtevrenaId] = useState<string | null>(null);
@@ -109,11 +112,18 @@ export function ResultsDirectory() {
   const [vyberTras, setVyberTras] = useState<{ id: string; nazev: string }[] | null>(null);
 
   useEffect(() => {
+    if (akceId) {
+      api
+        .get<VerejnaUdalostDto>(`/events/${akceId}/verejna`)
+        .then(setJednaUdalost)
+        .catch((e) => setError(chybaZeServeru(e, "Akci se nepodařilo načíst")));
+      return;
+    }
     api
       .get<VerejnaUdalostDto[]>("/events/verejne")
       .then(setUdalosti)
       .catch((e) => setError(chybaZeServeru(e, "Chyba načítání")));
-  }, []);
+  }, [akceId]);
 
   const probihajici = useMemo(() => udalosti?.filter((u) => !u.ukoncena) ?? [], [udalosti]);
   const ukoncene = useMemo(() => udalosti?.filter((u) => u.ukoncena) ?? [], [udalosti]);
@@ -156,6 +166,16 @@ export function ResultsDirectory() {
     }
   }
 
+  // Odkaz na celou akci (z menu organizátora): rovnou ukázat výběr tratě,
+  // případně heslo. U akce s jedinou tratí bez hesla by automatické otevření
+  // hned přesměrovalo a tlačítko Zpět by se vracelo do smyčky, proto tam stačí klik.
+  useEffect(() => {
+    if (jednaUdalost && (jednaUdalost.vyzadujeHeslo || jednaUdalost.trasy.length > 1)) {
+      otevritUdalost(jednaUdalost);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jednaUdalost]);
+
   const spolecneProps = { otevrenaId, heslo, setHeslo, odesilam, hesloChyba, vyberTras, otevritUdalost, odeslatHeslo, navigate };
 
   return (
@@ -173,17 +193,31 @@ export function ResultsDirectory() {
       <section className="landing-hero" style={{ paddingBottom: 40 }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div className="landing-eyebrow">Výsledky závodů</div>
-          <h1 style={{ fontSize: "clamp(26px, 3.6vw, 38px)" }}>Vyberte si závod</h1>
+          <h1 style={{ fontSize: "clamp(26px, 3.6vw, 38px)" }}>{akceId ? "Vyberte si trať" : "Vyberte si závod"}</h1>
           <p className="lede">
-            Přehled akcí měřených přes Depo. U některých je potřeba heslo od pořadatele — chrání jména a časy
-            závodníků před kýmkoliv, kdo odkaz nezná.
+            {akceId ? (
+              <>
+                Výsledky jednotlivých tratí akce.{" "}
+                <a href="/" style={{ color: "inherit" }}>
+                  Všechny akce
+                </a>
+              </>
+            ) : (
+              "Přehled akcí měřených přes Depo. U některých je potřeba heslo od pořadatele — chrání jména a časy závodníků před kýmkoliv, kdo odkaz nezná."
+            )}
           </p>
         </div>
       </section>
 
       <section className="landing-section">
-        {!udalosti && !error && <p style={{ color: "var(--text-secondary)" }}>Načítám…</p>}
+        {!udalosti && !jednaUdalost && !error && <p style={{ color: "var(--text-secondary)" }}>Načítám…</p>}
         {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
+
+        {jednaUdalost && (
+          <div style={{ maxWidth: 640 }}>
+            <UdalostKarta udalost={jednaUdalost} ukoncena={jednaUdalost.ukoncena} {...spolecneProps} />
+          </div>
+        )}
 
         {udalosti && udalosti.length === 0 && (
           <p style={{ color: "var(--text-secondary)" }}>Zatím tu není žádný veřejně vypsaný závod.</p>

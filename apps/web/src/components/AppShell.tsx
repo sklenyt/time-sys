@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { AuthUserDto } from "@depo/shared";
+import type { AuthUserDto, Trasa, Udalost } from "@depo/shared";
 import { api, clearTokens } from "../lib/api";
 import { vysledkyHref } from "../lib/domeny";
 
@@ -37,9 +37,9 @@ const NAV_ITEMS: NavItem[] = [
   {
     key: "vysledky",
     label: "Výsledky",
-    needsRoute: true,
+    needsEvent: true,
     external: true,
-    href: (routeId) => vysledkyHref(`/vysledky/${routeId}`),
+    href: (_r, eventId) => vysledkyHref(`/?akce=${eventId}`),
   },
   { key: "kolize", label: "Kolize", needsRoute: true, href: (routeId) => `/konflikty/${routeId}` },
   { key: "audit", label: "Audit log", needsRoute: true, href: (routeId) => `/audit/${routeId}` },
@@ -121,8 +121,26 @@ function nacistUzivatele(): Promise<AuthUserDto> {
   return probihajiciNacteni;
 }
 
+interface SkupinaTrati {
+  udalost: Udalost;
+  trasy: Trasa[];
+}
+
+let sdilenyPrehledTrati: SkupinaTrati[] | null = null;
+
+/** Aktivní (neukončené) akce s jejich tratěmi — pro přepínač trati v postranním menu. */
+async function nacistPrehledTrati(): Promise<SkupinaTrati[]> {
+  const akce = (await api.get<Udalost[]>("/events")).filter((u) => !u.ukoncena);
+  const skupiny = await Promise.all(
+    akce.map(async (udalost) => ({ udalost, trasy: await api.get<Trasa[]>(`/events/${udalost.id}/routes`) }))
+  );
+  sdilenyPrehledTrati = skupiny;
+  return skupiny;
+}
+
 /** Volat při odhlášení, ať se po přihlášení jiného účtu na chvíli nemihne předchozí jméno/pořadí. */
 function vycistitCacheUzivatele() {
+  sdilenyPrehledTrati = null;
   sdilenyUzivatel = null;
   probihajiciNacteni = null;
 }
@@ -158,6 +176,16 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
     sdilenyUzivatel ? slouzitPoradi(sdilenyUzivatel.poradiMenu) : VYCHOZI_PORADI
   );
   const [tazeneKey, setTazeneKey] = useState<NavKey | null>(null);
+  const [prehledTrati, setPrehledTrati] = useState<SkupinaTrati[] | null>(sdilenyPrehledTrati);
+  const [, setVerzeKontextu] = useState(0);
+
+  useEffect(() => {
+    nacistPrehledTrati()
+      .then(setPrehledTrati)
+      .catch(() => {
+        // Bez přepínače se dá dál pracovat s naposledy otevřenou tratí.
+      });
+  }, []);
 
   useEffect(() => {
     if (sdilenyUzivatel) return; // už vykresleno synchronně výše, není co dotahovat
@@ -181,6 +209,19 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
   const posledniKontext = nacistPosledniKontext();
   const efektivniRouteId = routeId ?? posledniKontext.routeId;
   const efektivniEventId = eventId ?? posledniKontext.eventId;
+
+  /** Přepnutí trati: zapamatuje ji jako aktuální kontext a stránku vázanou na trať otevře pro novou trať. */
+  function prepnoutTrat(novaRouteId: string) {
+    const skupina = prehledTrati?.find((g) => g.trasy.some((t) => t.id === novaRouteId));
+    if (!skupina) return;
+    ulozitPosledniKontext(novaRouteId, skupina.udalost.id);
+    const aktivniPolozka = NAV_BY_KEY.get(active);
+    if (aktivniPolozka?.needsRoute && !aktivniPolozka.external) {
+      navigate(aktivniPolozka.href(novaRouteId, skupina.udalost.id));
+    } else {
+      setVerzeKontextu((v) => v + 1);
+    }
+  }
 
   function odhlasit() {
     clearTokens();
@@ -223,6 +264,32 @@ export function AppShell({ active, routeId, eventId, children }: AppShellProps) 
           <img src="/depo-mark.svg" alt="" width={26} height={26} />
           <span className="app-sidebar-brand-name">Depo</span>
         </div>
+        {prehledTrati && prehledTrati.some((g) => g.trasy.length > 0) && (
+          <div className="app-trasa-prepinac">
+            <label htmlFor="app-trasa-select">Akce a trať</label>
+            <select
+              id="app-trasa-select"
+              value={efektivniRouteId ?? ""}
+              onChange={(e) => prepnoutTrat(e.target.value)}
+            >
+              {!efektivniRouteId && <option value="">Vyberte trať…</option>}
+              {efektivniRouteId && !prehledTrati.some((g) => g.trasy.some((t) => t.id === efektivniRouteId)) && (
+                <option value={efektivniRouteId}>(trať z ukončené akce)</option>
+              )}
+              {prehledTrati
+                .filter((g) => g.trasy.length > 0)
+                .map((g) => (
+                  <optgroup key={g.udalost.id} label={g.udalost.nazev}>
+                    {g.trasy.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.nazev}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+            </select>
+          </div>
+        )}
         <nav className="app-sidebar-nav">
           {poradi.map((key) => {
             const item = NAV_BY_KEY.get(key);

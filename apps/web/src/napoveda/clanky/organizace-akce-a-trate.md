@@ -12,7 +12,7 @@ klicova: sprava akci zalozit zavod trasa smazat prejmenovat ukoncit datum probeh
 - **Akce** — konkrétní závod v konkrétní den (např. „Jarní běh Mělník 2026“).
 - **Trať** — jedna disciplína/trasa v rámci akce (např. „10 km“, „21 km“). Akce může mít víc tratí zároveň.
 
-Všechno se spravuje na jednom místě — ve **Správě akcí** (`/sprava`), do které se dostanete z levého menu.
+Všechno se spravuje na jednom místě — ve **Správě akcí** (`/sprava`), do které se dostanete z levého menu. V levém menu je nahoře také pole **Akce a trať**, kterým přepínáte, se kterou tratí právě pracujete (Startovní listina, Měření, Čipy a další obrazovky vázané na trať). Ukončené akce v něm nejsou.
 
 ## Založení akce a tratě
 

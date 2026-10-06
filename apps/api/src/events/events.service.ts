@@ -14,6 +14,35 @@ function bezHesla<T extends { hesloVysledkuHash?: string | null }>(udalost: T): 
   return rest;
 }
 
+const VEREJNA_UDALOST_SELECT = {
+  id: true,
+  nazev: true,
+  datum: true,
+  hesloVysledkuHash: true,
+  ukoncena: true,
+  trasy: { select: { id: true, nazev: true, startVlny: { select: { casStartu: true } } } },
+} satisfies Prisma.UdalostSelect;
+
+function naVerejnouUdalost(u: Prisma.UdalostGetPayload<{ select: typeof VEREJNA_UDALOST_SELECT }>) {
+  // Autodetekce pro veřejný adresář (na žádost, chat 2026-09-26): datum
+  // akce je v minulosti a žádná trať vůbec neodstartovala — organizátor
+  // zjevně "Ukončit akci" nekliknul, ale akce evidentně proběhla/propadla.
+  // Nic se v databázi netrvale nemění (na rozdíl od u.ukoncena) — je to
+  // jen dopočítané při každém čtení, takže změna data akce zpět do
+  // budoucna nebo pozdější start ji z "ukončené" sama zase vrátí zpátky.
+  const zadnaTrasaOdstartovala = u.trasy.every((t) => t.startVlny.every((v) => v.casStartu === null));
+  const efektivneUkoncena = u.ukoncena || (jeDatumVMinulosti(u.datum) && zadnaTrasaOdstartovala);
+
+  return {
+    id: u.id,
+    nazev: u.nazev,
+    datum: u.datum,
+    vyzadujeHeslo: u.hesloVysledkuHash !== null,
+    ukoncena: efektivneUkoncena,
+    trasy: u.trasy.map((t) => ({ id: t.id, nazev: t.nazev })),
+  };
+}
+
 @Injectable()
 export class EventsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -87,35 +116,22 @@ export class EventsService {
     const udalosti = await this.prisma.udalost.findMany({
       where: { verejnyVypis: true },
       orderBy: { datum: "desc" },
-      select: {
-        id: true,
-        nazev: true,
-        datum: true,
-        hesloVysledkuHash: true,
-        ukoncena: true,
-        trasy: { select: { id: true, nazev: true, startVlny: { select: { casStartu: true } } } },
-      },
+      select: VEREJNA_UDALOST_SELECT,
     });
+    return udalosti.map(naVerejnouUdalost);
+  }
 
-    return udalosti.map((u) => {
-      // Autodetekce pro veřejný adresář (na žádost, chat 2026-09-26): datum
-      // akce je v minulosti a žádná trať vůbec neodstartovala — organizátor
-      // zjevně "Ukončit akci" nekliknul, ale akce evidentně proběhla/propadla.
-      // Nic se v databázi netrvale nemění (na rozdíl od u.ukoncena) — je to
-      // jen dopočítané při každém čtení, takže změna data akce zpět do
-      // budoucna nebo pozdější start ji z "ukončené" sama zase vrátí zpátky.
-      const zadnaTrasaOdstartovala = u.trasy.every((t) => t.startVlny.every((v) => v.casStartu === null));
-      const efektivneUkoncena = u.ukoncena || (jeDatumVMinulosti(u.datum) && zadnaTrasaOdstartovala);
-
-      return {
-        id: u.id,
-        nazev: u.nazev,
-        datum: u.datum,
-        vyzadujeHeslo: u.hesloVysledkuHash !== null,
-        ukoncena: efektivneUkoncena,
-        trasy: u.trasy.map((t) => ({ id: t.id, nazev: t.nazev })),
-      };
-    });
+  /**
+   * Jedna akce pro přímý odkaz z organizátorského menu — na rozdíl od
+   * adresáře nevyžaduje `verejnyVypis` (odkaz zná jen ten, kdo zná UUID, stejně
+   * jako přímé odkazy na výsledky trati). Jména a časy jsou i tak až za heslem.
+   */
+  async najitVerejnouUdalost(id: string) {
+    const udalost = await this.prisma.udalost.findUnique({ where: { id }, select: VEREJNA_UDALOST_SELECT });
+    if (!udalost) {
+      throw new NotFoundException(`Událost ${id} nenalezena`);
+    }
+    return naVerejnouUdalost(udalost);
   }
 
   /**

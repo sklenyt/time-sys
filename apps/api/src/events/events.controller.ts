@@ -32,6 +32,13 @@ export class EventsController {
     return this.events.najitVerejneUdalosti();
   }
 
+  /** Jedna akce pro přímý odkaz na výsledky z organizátorského menu — musí být před ":id" jen kvůli přehlednosti, cesta se liší. */
+  @Public()
+  @Get(":id/verejna")
+  findVerejna(@Param("id", ParseUUIDPipe) id: string) {
+    return this.events.najitVerejnouUdalost(id);
+  }
+
   @Get(":id")
   findOne(@Param("id", ParseUUIDPipe) id: string) {
     return this.events.findOne(id);

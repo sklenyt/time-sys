@@ -6,7 +6,7 @@ popis: Ruční zápis závodníků, přehled listiny, přidělování čísel, p
 klicova: startovka prihlasky zavodnici zapsat export xlsx zaplaceno
 ---
 
-Startovní listinu najdete v levém menu pod položkou **Startovní listina** u konkrétní trati.
+Startovní listinu najdete v levém menu pod položkou **Startovní listina**. Pro kterou trať se zobrazí, vyberete v rozbalovacím poli **Akce a trať** nahoře v levém menu (tratě jsou seskupené podle akcí). Stejný výběr platí i pro Měření, Čipy, Kdo ještě běží, Výsledky, Kolize a Audit log.
 
 ## Ruční zápis na místě
 
