@@ -18,6 +18,7 @@
 | 10 | [13-konkurencni-analyza.md](13-konkurencni-analyza.md) | Celkový přehled trhu — profily podobných systémů (MYLAPS, RACE RESULT, ChronoTrack, SportIdent/Copérnico, RunSignup, PikaTimer, fsTimer, OpenRaceTiming, Webscorer, RaceJoy, české nástroje a služby) a co z nich zvážit |
 | 11 | [14-graficka-identita.md](14-graficka-identita.md) | Grafická identita Depo — logo, barevný systém, typografie, brand guideline |
 | 12 | [15-produkcni-nasazeni.md](15-produkcni-nasazeni.md) | Produkční nasazení databáze a API — managed Postgres, pooling, počet instancí, SSE za proxy, multi-device use case |
+| 13 | [16-infrastruktura-prehled.md](16-infrastruktura-prehled.md) | Přehled infrastruktury (Cloudflare, Fly.io, Supabase, CI/CD) se dvěma schématy a laickým vysvětlením |
 
 ## Shrnutí v jedné větě
 
