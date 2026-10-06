@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { createTransport, Transporter } from "nodemailer";
+import { sestavPotvrzeniRegistrace } from "@depo/shared";
 
 /**
  * F32 — automatický e-mail rodině/blízké osobě při doběhu závodníka do
@@ -79,22 +80,16 @@ export class EmailService {
       return;
     }
 
-    const radkyText = [
-      `Ahoj ${params.jmeno} ${params.prijmeni},`,
-      "",
-      `zaregistrovali jste se na trať "${params.trasaNazev}" (${params.udalostNazev}). Startovní číslo vám přidělí pořadatel, dozvíte se ho na místě nebo v další zprávě.`,
-    ];
-    let radkyHtml = `<p>Ahoj ${escapeHtml(params.jmeno)} ${escapeHtml(params.prijmeni)},</p><p>zaregistrovali jste se na trať „${escapeHtml(params.trasaNazev)}“ (${escapeHtml(params.udalostNazev)}). Startovní číslo vám přidělí pořadatel, dozvíte se ho na místě nebo v další zprávě.</p>`;
-
-    if (params.vlastniText?.trim()) {
-      radkyText.push("", params.vlastniText.trim());
-      radkyHtml += `<p>${escapeHtml(params.vlastniText.trim()).replace(/\n/g, "<br>")}</p>`;
-    }
-
+    const potvrzeni = sestavPotvrzeniRegistrace({
+      jmeno: params.jmeno,
+      prijmeni: params.prijmeni,
+      trasaNazev: params.trasaNazev,
+      udalostNazev: params.udalostNazev,
+      vlastniText: params.vlastniText,
+      platbaCastkaKc: params.platba?.castkaKc,
+    });
     const attachments: NonNullable<Parameters<Transporter["sendMail"]>[0]>["attachments"] = [];
     if (params.platba) {
-      radkyText.push("", `Startovné: ${params.platba.castkaKc} Kč — QR platbu najdete v příloze tohoto e-mailu.`);
-      radkyHtml += `<p><strong>Startovné: ${params.platba.castkaKc} Kč</strong></p><p><img src="cid:qr-platba" alt="QR platba" width="220" height="220"></p>`;
       attachments.push({ filename: "qr-platba.png", content: params.platba.qrPng, cid: "qr-platba" });
     }
 
@@ -102,9 +97,9 @@ export class EmailService {
       await transporter.sendMail({
         from: process.env.SMTP_FROM ?? "vysledky@depo.app",
         to: params.komu,
-        subject: `Registrace přijata — ${params.trasaNazev}`,
-        text: radkyText.join("\n"),
-        html: radkyHtml,
+        subject: potvrzeni.predmet,
+        text: potvrzeni.text,
+        html: potvrzeni.html,
         attachments,
       });
     } catch (err) {
@@ -135,6 +130,3 @@ export class EmailService {
 }
 
 /** Vlastní text organizátora jde do HTML e-mailu — musí se escapovat, ať v něm nejde propašovat značky. */
-function escapeHtml(text: string): string {
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}

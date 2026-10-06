@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import type { AuthUserDto, Organizace, StartVlna, Trasa, Udalost, UzivatelRoleDto } from "@depo/shared";
-import { Role, TypStartu } from "@depo/shared";
+import { Role, TypStartu, sestavPotvrzeniRegistrace } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
@@ -624,6 +624,18 @@ export function Sprava() {
                         Uložit
                       </button>
                     </div>
+                    <details style={{ marginTop: 10 }}>
+                      <summary style={{ cursor: "pointer", fontSize: 12.5, color: "var(--text-secondary)" }}>
+                        Náhled e-mailu
+                      </summary>
+                      <EmailNahled
+                        trasaNazev={t.nazev}
+                        udalostNazev={u.nazev}
+                        vlastniText={platbaDrafts[t.id].potvrzovaciEmailText}
+                        platbaUcet={platbaDrafts[t.id].platbaUcet}
+                        platbaCastka={platbaDrafts[t.id].platbaCastka}
+                      />
+                    </details>
                   </div>
                 )}
               </li>
@@ -674,4 +686,42 @@ const ROLE_LABEL: Record<Role, string> = {
 
 function formatDatum(iso: string): string {
   return new Date(iso).toLocaleDateString("cs-CZ", { day: "numeric", month: "numeric", year: "numeric" });
+}
+
+const QR_ZASTUPNY =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><rect width="220" height="220" fill="#f1f1f1" stroke="#bbb"/><text x="110" y="115" font-family="sans-serif" font-size="14" fill="#777" text-anchor="middle">QR platba</text></svg>'
+  );
+
+/** Náhled potvrzovacího e-mailu z právě rozepsaných hodnot — text sestavuje stejná funkce jako API při odesílání. */
+function EmailNahled(props: {
+  trasaNazev: string;
+  udalostNazev: string;
+  vlastniText: string;
+  platbaUcet: string;
+  platbaCastka: string;
+}) {
+  const castka = Number(props.platbaCastka);
+  const sQr = props.platbaUcet.trim() !== "" && Number.isFinite(castka) && castka > 0;
+  const { predmet, html } = sestavPotvrzeniRegistrace({
+    jmeno: "Jan",
+    prijmeni: "Novák",
+    trasaNazev: props.trasaNazev,
+    udalostNazev: props.udalostNazev,
+    vlastniText: props.vlastniText,
+    platbaCastkaKc: sQr ? castka : null,
+  });
+  const srcDoc = `<body style="font-family:sans-serif;font-size:14px;margin:12px">${html.replace("cid:qr-platba", QR_ZASTUPNY)}</body>`;
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div style={{ fontSize: 12.5, marginBottom: 6 }}>
+        <strong>Předmět:</strong> {predmet}
+      </div>
+      <iframe title="Náhled e-mailu" sandbox="" srcDoc={srcDoc} style={{ width: "100%", height: sQr ? 460 : 220, border: "1px solid var(--line)", borderRadius: 8, background: "#fff" }} />
+      <p style={{ color: "var(--text-secondary)", fontSize: 11.5, margin: "4px 0 0" }}>
+        Ukázka s fiktivním jménem. Skutečný QR kód se vygeneruje při odeslání.
+      </p>
+    </div>
+  );
 }

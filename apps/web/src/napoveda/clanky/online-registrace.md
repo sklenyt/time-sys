@@ -31,6 +31,7 @@ Pokud závodník ve formuláři vyplní e-mail, appka mu ihned pošle potvrzovac
 - **Vlastní text** — libovolná zpráva navíc (pokyny k platbě, odkaz na startovní listinu apod.).
 - **Číslo účtu** — český formát `předčíslí-číslo/kódBanky` (např. `19-2000145399/0800`), předčíslí je nepovinné.
 - **Startovné v Kč** — částka, která se má vybrat.
+- **Náhled e-mailu** — rozbalovací sekce pod poli, která při psaní ukazuje, jak bude e-mail vypadat (předmět i text, s fiktivním jménem). QR platba je v náhledu jen zástupný obrázek, skutečný kód se vygeneruje až při odeslání.
 
 Když vyplníte číslo účtu i částku, appka do e-mailu automaticky přidá **QR platbu** (česká QR Platba, formát SPAYD) — závodník ji naskenuje bankovní aplikací a rovnou zaplatí. Chybně vyplněné číslo účtu registraci nezablokuje, jen se e-mail pošle bez QR kódu. Bez SMTP nastavení appka e-mail jen tiše nepošle — samotná registrace tím není ovlivněná.
 
