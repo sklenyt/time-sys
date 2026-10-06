@@ -49,4 +49,4 @@ Výchozí hodnota je „v pořádku“ (žádný z těchto stavů). Nastavení k
 
 ## Uzavření registrace
 
-Pokud používáte i [online registraci](/napoveda/online-registrace), lze ji ve Správě akcí tlačítkem **Uzavřít registraci** dočasně zastavit (typicky těsně před startem) — ruční zápis přímo ve Startovní listině tím není nijak omezen, funguje vždy.
+Pokud používáte i [online registraci](/napoveda/online-registrace), lze ji ve Správě akcí položkou **Registrace → Uzavřít registraci** dočasně zastavit (typicky těsně před startem) — ruční zápis přímo ve Startovní listině tím není nijak omezen, funguje vždy.

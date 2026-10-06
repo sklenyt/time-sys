@@ -16,11 +16,11 @@ Pokud trať už jednou odstartovala a kliknete na **Start** znovu, appka se zept
 
 ## Automatický start v naplánovaný čas
 
-Pod tratí, dokud ještě neodstartovala, je pole **Automatický start**:
+Pod tratí, dokud ještě neodstartovala, je tlačítko **Naplánovat start**:
 
-1. Zadejte datum a čas, kdy má trať odstartovat.
-2. Klikněte na **Naplánovat start**.
-3. Appka ukáže odpočet do startu a tlačítko **Zrušit plán**, kdyby bylo potřeba plán zrušit (např. při posunutí startu).
+1. Klikněte na **Naplánovat start** — rozbalí se pole pro datum a čas.
+2. Zadejte, kdy má trať odstartovat, a znovu klikněte na **Naplánovat start** (**Zavřít** výběr schová bez uložení).
+3. Appka pod tratí ukáže naplánované datum a čas, odpočet do startu (u vzdálenějšího startu ve dnech) a tlačítko **Zrušit plán**, kdyby bylo potřeba plán zrušit (např. při posunutí startu).
 
 V naplánovaný okamžik Depo trať spustí samo, i kdyby zrovna nikdo neseděl u obrazovky — nemusíte tedy mít appku otevřenou přesně v čas startu.
 

@@ -10,7 +10,7 @@ Kiosk je celoobrazovkové zobrazení výsledků bez jakéhokoliv ovládání —
 
 ## Dva druhy kiosku
 
-- **Kiosk jedné trati** — `depotime.cz/kiosk/ID-trasy`. Ukazuje výsledky jen jedné konkrétní trati/kategorie. Odkaz je ve Správě akcí u dané trasy, tlačítko **Kiosk**.
+- **Kiosk jedné trati** — `depotime.cz/kiosk/ID-trasy`. Ukazuje výsledky jen jedné konkrétní trati/kategorie. Odkaz je ve Správě akcí u dané trasy, položka **Zobrazení → Kiosk trati**.
 - **Kiosk celé akce** — `depotime.cz/kiosk-akce/ID-akce`. Sám automaticky rotuje mezi všemi tratěmi akce, ať nemusíte přepínat ručně. Odkaz je ve Správě akcí u akce, tlačítko **Kiosk (celá akce)**.
 
 U kiosku celé akce jde interval rotace upravit přes `?interval=20` v adrese (počet vteřin na jedné trati, výchozí je 15). Rotaci jde i ručně přeskočit šipkami vlevo/vpravo na klávesnici.

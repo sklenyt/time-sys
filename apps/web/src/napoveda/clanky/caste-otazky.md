@@ -20,7 +20,7 @@ Zkontrolujte, jestli jste opravdu klikli na **ZAPSAT** nebo stiskli **Enter** �
 
 ## Ztratil jsem odkaz na kiosk/registraci/embed pro svou trať
 
-Všechny tyhle odkazy se dají znovu zobrazit ve **Správě akcí** u dané trasy — tlačítka Kiosk, Registrace, Embed výsledků a Embed registrace je zobrazí znovu, žádný odkaz se neztrácí natrvalo.
+Všechny tyhle odkazy se dají znovu zobrazit ve **Správě akcí** u dané trasy — nabídky Registrace a Zobrazení (Kiosk trati, Embed výsledků, Embed registrace) je zobrazí znovu, žádný odkaz se neztrácí natrvalo.
 
 ## Import CSV hlásí chybu u každého řádku
 

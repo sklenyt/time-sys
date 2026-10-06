@@ -12,8 +12,8 @@ Kromě samostatného odkazu na výsledky nebo registraci ([Veřejné výsledky](
 
 Ve **Správě akcí** u konkrétní trati:
 
-- **Embed výsledků** — zkopíruje kód pro vložení živých výsledků.
-- **Embed registrace** — zkopíruje kód pro vložení registračního formuláře.
+- **Zobrazení → Embed výsledků** — zkopíruje kód pro vložení živých výsledků.
+- **Registrace → Embed registrace** — zkopíruje kód pro vložení registračního formuláře.
 
 Appka kód zobrazí v dialogovém okně, odkud ho zkopírujete (Ctrl+C / Cmd+C) a vložíte do zdrojového kódu své stránky, tam kde chcete, aby se výsledky/formulář objevily.
 

@@ -7,6 +7,7 @@ import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
 import { BusyOverlay } from "../components/BusyOverlay";
 import { StartPlanovac } from "../components/StartPlanovac";
+import { RozbalovaciMenu } from "../components/RozbalovaciMenu";
 
 /**
  * Administrace organizací, akcí a tratí — dřív žila přímo na Přehledu akce,
@@ -433,16 +434,6 @@ export function Sprava() {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               {!u.ukoncena && (
-                <button onClick={() => renameEvent(u.id, u.nazev)} className="btn-pill">
-                  Přejmenovat
-                </button>
-              )}
-              {!u.ukoncena && (
-                <button onClick={() => nastavitHesloVysledku(u.id)} className="btn-pill">
-                  Heslo výsledků
-                </button>
-              )}
-              {!u.ukoncena && (
                 <button onClick={() => ukazatKioskAkce(u.id)} className="btn-pill">
                   Kiosk (celá akce)
                 </button>
@@ -450,12 +441,19 @@ export function Sprava() {
               <button onClick={() => toggleRole(u.id)} className="btn-pill">
                 {otevreneRole[u.id] ? "Skrýt lidi s přístupem" : "Lidé s přístupem"}
               </button>
-              <button onClick={() => toggleUkoncena(u.id, !u.ukoncena)} className="btn-pill">
-                {u.ukoncena ? "Obnovit akci" : "Ukončit akci"}
-              </button>
-              <button onClick={() => deleteEvent(u.id, u.nazev)} className="btn-pill danger">
-                Smazat akci
-              </button>
+              <RozbalovaciMenu
+                popisek="Více"
+                polozky={[
+                  ...(u.ukoncena
+                    ? []
+                    : [
+                        { popisek: "Přejmenovat", akce: () => renameEvent(u.id, u.nazev) },
+                        { popisek: "Heslo výsledků", akce: () => nastavitHesloVysledku(u.id) },
+                      ]),
+                  { popisek: u.ukoncena ? "Obnovit akci" : "Ukončit akci", akce: () => toggleUkoncena(u.id, !u.ukoncena) },
+                  { popisek: "Smazat akci", akce: () => deleteEvent(u.id, u.nazev), nebezpecna: true },
+                ]}
+              />
             </div>
           </div>
           <p className="mono" style={{ color: "var(--text-secondary)", margin: "0 0 12px" }}>
@@ -549,36 +547,51 @@ export function Sprava() {
                         dokončeno
                       </span>
                     )}
+                    {!u.ukoncena && !t.dokoncena && (
+                      <span
+                        className="mono"
+                        style={{ marginLeft: 8, fontSize: 12, color: t.registraceUzavrena ? "var(--color-attention)" : "var(--color-live)" }}
+                      >
+                        {t.registraceUzavrena ? "registrace uzavřená" : "registrace otevřená"}
+                      </span>
+                    )}
+                    {vlnaByRoute[t.id]?.casStartu && (
+                      <span className="mono" style={{ color: "var(--text-secondary)", marginLeft: 8, fontSize: 12 }}>
+                        odstartováno {new Date(vlnaByRoute[t.id]!.casStartu!).toLocaleString("cs-CZ", { dateStyle: "short", timeStyle: "medium" })}
+                      </span>
+                    )}
                   </span>
                   {!u.ukoncena && (
-                    <span style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                      <button onClick={() => startRace(t.id)} className="btn-pill">
+                    <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                      <button onClick={() => startRace(t.id)} className="btn-pill primary">
                         Start
                       </button>
                       <button onClick={() => toggleDokoncena(t.id, !t.dokoncena)} className="btn-pill">
                         {t.dokoncena ? "Otevřít znovu" : "Dokončit"}
                       </button>
-                      <button onClick={() => ukazatRegistracniOdkaz(t.id)} className="btn-pill">
-                        Registrace
-                      </button>
-                      <button onClick={() => toggleRegistrace(t.id, !t.registraceUzavrena)} className="btn-pill">
-                        {t.registraceUzavrena ? "Otevřít registraci" : "Uzavřít registraci"}
-                      </button>
-                      <button onClick={() => togglePlatba(t)} className="btn-pill">
-                        {otevrenaPlatba[t.id] ? "Skrýt platbu" : "Potvrzovací e-mail / platba"}
-                      </button>
-                      <button onClick={() => ukazatEmbedRegistrace(t.id)} className="btn-pill">
-                        Embed registrace
-                      </button>
-                      <button onClick={() => ukazatEmbedKod(t.id)} className="btn-pill">
-                        Embed výsledků
-                      </button>
-                      <button onClick={() => ukazatKioskOdkaz(t.id)} className="btn-pill">
-                        Kiosk
-                      </button>
-                      <button onClick={() => deleteRoute(t.id, t.nazev)} className="btn-pill danger">
-                        Smazat
-                      </button>
+                      <RozbalovaciMenu
+                        popisek="Registrace"
+                        polozky={[
+                          { popisek: "Odkaz na formulář", akce: () => ukazatRegistracniOdkaz(t.id) },
+                          { popisek: "Embed registrace", akce: () => ukazatEmbedRegistrace(t.id) },
+                          { popisek: otevrenaPlatba[t.id] ? "Skrýt platbu" : "Potvrzovací e-mail / platba", akce: () => togglePlatba(t) },
+                          {
+                            popisek: t.registraceUzavrena ? "Otevřít registraci" : "Uzavřít registraci",
+                            akce: () => toggleRegistrace(t.id, !t.registraceUzavrena),
+                          },
+                        ]}
+                      />
+                      <RozbalovaciMenu
+                        popisek="Zobrazení"
+                        polozky={[
+                          { popisek: "Kiosk trati", akce: () => ukazatKioskOdkaz(t.id) },
+                          { popisek: "Embed výsledků", akce: () => ukazatEmbedKod(t.id) },
+                        ]}
+                      />
+                      <RozbalovaciMenu
+                        popisek="Další"
+                        polozky={[{ popisek: "Smazat trať", akce: () => deleteRoute(t.id, t.nazev), nebezpecna: true }]}
+                      />
                     </span>
                   )}
                 </div>

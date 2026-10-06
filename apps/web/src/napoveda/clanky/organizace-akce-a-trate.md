@@ -22,26 +22,28 @@ Všechno se spravuje na jednom místě — ve **Správě akcí** (`/sprava`), do
 
 ## Co jde u akce nastavit
 
-U každé aktivní (neukončené) akce máte v horní liště:
+U každé aktivní (neukončené) akce máte v horní liště tlačítka **Kiosk (celá akce)**, **Lidé s přístupem** a nabídku **Více** (po kliknutí se rozbalí; zavřete ji klikem mimo nebo klávesou Esc). Konkrétně:
 
-- **Přejmenovat** — změní název akce.
-- **Heslo výsledků** — nastaví heslo, které musí návštěvníci zadat, než uvidí výsledky přes veřejný seznam na `vysledky.depotime.cz`. Víc v [Heslo k výsledkům](/napoveda/heslo-vysledku).
+- **Více → Přejmenovat** — změní název akce.
+- **Více → Heslo výsledků** — nastaví heslo, které musí návštěvníci zadat, než uvidí výsledky přes veřejný seznam na `vysledky.depotime.cz`. Víc v [Heslo k výsledkům](/napoveda/heslo-vysledku).
 - **Kiosk (celá akce)** — odkaz na celoobrazovkový kiosk, který sám rotuje mezi všemi tratěmi akce. Víc v [Kiosk pro promítání v cíli](/napoveda/kiosk).
-- **Ukončit akci** — schová akci z živého Přehledu (Dashboard), ale nic nemaže. Kdykoliv jde tlačítkem **Obnovit akci** vrátit zpět. Ukončená akce se automaticky zavírá i pro startovní listinu a měření — je to určené pro už dokončené závody.
-- **Smazat akci** — nevratně smaže akci i se všemi tratěmi, přihláškami a naměřenými časy. Appka se před smazáním ptá na potvrzení.
+- **Lidé s přístupem** — rozbalí seznam lidí s přístupem k akci a umožní pozvat kolegu s rolí.
+- **Více → Ukončit akci** — schová akci z živého Přehledu (Dashboard), ale nic nemaže. Kdykoliv jde položkou **Více → Obnovit akci** vrátit zpět. Ukončená akce se automaticky zavírá i pro startovní listinu a měření — je to určené pro už dokončené závody.
+- **Více → Smazat akci** — nevratně smaže akci i se všemi tratěmi, přihláškami a naměřenými časy. Appka se před smazáním ptá na potvrzení.
 
 ## Co jde nastavit u tratě
 
-U jednotlivé trati (v seznamu pod akcí) máte:
+U jednotlivé trati (v seznamu pod akcí) vidíte u názvu stav registrace („registrace otevřená/uzavřená"), případně čas, kdy trať odstartovala. Vedle toho jsou tlačítka **Start**, **Dokončit** a rozbalovací nabídky **Registrace**, **Zobrazení** a **Další**:
 
 - **Start** — spustí start vlny (od tohoto okamžiku běží čas). Pokud trať už odstartovala, appka se před opětovným startem zeptá — nový start by přepsal čas startu a tím i časy všech závodníků.
-- **Automatický start** — místo ručního tlačítka zadáte čas a Depo trať spustí sám přesně v ten okamžik, i kdybyste zrovna neseděli u počítače. Plán jde kdykoliv zrušit tlačítkem **Zrušit plán**.
+- **Naplánovat start** (tlačítko pod tratí) — místo ručního tlačítka zadáte čas a Depo trať spustí sám přesně v ten okamžik, i kdybyste zrovna neseděli u počítače. Naplánovaný čas i odpočet vidíte přímo pod tratí, plán jde kdykoliv zrušit tlačítkem **Zrušit plán**.
 - **Dokončit / Otevřít znovu** — označí trať jako dokončenou (jen informativní stav, nic neuzamyká).
-- **Registrace** — zobrazí odkaz na veřejný registrační formulář, kde se mohou závodníci přihlásit sami. Víc v [Online registrace závodníků](/napoveda/online-registrace).
-- **Otevřít/Uzavřít registraci** — dočasně zavře veřejný formulář (např. těsně před startem).
-- **Embed registrace** / **Embed výsledků** — kód `<iframe>` pro vložení registračního formuláře nebo živých výsledků přímo na váš vlastní web. Víc v [Vložení na váš web (embed)](/napoveda/embed-na-web).
-- **Kiosk** — odkaz na kiosk jedné konkrétní trati.
-- **Smazat** — nevratně smaže trať se vším, co k ní patří.
+- **Registrace → Odkaz na formulář** — zobrazí odkaz na veřejný registrační formulář, kde se mohou závodníci přihlásit sami. Víc v [Online registrace závodníků](/napoveda/online-registrace).
+- **Registrace → Otevřít/Uzavřít registraci** — dočasně zavře veřejný formulář (např. těsně před startem).
+- **Registrace → Potvrzovací e-mail / platba** — text potvrzovacího e-mailu, číslo účtu a startovné.
+- **Registrace → Embed registrace** a **Zobrazení → Embed výsledků** — kód `<iframe>` pro vložení registračního formuláře nebo živých výsledků přímo na váš vlastní web. Víc v [Vložení na váš web (embed)](/napoveda/embed-na-web).
+- **Zobrazení → Kiosk trati** — odkaz na kiosk jedné konkrétní trati.
+- **Další → Smazat trať** — nevratně smaže trať se vším, co k ní patří.
 
 ## Aktivní vs. ukončená akce
 

@@ -10,7 +10,7 @@ Vedle ručního zápisu a importu CSV umí Depo nabídnout i veřejný formulá�
 
 ## Odkaz na formulář
 
-Ve **Správě akcí** u dané trati klikněte na **Registrace** — appka ukáže odkaz ve tvaru `depotime.cz/registrace/ID-trasy`. Odkaz můžete sdílet kdekoliv (web, sociální sítě, plakát s QR kódem).
+Ve **Správě akcí** u dané trati otevřete nabídku **Registrace** a zvolte **Odkaz na formulář** — appka ukáže odkaz ve tvaru `depotime.cz/registrace/ID-trasy`. Odkaz můžete sdílet kdekoliv (web, sociální sítě, plakát s QR kódem).
 
 ## Co formulář obsahuje
 
@@ -34,7 +34,7 @@ Startovní číslo se nepřiděluje automaticky — odeslaný formulář vytvoř
 
 ## Potvrzovací e-mail a platba startovného
 
-Na e-mail uvedený ve formuláři appka ihned pošle potvrzovací e-mail, že registraci přijala. Text i platební údaje si nastavíte ve **Správě akcí** u dané trati tlačítkem **Potvrzovací e-mail / platba**:
+Na e-mail uvedený ve formuláři appka ihned pošle potvrzovací e-mail, že registraci přijala. Text i platební údaje si nastavíte ve **Správě akcí** u dané trati položkou **Registrace → Potvrzovací e-mail / platba**:
 
 - **Vlastní text** — libovolná zpráva navíc (pokyny k platbě, odkaz na startovní listinu apod.).
 - **Číslo účtu** — český formát `předčíslí-číslo/kódBanky` (např. `19-2000145399/0800`), předčíslí je nepovinné.
@@ -51,7 +51,7 @@ Ve Startovní listině má každý závodník zaškrtávátko **Zaplaceno** — 
 
 ## Uzavření a otevření registrace
 
-Ve Správě akcí tlačítkem **Uzavřít registraci** formulář dočasně zastavíte (typicky těsně před startem) — návštěvníci uvidí informaci, že registrace je uzavřená. Tlačítkem **Otevřít registraci** ji znovu zpřístupníte. Ruční zápis a import CSV fungují vždy, uzavření se týká jen tohoto veřejného formuláře.
+Ve Správě akcí položkou **Registrace → Uzavřít registraci** formulář dočasně zastavíte (typicky těsně před startem) — návštěvníci uvidí informaci, že registrace je uzavřená. Položkou **Registrace → Otevřít registraci** ji znovu zpřístupníte. Ruční zápis a import CSV fungují vždy, uzavření se týká jen tohoto veřejného formuláře.
 
 ## Vložení formuláře na váš web
 

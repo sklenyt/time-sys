@@ -6,6 +6,7 @@ import { chybaZeServeru } from "../lib/chyby";
 function formatOdpocet(msDoStartu: number): string {
   if (msDoStartu <= 0) return "start právě teď…";
   const s = Math.floor(msDoStartu / 1000);
+  if (s >= 48 * 3600) return `${Math.floor(s / 86400)} dní`;
   const hh = String(Math.floor(s / 3600)).padStart(2, "0");
   const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
   const ss = String(s % 60).padStart(2, "0");
@@ -41,6 +42,7 @@ interface StartPlanovacProps {
 export function StartPlanovac({ routeId, vlna, onChanged }: StartPlanovacProps) {
   const [cas, setCas] = useState(vychoziCas);
   const [odesilam, setOdesilam] = useState(false);
+  const [otevrene, setOtevrene] = useState(false);
   const [chyba, setChyba] = useState<string | null>(null);
   const [ted, setTed] = useState(() => Date.now());
 
@@ -65,6 +67,7 @@ export function StartPlanovac({ routeId, vlna, onChanged }: StartPlanovacProps) 
         planovanyStart: new Date(cas).toISOString(),
       });
       setCas(vychoziCas());
+      setOtevrene(false);
       onChanged();
     } catch (e) {
       setChyba(chybaZeServeru(e, "Naplánování se nezdařilo"));
@@ -104,6 +107,9 @@ export function StartPlanovac({ routeId, vlna, onChanged }: StartPlanovacProps) 
         <span className="mono" style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4, color: "var(--text-secondary)" }}>
           Automatický start
         </span>
+        <span className="mono" style={{ fontSize: 13, fontWeight: 700 }}>
+          {planovanyStart.toLocaleString("cs-CZ", { dateStyle: "medium", timeStyle: "short" })}
+        </span>
         <span className="mono" style={{ fontSize: 13, color: "var(--tape-700)", fontWeight: 700 }}>
           za {formatOdpocet(planovanyStart.getTime() - ted)}
         </span>
@@ -111,6 +117,16 @@ export function StartPlanovac({ routeId, vlna, onChanged }: StartPlanovacProps) 
           Zrušit plán
         </button>
         {chyba && <span style={{ color: "var(--color-danger)", fontSize: 12.5 }}>{chyba}</span>}
+      </div>
+    );
+  }
+
+  if (!otevrene) {
+    return (
+      <div style={{ marginTop: 8 }}>
+        <button onClick={() => setOtevrene(true)} className="btn-pill">
+          Naplánovat start
+        </button>
       </div>
     );
   }
@@ -128,6 +144,9 @@ export function StartPlanovac({ routeId, vlna, onChanged }: StartPlanovacProps) 
       />
       <button onClick={naplanovat} disabled={odesilam || !cas} className="btn-pill">
         Naplánovat start
+      </button>
+      <button onClick={() => setOtevrene(false)} disabled={odesilam} className="btn-pill">
+        Zavřít
       </button>
       {chyba && <span style={{ color: "var(--color-danger)", fontSize: 12.5 }}>{chyba}</span>}
     </div>
