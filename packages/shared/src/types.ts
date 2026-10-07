@@ -26,6 +26,8 @@ export interface Udalost {
   htmlHlavicka?: string | null;
   logoUrl?: string | null;
   ukoncena: boolean;
+  /** Kopie (CC) potvrzení registrace a platby; null = bez kopie. */
+  emailKopie?: string | null;
 }
 
 export interface Trasa {

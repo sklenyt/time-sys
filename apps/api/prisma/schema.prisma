@@ -131,6 +131,9 @@ model Udalost {
   // se skryjí, ať se v seznamu nekupí dopsané závody. Data zůstávají beze
   // změny (žádný mazací efekt), jde jen o UI stav.
   ukoncena          Boolean  @default(false) @map("ukoncena")
+  // Adresa, na kterou se posílá kopie (CC) potvrzení registrace a platby
+  // odeslaných ze systémového odesílatele — každá akce může mít jinou.
+  emailKopie        String?  @map("email_kopie")
 
   organizace     Organizace      @relation(fields: [organizaceId], references: [id], onDelete: Restrict)
   trasy          Trasa[]

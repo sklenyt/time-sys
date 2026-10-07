@@ -184,7 +184,7 @@ describe("RecordsService", () => {
         startovniCislo: 1,
         prijmeni: "Novák",
         jmeno: "Petr",
-        oznamovaciEmail: "blizky@example.cz",
+        email: "zavodnik@example.cz",
         startVlna: { casStartu: START_CAS },
       });
     });

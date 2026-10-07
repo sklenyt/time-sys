@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { createTransport, Transporter } from "nodemailer";
-import { sestavPotvrzeniPlatby, sestavPotvrzeniRegistrace, type UdajeRegistrace } from "@depo/shared";
+import { sestavOznameniODojezdu, sestavPotvrzeniPlatby, sestavPotvrzeniRegistrace, type UdajeRegistrace } from "@depo/shared";
 
 /**
  * F32 — automatický e-mail rodině/blízké osobě při doběhu závodníka do
@@ -9,6 +9,21 @@ import { sestavPotvrzeniPlatby, sestavPotvrzeniRegistrace, type UdajeRegistrace 
  * poštovního serveru), ať to neshodí zápis doběhu, který je kritickou
  * cestou systému.
  */
+export type TypEmailu = "REGISTRACE" | "PLATBA" | "DOJEZD" | "SYSTEM";
+
+const OBECNY_ODESILATEL = "vysledky@depo.app";
+
+/**
+ * Odesílatel podle typu e-mailu — typ může mít vlastní adresu
+ * (`SMTP_FROM_<TYP>`, např. `SMTP_FROM_DOJEZD` pro výsledky), jinak se použije
+ * obecné `SMTP_FROM`. Adresy musí být u SMTP poskytovatele ověřené (SPF/DKIM),
+ * jinak e-maily končí ve spamu. Kopii (CC, viditelná příjemci) určuje akce (`Udalost.emailKopie`).
+ */
+export function odesilatelAKopie(typ: TypEmailu, kopie?: string | null): { from: string; cc?: string } {
+  const from = process.env[`SMTP_FROM_${typ}`]?.trim() || process.env.SMTP_FROM?.trim() || OBECNY_ODESILATEL;
+  return { from, cc: kopie?.trim() || undefined };
+}
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
@@ -35,6 +50,7 @@ export class EmailService {
     jmeno: string;
     startovniCislo: number;
     trasaNazev: string;
+    udalostNazev?: string | null;
     casCelkem: string;
     odkazNaVysledky: string;
   }): Promise<void> {
@@ -44,12 +60,14 @@ export class EmailService {
       return;
     }
 
+    const oznameni = sestavOznameniODojezdu(params);
     try {
       await transporter.sendMail({
-        from: process.env.SMTP_FROM ?? "vysledky@depo.app",
+        ...odesilatelAKopie("DOJEZD"),
         to: params.komu,
-        subject: `${params.prijmeni} ${params.jmeno} doběhl/a do cíle — ${params.trasaNazev}`,
-        text: `${params.prijmeni} ${params.jmeno} (startovní číslo ${params.startovniCislo}) právě doběhl/a do cíle na trati "${params.trasaNazev}" s časem ${params.casCelkem}.\n\nVýsledek: ${params.odkazNaVysledky}`,
+        subject: oznameni.predmet,
+        text: oznameni.text,
+        html: oznameni.html,
       });
     } catch (err) {
       // Nedoručený e-mail nesmí shodit zápis doběhu (F06 je kritická cesta) — jen se zaloguje.
@@ -73,6 +91,7 @@ export class EmailService {
     udalostNazev: string;
     vlastniText?: string | null;
     udaje?: UdajeRegistrace;
+    kopie?: string | null;
     platba?: { castkaKc: number; qrPng: Buffer };
   }): Promise<void> {
     const transporter = this.getTransporter();
@@ -97,7 +116,7 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: process.env.SMTP_FROM ?? "vysledky@depo.app",
+        ...odesilatelAKopie("REGISTRACE", params.kopie),
         to: params.komu,
         subject: potvrzeni.predmet,
         text: potvrzeni.text,
@@ -118,6 +137,7 @@ export class EmailService {
     trasaNazev: string;
     udalostNazev: string;
     platbaCastkaKc?: number | null;
+    kopie?: string | null;
   }): Promise<boolean> {
     const transporter = this.getTransporter();
     if (!transporter) {
@@ -127,7 +147,7 @@ export class EmailService {
     const potvrzeni = sestavPotvrzeniPlatby(params);
     try {
       await transporter.sendMail({
-        from: process.env.SMTP_FROM ?? "vysledky@depo.app",
+        ...odesilatelAKopie("PLATBA", params.kopie),
         to: params.komu,
         subject: potvrzeni.predmet,
         text: potvrzeni.text,
@@ -151,7 +171,7 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: process.env.SMTP_FROM ?? "vysledky@depo.app",
+        ...odesilatelAKopie("SYSTEM"),
         to: params.komu,
         subject: "Reset hesla — Depo",
         text: `Ahoj ${params.jmeno},\n\npožádali jste o reset hesla k účtu Depo. Pro nastavení nového hesla klikněte na odkaz níže. Odkaz je platný 1 hodinu.\n\n${params.odkaz}\n\nPokud jste o reset hesla nežádali, tento e-mail ignorujte.`,

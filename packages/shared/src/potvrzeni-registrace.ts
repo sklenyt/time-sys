@@ -161,3 +161,50 @@ export function sestavPotvrzeniPlatby(v: PotvrzeniPlatbyVstup): PotvrzeniRegistr
 
   return { predmet: `Platba přijata, startovní číslo ${v.startovniCislo} — ${v.udalostNazev} (${v.trasaNazev})`, text: text.join("\n"), html };
 }
+
+export interface OznameniODojezduVstup {
+  jmeno: string;
+  prijmeni: string;
+  startovniCislo: number;
+  trasaNazev: string;
+  udalostNazev?: string | null;
+  casCelkem: string;
+  odkazNaVysledky: string;
+}
+
+/** E-mail závodníkovi po dojezdu (na jeho e-mail z registrace): gratulace, čas v cíli a odkaz na výsledky akce. */
+export function sestavOznameniODojezdu(v: OznameniODojezduVstup): PotvrzeniRegistrace {
+  const jmeno = `${v.jmeno} ${v.prijmeni}`;
+  const akce = v.udalostNazev?.trim() || null;
+  const patickaText = `Tento e-mail vám posíláme, protože jste se zaregistrovali${akce ? ` na akci ${akce}` : ""}. Odeslal ho automaticky systém Depo, neodpovídejte na něj.`;
+  const text = [
+    `Dobrý den, ${jmeno},`,
+    "",
+    "gratulujeme, jste v cíli!",
+    "",
+    ...(akce ? [`Akce: ${akce}`] : []),
+    `Trať: ${v.trasaNazev}`,
+    `Startovní číslo: ${v.startovniCislo}`,
+    `Váš čas: ${v.casCelkem}`,
+    "",
+    `Výsledky akce najdete tady: ${v.odkazNaVysledky}`,
+    "",
+    "—",
+    patickaText,
+  ];
+
+  const html =
+    `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#1a2233;max-width:560px">` +
+    `<p style="margin:0 0 14px">Dobrý den, ${escapeHtml(jmeno)},</p>` +
+    `<p style="margin:0 0 4px;font-size:22px;font-weight:700">Gratulujeme, jste v cíli!</p>` +
+    `<p style="margin:0 0 16px;color:#667085">${akce ? `${escapeHtml(akce)} · ` : ""}${escapeHtml(v.trasaNazev)}</p>` +
+    `<div style="margin:0 0 16px;padding:16px;border:1px solid #d9dee7;border-radius:8px;text-align:center">` +
+    `<div style="color:#667085;font-size:13px">Váš čas</div>` +
+    `<div style="font-size:40px;font-weight:700;line-height:1.2;font-family:'Courier New',monospace">${escapeHtml(v.casCelkem)}</div>` +
+    `<div style="color:#667085;font-size:13px;margin-top:4px">startovní číslo ${v.startovniCislo}</div></div>` +
+    `<p style="margin:0 0 20px;text-align:center"><a href="${escapeHtml(v.odkazNaVysledky)}" style="display:inline-block;background:#0b1220;color:#ffffff;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:8px">Zobrazit výsledky akce</a></p>` +
+    `<p style="margin:0;padding-top:12px;border-top:1px solid #e4e7ec;color:#98a2b3;font-size:12px">${escapeHtml(patickaText)}</p>` +
+    `</div>`;
+
+  return { predmet: `Jste v cíli${akce ? ` — ${akce}` : ""} (${v.trasaNazev})`, text: text.join("\n"), html };
+}

@@ -101,6 +101,7 @@ export class EventsService {
         logoUrl: dto.logoUrl,
         verejnyVypis: dto.verejnyVypis,
         hesloVysledkuHash,
+        emailKopie: dto.emailKopie === undefined ? undefined : dto.emailKopie?.trim() || null,
         ukoncena: dto.ukoncena,
       },
     });

@@ -236,6 +236,7 @@ export class EntriesService {
       trasaNazev: trasa.nazev,
       udalostNazev: trasa.udalost.nazev,
       platbaCastkaKc: trasa.platbaCastka,
+      kopie: trasa.udalost.emailKopie,
     });
     if (!odeslano) {
       throw new ServiceUnavailableException("E-mail se nepodařilo odeslat (zkontrolujte nastavení SMTP)");
@@ -346,6 +347,7 @@ export class EntriesService {
         trasaNazev: trasa.nazev,
         udalostNazev: trasa.udalost.nazev,
         vlastniText: trasa.potvrzovaciEmailText,
+        kopie: trasa.udalost.emailKopie,
         udaje: {
           rocnik: dto.rocnik,
           pohlavi: dto.pohlavi,

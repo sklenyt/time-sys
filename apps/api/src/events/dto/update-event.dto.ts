@@ -1,4 +1,4 @@
-import { IsBoolean, IsDateString, IsOptional, IsString, IsUrl, MinLength } from "class-validator";
+import { IsBoolean, IsDateString, IsEmail, IsOptional, IsString, IsUrl, MinLength, ValidateIf } from "class-validator";
 
 /** organizaceId zde záměrně chybí — přesun události mezi organizacemi není podporovaná operace. */
 export class UpdateEventDto {
@@ -38,4 +38,10 @@ export class UpdateEventDto {
   @IsOptional()
   @IsBoolean()
   ukoncena?: boolean;
+
+  /** Kopie (CC, viditelná příjemci) potvrzení registrace a platby; prázdný řetězec nebo null kopii zruší. */
+  @IsOptional()
+  @ValidateIf((_o, v) => v !== "" && v !== null)
+  @IsEmail()
+  emailKopie?: string | null;
 }

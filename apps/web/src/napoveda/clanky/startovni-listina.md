@@ -21,7 +21,7 @@ V sekci **Zapsat závodníka** jsou povinné údaje označené hvězdičkou (*) 
 - **Kategorie** — vybíráte z kategorií zvolené tratě. Pokud ji Depo podle ročníku a pohlaví [navrhlo](/napoveda/kategorie), pole se předvyplní a pod formulářem se objeví poznámka; klidně ji přepište, pokud nesedí.
 - **E-mail**.
 
-V rozbalovací části **Další údaje (nepovinné)** je klub, telefon, nouzový kontakt, e-mail pro oznámení o dojezdu a zdravotní poznámka.
+V rozbalovací části **Další údaje (nepovinné)** je klub, telefon, nouzový kontakt, e-mail pro oznámení o dojezdu (zatím se nepoužívá, e-mail o dojezdu chodí na hlavní e-mail závodníka) a zdravotní poznámka.
 
 Klikněte na **Přidat do listiny**. Pokud chcete zapsat víc lidí najednou, rychlejší je [Import z CSV](/napoveda/import-csv).
 

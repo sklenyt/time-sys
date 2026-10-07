@@ -68,7 +68,7 @@ export class RecordsService {
     // Kolikátý průjezd cílem tohle je (víckolové tratě, Trasa.pocetKol) —
     // jen u DOJEZD, ať se zbytečně nedotazuje trať na každý zápis mezičasu.
     const trasaProKolo =
-      typUdalosti === TypUdalosti.DOJEZD ? await this.prisma.trasa.findUnique({ where: { id: trasaId } }) : null;
+      typUdalosti === TypUdalosti.DOJEZD ? await this.prisma.trasa.findUnique({ where: { id: trasaId }, include: { udalost: true } }) : null;
 
     // Kolize stanovišť (03-architecture.md §3.5): stejná přihláška dostala
     // DOJEZD z jiného zařízení nedávno — dvě nezávislá zařízení mohla
@@ -134,17 +134,18 @@ export class RecordsService {
       // U víckolové tratě jen při skutečném doběhu (poslední z pocetKol
       // průjezdů) — jinak by e-mail chodil po každém kole, ne jen v cíli.
       const jeSkutecnyDobeh = aktualniKolo !== null && pocetKol !== null && aktualniKolo >= pocetKol;
-      if (prihlaska?.oznamovaciEmail && casCelkem && trasaProKolo && jeSkutecnyDobeh) {
-        const webUrl = process.env.WEB_APP_URL ?? "http://localhost:5173";
+      if (prihlaska?.email && casCelkem && trasaProKolo && jeSkutecnyDobeh) {
+        const vysledkyUrl = process.env.VYSLEDKY_URL ?? "https://vysledky.depotime.cz";
         this.email
           .posliOznameniODobehu({
-            komu: prihlaska.oznamovaciEmail,
+            komu: prihlaska.email,
             prijmeni: prihlaska.prijmeni,
             jmeno: prihlaska.jmeno,
             startovniCislo: prihlaska.startovniCislo,
             trasaNazev: trasaProKolo.nazev,
+            udalostNazev: trasaProKolo.udalost?.nazev,
             casCelkem,
-            odkazNaVysledky: `${webUrl}/vysledky/${trasaId}/bezec/${prihlaska.id}`,
+            odkazNaVysledky: `${vysledkyUrl}/?akce=${trasaProKolo.udalostId}`,
           })
           .catch(() => {});
       }

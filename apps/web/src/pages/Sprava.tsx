@@ -148,6 +148,18 @@ export function Sprava() {
    * návštěvnost) — tohle nastaví jen heslo, které pak musí sdílet se
    * závodníky, ať se ke jménům a časům nedostane kdokoliv.
    */
+  async function nastavitEmailKopie(eventId: string, soucasna: string | null | undefined) {
+    const adresa = window.prompt(
+      "Kopie potvrzení registrace a platby pošleme na tuto adresu (viditelná kopie, závodník adresu uvidí v e-mailu jako Cc). Nechte prázdné pro zrušení kopie.",
+      soucasna ?? ""
+    );
+    if (adresa === null) return;
+    await sBusy("Ukládám…", async () => {
+      await api.patch(`/events/${eventId}`, { emailKopie: adresa.trim() });
+      await reload();
+    });
+  }
+
   async function nastavitHesloVysledku(eventId: string) {
     const heslo = window.prompt(
       "Heslo pro přístup k výsledkům na vysledky.depotime.cz (min. 4 znaky, sdílejte ho se závodníky). Nechte prázdné pro zrušení hesla."
@@ -449,6 +461,7 @@ export function Sprava() {
                     : [
                         { popisek: "Přejmenovat", akce: () => renameEvent(u.id, u.nazev) },
                         { popisek: "Heslo výsledků", akce: () => nastavitHesloVysledku(u.id) },
+                        { popisek: "Kopie e-mailů", akce: () => nastavitEmailKopie(u.id, u.emailKopie) },
                       ]),
                   { popisek: u.ukoncena ? "Obnovit akci" : "Ukončit akci", akce: () => toggleUkoncena(u.id, !u.ukoncena) },
                   { popisek: "Smazat akci", akce: () => deleteEvent(u.id, u.nazev), nebezpecna: true },
@@ -458,6 +471,7 @@ export function Sprava() {
           </div>
           <p className="mono" style={{ color: "var(--text-secondary)", margin: "0 0 12px" }}>
             {formatDatum(u.datum)}
+            {u.emailKopie && ` · kopie e-mailů na ${u.emailKopie}`}
           </p>
 
           {otevreneRole[u.id] && (

@@ -28,7 +28,7 @@ Nepovinné údaje:
 - Telefon.
 - Nouzový kontakt — jméno a telefon osoby pro případ nouze na trati.
 - Zdravotní poznámka (alergie, léky apod.).
-- E-mail pro oznámení o dojezdu — pokud ho závodník vyplní, přijde na něj automatický e-mail ve chvíli, kdy proběhne cílem (hodí se pro rodinu/blízké, kteří čekají doma).
+- E-mail pro oznámení o dojezdu — pole je zatím jen evidované; e-mail o dojezdu se neposílá na něj, ale na hlavní e-mail závodníka (viz níže).
 
 Startovní číslo se nepřiděluje automaticky — odeslaný formulář vytvoří jen **čekající registraci**. Číslo jí musíte ručně přidělit ve [Startovní listině](/napoveda/startovni-listina) v sekci „K přidělení", teprve pak se závodník počítá do listiny, měření i výsledků. Díky tomu máte plnou kontrolu nad číslováním a můžete registraci před přidělením čísla i zamítnout (např. u duplicit nebo spamu).
 
@@ -41,9 +41,15 @@ Na e-mail uvedený ve formuláři appka ihned pošle potvrzovací e-mail, že re
 - **Startovné v Kč** — částka, která se má vybrat.
 - **Náhled e-mailu** — rozbalovací sekce pod poli, která při psaní ukazuje, jak bude e-mail vypadat (předmět i text, s fiktivním jménem). QR platba je v náhledu jen zástupný obrázek, skutečný kód se vygeneruje až při odeslání.
 
+Chcete-li dostávat kopie odeslaných potvrzení, nastavte u akce ve Správě akcí **Více → Kopie e-mailů** — platí pro potvrzení registrace i pro e-mail „Platba přijata".
+
 E-mail obsahuje i **shrnutí údajů**, které závodník ve formuláři uvedl (jméno, ročník, kategorie, klub, kontakty, nouzový kontakt), aby si je mohl zkontrolovat. **Zdravotní poznámka se v e-mailu neuvádí** — je tam jen informace, že byla vyplněna (kvůli ochraně citlivých údajů).
 
 Když vyplníte číslo účtu i částku, appka do e-mailu automaticky přidá **QR platbu** (česká QR Platba, formát SPAYD) — závodník ji naskenuje bankovní aplikací a rovnou zaplatí. Chybně vyplněné číslo účtu registraci nezablokuje, jen se e-mail pošle bez QR kódu. Bez SMTP nastavení appka e-mail jen tiše nepošle — samotná registrace tím není ovlivněná.
+
+## E-mail po dojezdu
+
+Když závodník proběhne cílem (u víckolových tratí po posledním kole), appka mu na e-mail uvedený při registraci pošle z adresy `vysledky@depotime.cz` e-mail „Gratulujeme, jste v cíli!" s jeho časem, startovním číslem a tlačítkem **Zobrazit výsledky akce**, které vede na veřejnou stránku výsledků akce (`vysledky.depotime.cz`), kde si vybere trať. E-mail se pošle jen závodníkům, kteří mají e-mail vyplněný, a jen pokud je nastavený SMTP.
 
 ## Ruční kontrola platby
 

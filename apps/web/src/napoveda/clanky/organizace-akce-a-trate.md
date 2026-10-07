@@ -27,6 +27,7 @@ U každé aktivní (neukončené) akce máte v horní liště tlačítka **Kiosk
 - **Více → Přejmenovat** — změní název akce.
 - **Více → Heslo výsledků** — nastaví heslo, které musí návštěvníci zadat, než uvidí výsledky přes veřejný seznam na `vysledky.depotime.cz`. Víc v [Heslo k výsledkům](/napoveda/heslo-vysledku).
 - **Kiosk (celá akce)** — odkaz na celoobrazovkový kiosk, který sám rotuje mezi všemi tratěmi akce. Víc v [Kiosk pro promítání v cíli](/napoveda/kiosk).
+- **Více → Kopie e-mailů** — adresa, na kterou se posílá kopie (v e-mailu je vidět jako Cc) potvrzení registrace a platby závodníkům téhle akce (hodí se pro organizátora, ať ví, co se odeslalo). Nastavuje se zvlášť pro každou akci, prázdné pole kopii zruší. Nastavená adresa je vidět pod datem akce.
 - **Lidé s přístupem** — rozbalí seznam lidí s přístupem k akci a umožní pozvat kolegu s rolí.
 - **Více → Ukončit akci** — schová akci z živého Přehledu (Dashboard), ale nic nemaže. Kdykoliv jde položkou **Více → Obnovit akci** vrátit zpět. Ukončená akce se automaticky zavírá i pro startovní listinu a měření — je to určené pro už dokončené závody.
 - **Více → Smazat akci** — nevratně smaže akci i se všemi tratěmi, přihláškami a naměřenými časy. Appka se před smazáním ptá na potvrzení.
