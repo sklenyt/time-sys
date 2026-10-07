@@ -44,6 +44,7 @@ U jednotlivé trati (v seznamu pod akcí) vidíte u názvu stav registrace („r
 - **Registrace → Potvrzovací e-mail / platba** — text potvrzovacího e-mailu, číslo účtu a startovné.
 - **Registrace → Embed registrace** a **Zobrazení → Embed výsledků** — kód `<iframe>` pro vložení registračního formuláře nebo živých výsledků přímo na váš vlastní web. Víc v [Vložení na váš web (embed)](/napoveda/embed-na-web).
 - **Zobrazení → Kiosk trati** — odkaz na kiosk jedné konkrétní trati.
+- **Další → Délka kola (km)** — nepovinná délka jednoho kola (u trati bez kol celé trati), jde zadat i při založení trati. Slouží jen ke kontrole podezřelých časů (viz [Kdo ještě běží](/napoveda/kdo-jeste-bezi)), Nechte-li pole prázdné, kontrola podle délky se nepoužije. U trati se délka zobrazí vedle názvu, např. „3× kolo · 5 km/kolo (15 km)".
 - **Další → Změnit počet kol** — upraví počet kol tratě (víc v [Víckolové závody](/napoveda/vickolove-zavody)). Pokud už trať odstartovala, appka před změnou upozorní, že se můžou změnit výsledky.
 - **Další → Smazat trať** — nevratně smaže trať se vším, co k ní patří.
 

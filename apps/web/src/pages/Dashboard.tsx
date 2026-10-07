@@ -176,7 +176,11 @@ export function Dashboard() {
       attentionItems.push({
         key: `a-${a.prihlaskaId}-${a.cas}`,
         title: `Podezřelý čas — č. ${a.startovniCislo}`,
-        detail: `${t.nazev} · ${a.typAnomalie === TypAnomalie.PRILIS_RYCHLY ? "výrazně rychlejší" : "výrazně pomalejší"} než ostatní v kat. ${a.kategorieKod}`,
+        detail: `${t.nazev} · ${
+          a.typAnomalie === TypAnomalie.NEREALNE_TEMPO
+            ? "nereálně rychlý čas vzhledem k délce tratě"
+            : `${a.typAnomalie === TypAnomalie.PRILIS_RYCHLY ? "výrazně rychlejší" : "výrazně pomalejší"} než ostatní v kat. ${a.kategorieKod}`
+        }`,
         actionLabel: "Detail",
         to: `/kdo-bezi/${t.id}`,
       });

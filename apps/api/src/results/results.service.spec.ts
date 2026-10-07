@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { NotFoundException } from "@nestjs/common";
 import { Pohlavi, StavUkonceni, TypAnomalie, TypUdalosti } from "@depo/shared";
-import { ResultsService } from "./results.service";
+import { ResultsService, nejrychlejsiRealneTempoMinKm } from "./results.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 const TRASA_ID = "trasa-1";
@@ -380,6 +380,35 @@ describe("ResultsService", () => {
 
       const anomalie = await service.getAnomalies(TRASA_ID);
       expect(anomalie.polozky).toHaveLength(0);
+    });
+
+    it("flags unrealistic average pace when the lap length is set, even if everyone ran the same (shortened) track", async () => {
+      // 10 km za 20 minut = 2:00 min/km — rychleji než světový rekord na 10 km.
+      prisma.trasa.findUnique.mockResolvedValue({
+        id: TRASA_ID, nazev: "Test trasa", pocetKol: 1, delkaKm: 10, udalost: { nazev: "Test akce" }, startVlny: [{ casStartu: new Date() }],
+      });
+      const a = prihlaska({ id: "a", startovniCislo: 1 });
+      const b = prihlaska({ id: "b", startovniCislo: 2 });
+      const c = prihlaska({ id: "c", startovniCislo: 3 });
+      prisma.prihlaska.findMany.mockResolvedValue([a, b, c]);
+      prisma.zaznamUdalosti.findMany.mockImplementation(async ({ where }) => {
+        if (where.typUdalosti === TypUdalosti.MEZICAS || where.typUdalosti?.in?.includes?.(TypUdalosti.MEZICAS)) return [];
+        return [
+          zaznam({ id: "z-a", prihlaskaId: "a", cas: minutyOdStartu(20) }),
+          zaznam({ id: "z-b", prihlaskaId: "b", cas: minutyOdStartu(21) }),
+          zaznam({ id: "z-c", prihlaskaId: "c", cas: minutyOdStartu(45) }),
+        ];
+      });
+
+      const anomalie = await service.getAnomalies(TRASA_ID);
+
+      const nereale = anomalie.polozky.filter((p) => p.typAnomalie === TypAnomalie.NEREALNE_TEMPO).map((p) => p.prihlaskaId);
+      expect(nereale).toEqual(["a", "b"]);
+    });
+
+    it("allows slower limits for longer distances", () => {
+      expect(nejrychlejsiRealneTempoMinKm(5)).toBeLessThan(nejrychlejsiRealneTempoMinKm(15));
+      expect(nejrychlejsiRealneTempoMinKm(15)).toBeLessThan(nejrychlejsiRealneTempoMinKm(100));
     });
   });
 });

@@ -478,6 +478,8 @@ export interface RunnerHistoryResponseDto {
 export enum TypAnomalie {
   PRILIS_RYCHLY = "PRILIS_RYCHLY",
   PRILIS_POMALY = "PRILIS_POMALY",
+  /** Čas je při zadané délce tratě rychlejší, než je u běhu reálné (možné zkrácení trati). */
+  NEREALNE_TEMPO = "NEREALNE_TEMPO",
 }
 
 export interface AnomaliePolozka {

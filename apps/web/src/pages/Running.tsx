@@ -102,8 +102,8 @@ export function Running() {
         <section style={{ marginTop: 32 }}>
           <h2 style={{ color: "var(--color-danger)" }}>Podezřelé časy</h2>
           <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
-            Výrazná odchylka od mediánu ostatních běžců ve stejné kategorii — možná chyba záznamu, zkrácení trati
-            nebo nouzová situace na trati.
+            Výrazná odchylka od mediánu ostatních běžců ve stejné kategorii, nebo (je-li u tratě zadaná délka)
+            nereálně rychlý čas vzhledem k délce tratě — možná chyba záznamu, zkrácení trati nebo nouzová situace na trati.
           </p>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {anomalie.polozky.map((a, i) => (
@@ -118,9 +118,15 @@ export function Running() {
                 }}
               >
                 #{a.startovniCislo} {a.prijmeni} {a.jmeno} ({a.kategorieKod}) —{" "}
-                {a.typAnomalie === TypAnomalie.PRILIS_RYCHLY ? "podezřele rychlý" : "podezřele pomalý"}{" "}
-                {a.typUdalosti === "MEZICAS" ? "mezičas" : "cílový čas"}: {a.cas} (medián kategorie:{" "}
-                {Math.round(a.medianKategorieMs / 1000 / 60)} min)
+                {a.typAnomalie === TypAnomalie.NEREALNE_TEMPO ? (
+                  <>nereálně rychlý cílový čas: {a.cas} (zkrácená trať?)</>
+                ) : (
+                  <>
+                    {a.typAnomalie === TypAnomalie.PRILIS_RYCHLY ? "podezřele rychlý" : "podezřele pomalý"}{" "}
+                    {a.typUdalosti === "MEZICAS" ? "mezičas" : "cílový čas"}: {a.cas} (medián kategorie:{" "}
+                    {Math.round(a.medianKategorieMs / 1000 / 60)} min)
+                  </>
+                )}
               </li>
             ))}
           </ul>

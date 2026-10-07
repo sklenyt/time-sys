@@ -26,6 +26,7 @@ export function Sprava() {
   const [eventDatum, setEventDatum] = useState("");
   const [routeDrafts, setRouteDrafts] = useState<Record<string, string>>({});
   const [routeKolDrafts, setRouteKolDrafts] = useState<Record<string, string>>({});
+  const [routeDelkaDrafts, setRouteDelkaDrafts] = useState<Record<string, string>>({});
   const [otevrenaPlatba, setOtevrenaPlatba] = useState<Record<string, boolean>>({});
   const [platbaDrafts, setPlatbaDrafts] = useState<
     Record<string, { potvrzovaciEmailText: string; platbaUcet: string; platbaCastka: string }>
@@ -107,14 +108,17 @@ export function Sprava() {
     const nazev = routeDrafts[eventId];
     if (!nazev?.trim()) return;
     const pocetKol = Math.max(1, Number(routeKolDrafts[eventId]) || 1);
+    const delkaKm = Number((routeDelkaDrafts[eventId] ?? "").replace(",", "."));
     await sBusy("Přidávám trasu…", async () => {
       await api.post(`/events/${eventId}/routes`, {
         nazev,
         pocetKol,
+        ...(delkaKm > 0 ? { delkaKm } : {}),
         typStartu: TypStartu.HROMADNY,
       });
       setRouteDrafts((d) => ({ ...d, [eventId]: "" }));
       setRouteKolDrafts((d) => ({ ...d, [eventId]: "" }));
+      setRouteDelkaDrafts((d) => ({ ...d, [eventId]: "" }));
       await reload();
     });
   }
@@ -301,6 +305,24 @@ export function Sprava() {
     }
     await sBusy("Ukládám…", async () => {
       await api.patch(`/routes/${t.id}`, { pocetKol: pocet });
+      await reload();
+    });
+  }
+
+  async function upravitDelkuKola(t: Trasa) {
+    const odpoved = window.prompt(
+      `Délka jednoho kola trati „${t.nazev}" v km (např. 5 nebo 10,5). Slouží jen ke kontrole podezřelých časů. Prázdné pole délku zruší.`,
+      t.delkaKm ? String(t.delkaKm).replace(".", ",") : ""
+    );
+    if (odpoved === null) return;
+    const text = odpoved.trim().replace(",", ".");
+    const delka = text === "" ? null : Number(text);
+    if (delka !== null && (!Number.isFinite(delka) || delka <= 0)) {
+      setError("Délka kola musí být kladné číslo v km");
+      return;
+    }
+    await sBusy("Ukládám…", async () => {
+      await api.patch(`/routes/${t.id}`, { delkaKm: delka });
       await reload();
     });
   }
@@ -574,9 +596,15 @@ export function Sprava() {
                 <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
                   <span>
                     {t.nazev}
-                    {t.pocetKol > 1 && (
+                    {(t.pocetKol > 1 || t.delkaKm) && (
                       <span className="mono" style={{ color: "var(--text-secondary)", marginLeft: 8, fontSize: 12 }}>
-                        {t.pocetKol}× kolo
+                        {t.pocetKol > 1 ? `${t.pocetKol}× kolo` : ""}
+                        {t.pocetKol > 1 && t.delkaKm ? " · " : ""}
+                        {t.delkaKm
+                          ? t.pocetKol > 1
+                            ? `${t.delkaKm} km/kolo (${Math.round(t.delkaKm * t.pocetKol * 100) / 100} km)`
+                            : `${t.delkaKm} km`
+                          : ""}
                       </span>
                     )}
                     {t.dokoncena && (
@@ -629,6 +657,7 @@ export function Sprava() {
                         popisek="Další"
                         polozky={[
                           { popisek: "Změnit počet kol", akce: () => upravitPocetKol(t) },
+                          { popisek: "Délka kola (km)", akce: () => upravitDelkuKola(t) },
                           { popisek: "Smazat trať", akce: () => deleteRoute(t.id, t.nazev), nebezpecna: true },
                         ]}
                       />
@@ -710,6 +739,14 @@ export function Sprava() {
                 inputMode="numeric"
                 title="Kolikrát závodník objede okruh, než doběhne — nechte prázdné pro trať bez kol (1)"
                 style={{ ...inputStyle, width: 100 }}
+              />
+              <input
+                value={routeDelkaDrafts[u.id] ?? ""}
+                onChange={(e) => setRouteDelkaDrafts((d) => ({ ...d, [u.id]: e.target.value }))}
+                placeholder="Délka kola (km)"
+                inputMode="decimal"
+                title="Nepovinné — délka jednoho kola (u trati bez kol celé trati) v km, slouží ke kontrole podezřelých časů"
+                style={{ ...inputStyle, width: 130 }}
               />
               <button onClick={() => createRoute(u.id)} className="btn-pill primary">
                 Přidat trasu

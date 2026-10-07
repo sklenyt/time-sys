@@ -23,6 +23,6 @@ Data se obnovují automaticky každých 5 sekund, není potřeba stránku ručn�
 
 ## Podezřelé časy
 
-Pod tabulkou se, pokud existují, zobrazují **podezřelé časy** — Depo porovnává mezičas nebo cílový čas každého běžce s mediánem ostatních ve stejné kategorii, a pokud se výrazně liší (podezřele rychlý nebo podezřele pomalý), upozorní na to. Nejde o automatické rozhodnutí, jen o pomůcku — může jít o chybu záznamu, ale i o zkrácení trati nebo nouzovou situaci na trati, kterou stojí za to prověřit.
+Pod tabulkou se, pokud existují, zobrazují **podezřelé časy** — Depo porovnává mezičas nebo cílový čas každého běžce s mediánem ostatních ve stejné kategorii, a pokud se výrazně liší (podezřele rychlý nebo podezřele pomalý), upozorní na to. Pokud máte u tratě zadanou [délku kola](/napoveda/organizace-akce-a-trate), appka navíc označí **nereálně rychlý čas vzhledem k délce tratě** (např. 10 km za 20 minut) — to odhalí i zkrácenou trať, kterou by statistika proti ostatním nezachytila, kdyby ji zkrátili všichni. Limit je nastavený tak, aby se označily jen časy rychlejší než reálné (pod světovými rekordy); je určený pro běh, u jiných sportů (např. kolo) délku nezadávejte. Nejde o automatické rozhodnutí, jen o pomůcku — může jít o chybu záznamu, ale i o zkrácení trati nebo nouzovou situaci na trati, kterou stojí za to prověřit.
 
 Upozornění se počítá jen v kategoriích, kde je aspoň 3 klasifikovaných/běžících — u menších kategorií porovnání nemá dostatek dat, aby dávalo smysl.

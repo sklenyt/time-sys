@@ -488,6 +488,31 @@ export class ResultsService {
 
     polozky.push(...this.detekovatOdlehleHodnoty(mezicasoveHodnoty, TypUdalosti.MEZICAS));
 
+    // Absolutní kontrola podle délky tratě (nepovinná): tempo, které je u běhu
+    // nereálné, naznačuje zkrácenou trať — to statistika proti ostatním
+    // nezachytí, když zkrátili všichni. Délka je za jedno kolo.
+    if (trasa.delkaKm && trasa.delkaKm > 0) {
+      const celkemKm = trasa.delkaKm * trasa.pocetKol;
+      const limit = nejrychlejsiRealneTempoMinKm(celkemKm);
+      for (const p of vysledky.klasifikovani) {
+        const tempo = p.casCelkemMs! / 60000 / celkemKm;
+        const uzOznaceny = polozky.some((a) => a.prihlaskaId === p.prihlaskaId && a.typUdalosti === TypUdalosti.DOJEZD);
+        if (tempo >= limit || uzOznaceny) continue;
+        polozky.push({
+          prihlaskaId: p.prihlaskaId,
+          startovniCislo: p.startovniCislo,
+          prijmeni: p.prijmeni,
+          jmeno: p.jmeno,
+          kategorieKod: p.kategorieKod,
+          typUdalosti: TypUdalosti.DOJEZD,
+          cas: formatDuration(p.casCelkemMs!),
+          casMs: p.casCelkemMs!,
+          medianKategorieMs: 0,
+          typAnomalie: TypAnomalie.NEREALNE_TEMPO,
+        });
+      }
+    }
+
     return { trasaId, polozky };
   }
 
@@ -686,6 +711,18 @@ export class ResultsService {
 }
 
 /** Medián seřazeného pole — robustnější než průměr proti odlehlým hodnotám (F33). */
+/**
+ * Nejrychlejší reálné průměrné tempo (min/km) pro danou délku — záměrně
+ * pod světovými rekordy, ať se označí jen opravdu nereálné časy. Pro běh;
+ * u jiných sportů (kolo) délku tratě nezadávejte.
+ */
+export function nejrychlejsiRealneTempoMinKm(celkemKm: number): number {
+  if (celkemKm <= 10) return 2.5;
+  if (celkemKm <= 21.1) return 2.75;
+  if (celkemKm <= 42.2) return 2.9;
+  return 3.3;
+}
+
 function median(serazeneHodnoty: number[]): number {
   const mid = Math.floor(serazeneHodnoty.length / 2);
   return serazeneHodnoty.length % 2 !== 0
