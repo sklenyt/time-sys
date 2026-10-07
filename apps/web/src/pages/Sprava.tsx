@@ -282,6 +282,29 @@ export function Sprava() {
     });
   }
 
+  async function upravitPocetKol(t: Trasa) {
+    const odpoved = window.prompt(`Počet kol trati „${t.nazev}":`, String(t.pocetKol));
+    if (odpoved === null) return;
+    const pocet = Number(odpoved.trim());
+    if (!Number.isInteger(pocet) || pocet < 1) {
+      setError("Počet kol musí být celé číslo od 1 výš");
+      return;
+    }
+    if (pocet === t.pocetKol) return;
+    if (
+      vlnaByRoute[t.id]?.casStartu &&
+      !window.confirm(
+        "Trať už odstartovala. Změna počtu kol přepočítá, kdo je v cíli (běžec se počítá do výsledků až po posledním kole), takže se můžou změnit výsledky. Opravdu změnit?"
+      )
+    ) {
+      return;
+    }
+    await sBusy("Ukládám…", async () => {
+      await api.patch(`/routes/${t.id}`, { pocetKol: pocet });
+      await reload();
+    });
+  }
+
   async function deleteRoute(routeId: string, nazev: string) {
     if (!window.confirm(`Opravdu smazat trasu "${nazev}"? Tuto akci nelze vrátit zpět.`)) return;
     await sBusy("Mažu trasu…", async () => {
@@ -604,7 +627,10 @@ export function Sprava() {
                       />
                       <RozbalovaciMenu
                         popisek="Další"
-                        polozky={[{ popisek: "Smazat trať", akce: () => deleteRoute(t.id, t.nazev), nebezpecna: true }]}
+                        polozky={[
+                          { popisek: "Změnit počet kol", akce: () => upravitPocetKol(t) },
+                          { popisek: "Smazat trať", akce: () => deleteRoute(t.id, t.nazev), nebezpecna: true },
+                        ]}
                       />
                     </span>
                   )}

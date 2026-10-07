@@ -44,6 +44,7 @@ U jednotlivé trati (v seznamu pod akcí) vidíte u názvu stav registrace („r
 - **Registrace → Potvrzovací e-mail / platba** — text potvrzovacího e-mailu, číslo účtu a startovné.
 - **Registrace → Embed registrace** a **Zobrazení → Embed výsledků** — kód `<iframe>` pro vložení registračního formuláře nebo živých výsledků přímo na váš vlastní web. Víc v [Vložení na váš web (embed)](/napoveda/embed-na-web).
 - **Zobrazení → Kiosk trati** — odkaz na kiosk jedné konkrétní trati.
+- **Další → Změnit počet kol** — upraví počet kol tratě (víc v [Víckolové závody](/napoveda/vickolove-zavody)). Pokud už trať odstartovala, appka před změnou upozorní, že se můžou změnit výsledky.
 - **Další → Smazat trať** — nevratně smaže trať se vším, co k ní patří.
 
 ## Aktivní vs. ukončená akce

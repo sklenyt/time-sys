@@ -12,7 +12,7 @@ Pro tratě typu „okruh, který se jede vícekrát“ (typicky atletický ovál
 
 Počet kol se zadává rovnou při zakládání trasy ve [Správě akcí](/napoveda/organizace-akce-a-trate) — vedle pole s názvem trasy je pole **Počet kol**. Necháte-li ho prázdné, trasa se založí jako jednokolová (běžný případ, žádný okruh). Trať s víc koly se v seznamu tratí pozná podle štítku „N× kolo“ u názvu.
 
-V uživatelském rozhraní jde počet kol nastavit jen při založení trasy — u už existující trasy pole pro dodatečnou změnu není.
+Počet kol jde dodatečně změnit u existující trasy ve Správě akcí: u trasy otevřete nabídku **Další → Změnit počet kol**. Pokud už trať odstartovala, appka před změnou upozorní, že se můžou změnit výsledky (běžec se počítá do výsledků až po posledním kole).
 
 ## Jak funguje zápis
 
