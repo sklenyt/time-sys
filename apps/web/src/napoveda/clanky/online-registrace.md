@@ -28,7 +28,6 @@ Nepovinné údaje:
 - Telefon.
 - Nouzový kontakt — jméno a telefon osoby pro případ nouze na trati.
 - Zdravotní poznámka (alergie, léky apod.).
-- E-mail pro oznámení o dojezdu — pole je zatím jen evidované; e-mail o dojezdu se neposílá na něj, ale na hlavní e-mail závodníka (viz níže).
 
 Startovní číslo se nepřiděluje automaticky — odeslaný formulář vytvoří jen **čekající registraci**. Číslo jí musíte ručně přidělit ve [Startovní listině](/napoveda/startovni-listina) v sekci „K přidělení", teprve pak se závodník počítá do listiny, měření i výsledků. Díky tomu máte plnou kontrolu nad číslováním a můžete registraci před přidělením čísla i zamítnout (např. u duplicit nebo spamu).
 

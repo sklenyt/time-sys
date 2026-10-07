@@ -46,7 +46,6 @@ export class EntriesService {
           startVlnaId,
           email: dto.email,
           telefon: dto.telefon,
-          oznamovaciEmail: dto.oznamovaciEmail,
           // Citlivé osobní údaje (F31) — nikdy plain-text ve sloupci (§8.4).
           nouzovyKontakt: dto.nouzovyKontakt ? encryptSecret(dto.nouzovyKontakt) : undefined,
           zdravotniPoznamka: dto.zdravotniPoznamka ? encryptSecret(dto.zdravotniPoznamka) : undefined,
@@ -314,7 +313,6 @@ export class EntriesService {
         kategorieId: dto.kategorieId,
         email: dto.email,
         telefon: dto.telefon,
-        oznamovaciEmail: dto.oznamovaciEmail,
         nouzovyKontakt: dto.nouzovyKontakt ? encryptSecret(dto.nouzovyKontakt) : undefined,
         zdravotniPoznamka: dto.zdravotniPoznamka ? encryptSecret(dto.zdravotniPoznamka) : undefined,
         clenoveDruzstva: dto.clenoveDruzstva?.length
@@ -357,7 +355,6 @@ export class EntriesService {
           telefon: dto.telefon,
           nouzovyKontakt: dto.nouzovyKontakt,
           zdravotniPoznamkaUvedena: !!dto.zdravotniPoznamka?.trim(),
-          oznamovaciEmail: dto.oznamovaciEmail,
           clenoveDruzstva: dto.clenoveDruzstva?.map((c) => `${c.jmeno} ${c.prijmeni}`),
         },
         platba,
@@ -404,7 +401,6 @@ export class EntriesService {
       kategorieId: registrace.kategorieId,
       email: registrace.email ?? undefined,
       telefon: registrace.telefon ?? undefined,
-      oznamovaciEmail: registrace.oznamovaciEmail ?? undefined,
       // Zašifrovaná v Registrace stejně jako v Prihlaska (F31) — create()
       // by je jinak zašifroval podruhé, proto se dešifrují až tady na
       // hranici mezi tabulkami, ne přes odsifrovatRegistraci (ten je pro

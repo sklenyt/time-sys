@@ -56,9 +56,6 @@ export class CreateEntryManualDto {
   @IsString()
   zdravotniPoznamka?: string;
 
-  @IsOptional()
-  @IsEmail()
-  oznamovaciEmail?: string;
 
   @IsOptional()
   @IsArray()
@@ -120,10 +117,6 @@ export class CreateEntryDto {
   @IsString()
   zdravotniPoznamka?: string;
 
-  /** F32 — e-mail rodině/blízké osobě, na který přijde oznámení o doběhu do cíle. */
-  @IsOptional()
-  @IsEmail()
-  oznamovaciEmail?: string;
 
   /** Štafeta/družstvo (max 4 členové, legacy vzor viz TeamMemberDto) — nepovinné. */
   @IsOptional()

@@ -8,7 +8,6 @@ export interface UdajeRegistrace {
   telefon?: string | null;
   nouzovyKontakt?: string | null;
   zdravotniPoznamkaUvedena?: boolean;
-  oznamovaciEmail?: string | null;
   clenoveDruzstva?: string[];
 }
 
@@ -44,7 +43,6 @@ function radkyUdaju(v: PotvrzeniRegistraceVstup): [string, string][] {
   if (u.telefon?.trim()) r.push(["Telefon", u.telefon.trim()]);
   if (u.nouzovyKontakt?.trim()) r.push(["Nouzový kontakt", u.nouzovyKontakt.trim()]);
   if (u.zdravotniPoznamkaUvedena) r.push(["Zdravotní poznámka", "uvedena (z důvodu ochrany údajů ji v e-mailu neuvádíme)"]);
-  if (u.oznamovaciEmail?.trim()) r.push(["E-mail pro oznámení o dojezdu", u.oznamovaciEmail.trim()]);
   if (u.clenoveDruzstva?.length) r.push(["Členové družstva", u.clenoveDruzstva.join(", ")]);
   return r;
 }

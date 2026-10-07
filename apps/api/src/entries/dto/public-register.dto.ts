@@ -48,10 +48,6 @@ export class PublicRegisterDto {
   @IsString()
   zdravotniPoznamka?: string;
 
-  /** F32 — e-mail rodině/blízké osobě, na který přijde oznámení o doběhu do cíle. */
-  @IsOptional()
-  @IsEmail()
-  oznamovaciEmail?: string;
 
   /** Souhlas se zpracováním osobních údajů — registrace bez něj se nepřijme. */
   @IsBoolean()

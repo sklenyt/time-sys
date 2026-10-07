@@ -28,7 +28,6 @@ export function Register() {
   const [telefon, setTelefon] = useState("");
   const [nouzovyKontakt, setNouzovyKontakt] = useState("");
   const [zdravotniPoznamka, setZdravotniPoznamka] = useState("");
-  const [oznamovaciEmail, setOznamovaciEmail] = useState("");
   const [souhlas, setSouhlas] = useState(false);
 
   useEffect(() => {
@@ -63,7 +62,6 @@ export function Register() {
         telefon: telefon.trim() || undefined,
         nouzovyKontakt: nouzovyKontakt.trim() || undefined,
         zdravotniPoznamka: zdravotniPoznamka.trim() || undefined,
-        oznamovaciEmail: oznamovaciEmail.trim() || undefined,
         souhlasSeZpracovanim: souhlas,
       });
       setHotovo(vysledek);
@@ -160,13 +158,6 @@ export function Register() {
           onChange={(e) => setZdravotniPoznamka(e.target.value)}
           rows={2}
           style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
-        />
-        <input
-          placeholder="E-mail pro oznámení o dojezdu"
-          type="email"
-          value={oznamovaciEmail}
-          onChange={(e) => setOznamovaciEmail(e.target.value)}
-          style={inputStyle}
         />
         <label style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, lineHeight: 1.4 }}>
           <input type="checkbox" required checked={souhlas} onChange={(e) => setSouhlas(e.target.checked)} style={{ marginTop: 3 }} />

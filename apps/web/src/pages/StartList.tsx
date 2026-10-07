@@ -313,7 +313,6 @@ export function StartList() {
   const [telefon, setTelefon] = useState("");
   const [nouzovyKontakt, setNouzovyKontakt] = useState("");
   const [zdravotniPoznamka, setZdravotniPoznamka] = useState("");
-  const [oznamovaciEmail, setOznamovaciEmail] = useState("");
   const [navrzenaKategorieId, setNavrzenaKategorieId] = useState<string | null>(null);
   const [druzstvo, setDruzstvo] = useState(false);
   const [clenove, setClenove] = useState<DruzstvoClen[]>([{ ...PRAZDNY_CLEN }]);
@@ -481,7 +480,6 @@ export function StartList() {
         telefon: telefon.trim() || undefined,
         nouzovyKontakt: nouzovyKontakt.trim() || undefined,
         zdravotniPoznamka: zdravotniPoznamka.trim() || undefined,
-        oznamovaciEmail: oznamovaciEmail.trim() || undefined,
         clenoveDruzstva: platniClenove?.length ? platniClenove : undefined,
       });
       setCislo("");
@@ -495,7 +493,6 @@ export function StartList() {
       setTelefon("");
       setNouzovyKontakt("");
       setZdravotniPoznamka("");
-      setOznamovaciEmail("");
       setNavrzenaKategorieId(null);
       setDruzstvo(false);
       setClenove([{ ...PRAZDNY_CLEN }]);
@@ -821,10 +818,6 @@ export function StartList() {
                 <div className="zapis-pole">
                   <label htmlFor="zapis-nouzovy">Nouzový kontakt (jméno + telefon)</label>
                   <input id="zapis-nouzovy" value={nouzovyKontakt} onChange={(e) => setNouzovyKontakt(e.target.value)} style={inputStyle} />
-                </div>
-                <div className="zapis-pole">
-                  <label htmlFor="zapis-oznameni">E-mail pro oznámení o dojezdu</label>
-                  <input id="zapis-oznameni" type="email" value={oznamovaciEmail} onChange={(e) => setOznamovaciEmail(e.target.value)} style={inputStyle} />
                 </div>
                 <div className="zapis-pole" style={{ flexBasis: "100%" }}>
                   <label htmlFor="zapis-zdravi">Zdravotní poznámka (alergie, léky…)</label>

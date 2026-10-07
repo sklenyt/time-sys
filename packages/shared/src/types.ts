@@ -91,7 +91,6 @@ export interface Prihlaska {
   registrovan: boolean;
   nouzovyKontakt?: string | null;
   zdravotniPoznamka?: string | null;
-  oznamovaciEmail?: string | null;
   stavUkonceni?: StavUkonceni | null;
   clenoveDruzstva?: DruzstvoClen[] | null;
   zaplaceno: boolean;
@@ -126,7 +125,6 @@ export interface RegistraceDto {
   kategorieKod?: string;
   nouzovyKontakt?: string | null;
   zdravotniPoznamka?: string | null;
-  oznamovaciEmail?: string | null;
   clenoveDruzstva?: DruzstvoClen[] | null;
   vytvorenoAt: string;
 }
