@@ -129,7 +129,7 @@ export function sestavPotvrzeniPlatby(v: PotvrzeniPlatbyVstup): PotvrzeniRegistr
     `Trať: ${v.trasaNazev}`,
     `Startovní číslo: ${v.startovniCislo}`,
     "",
-    "Startovní číslo si prosím uschovejte, budete ho potřebovat při prezenci a na trati. Další pokyny k závodu vám případně sdělí pořadatel.",
+    "Další pokyny k závodu vám případně sdělí pořadatel.",
     "",
     "Těšíme se na vás na startu.",
     "",
@@ -151,7 +151,7 @@ export function sestavPotvrzeniPlatby(v: PotvrzeniPlatbyVstup): PotvrzeniRegistr
     `<tr><td style="${td};color:#667085">Akce</td><td style="${td}"><strong>${escapeHtml(v.udalostNazev)}</strong></td></tr>` +
     `<tr><td style="${td};color:#667085">Trať</td><td style="${td}"><strong>${escapeHtml(v.trasaNazev)}</strong></td></tr>` +
     `</table>` +
-    `<p style="margin:0 0 14px">Startovní číslo si prosím uschovejte, budete ho potřebovat při prezenci a na trati. Další pokyny k závodu vám případně sdělí pořadatel.</p>` +
+    `<p style="margin:0 0 14px">Další pokyny k závodu vám případně sdělí pořadatel.</p>` +
     `<p style="margin:0 0 4px">Těšíme se na vás na startu.</p>` +
     `<p style="margin:0 0 20px">Pořadatelé akce ${escapeHtml(v.udalostNazev)}</p>` +
     `<p style="margin:0;padding-top:12px;border-top:1px solid #e4e7ec;color:#98a2b3;font-size:12px">Tento e-mail byl odeslán automaticky systémem Depo, neodpovídejte na něj.</p>` +
