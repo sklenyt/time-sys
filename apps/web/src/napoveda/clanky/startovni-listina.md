@@ -29,7 +29,7 @@ Chcete-li zapsat štafetu nebo družstvo běžící pod jedním startovním čí
 
 ## K přidělení — čekající online registrace
 
-Pokud používáte [online registraci](/napoveda/online-registrace), objeví se nad listinou sekce **K přidělení** se seznamem lidí, kteří se zaregistrovali sami, ale ještě nemají startovní číslo. U každého zadáte číslo a potvrdíte **Přidělit** — teprve tím vznikne skutečná přihláška v listině. Registraci, která nemá vzniknout (duplicita, spam), tlačítkem **Zamítnout** smažete bez založení přihlášky.
+Pokud používáte [online registraci](/napoveda/online-registrace), objeví se nad listinou sekce **K přidělení** (s počtem čekajících) se seznamem lidí, kteří se zaregistrovali sami, ale ještě nemají startovní číslo. U každého vidíte jméno, e-mail, kategorii a čas registrace. Zadejte číslo do pole v řádku a potvrďte **Přidělit** — teprve tím vznikne skutečná přihláška v listině. V nabídce **⋯** u řádku jde opravit e-mail, znovu poslat potvrzení registrace, nebo registraci, která nemá vzniknout (duplicita, spam), **Zamítnout registraci** — smaže se bez založení přihlášky.
 
 ## Přehled listiny
 

@@ -224,169 +224,133 @@ function ChipBunka({
   );
 }
 
-/** E-mail závodníka s opravou (špatně zadaná adresa) a opětovným odesláním potvrzení registrace. */
-function EmailBunka({
-  routeId,
-  druh,
-  id,
-  email,
-  onChanged,
-}: {
-  routeId: string;
-  druh: "entries" | "registrations";
-  id: string;
-  email?: string | null;
-  onChanged: () => void;
-}) {
-  const [upravuji, setUpravuji] = useState(false);
-  const [hodnota, setHodnota] = useState(email ?? "");
-  const [odesilam, setOdesilam] = useState(false);
-  const [zprava, setZprava] = useState<{ text: string; chyba: boolean } | null>(null);
-
-  async function ulozit() {
-    setOdesilam(true);
-    setZprava(null);
-    try {
-      await api.patch(`/routes/${routeId}/${druh}/${id}`, { email: hodnota.trim() });
-      setUpravuji(false);
-      onChanged();
-    } catch (e) {
-      setZprava({ text: chybaZeServeru(e, "E-mail se nepodařilo uložit"), chyba: true });
-    } finally {
-      setOdesilam(false);
-    }
-  }
-
-  async function poslatZnovu() {
-    if (!email) return;
-    if (!window.confirm(`Znovu odeslat potvrzení registrace na ${email}?`)) return;
-    setOdesilam(true);
-    setZprava(null);
-    try {
-      await api.post(`/routes/${routeId}/${druh}/${id}/potvrzeni-registrace`, {});
-      setZprava({ text: "Potvrzení odesláno", chyba: false });
-    } catch (e) {
-      setZprava({ text: chybaZeServeru(e, "E-mail se nepodařilo odeslat"), chyba: true });
-    } finally {
-      setOdesilam(false);
-    }
-  }
-
-  if (upravuji) {
-    return (
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-        <input
-          type="email"
-          value={hodnota}
-          autoFocus
-          onChange={(e) => setHodnota(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && hodnota.trim() && ulozit()}
-          style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid var(--line)", fontSize: 12.5, minWidth: 190 }}
-        />
-        <button onClick={ulozit} disabled={odesilam || !hodnota.trim()} className="btn-pill primary" style={{ padding: "3px 10px", fontSize: 11.5 }}>
-          Uložit
-        </button>
-        <button onClick={() => setUpravuji(false)} disabled={odesilam} className="btn-pill" style={{ padding: "3px 10px", fontSize: 11.5 }}>
-          Zrušit
-        </button>
-        {zprava && <span style={{ fontSize: 11, color: zprava.chyba ? "var(--color-danger)" : "var(--text-secondary)" }}>{zprava.text}</span>}
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ fontFamily: "var(--font-ui)", fontSize: 12.5 }}>
-      <div style={{ color: email ? undefined : "var(--text-secondary)", wordBreak: "break-all" }}>{email ?? "bez e-mailu"}</div>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 3, alignItems: "center" }}>
-        <button
-          onClick={() => {
-            setHodnota(email ?? "");
-            setZprava(null);
-            setUpravuji(true);
-          }}
-          className="btn-pill"
-          style={{ padding: "2px 8px", fontSize: 11 }}
-        >
-          Upravit e-mail
-        </button>
-        {email && (
-          <button onClick={poslatZnovu} disabled={odesilam} className="btn-pill" style={{ padding: "2px 8px", fontSize: 11 }}>
-            Poslat potvrzení znovu
-          </button>
-        )}
-        {zprava && <span style={{ fontSize: 11, color: zprava.chyba ? "var(--color-danger)" : "var(--text-secondary)" }}>{zprava.text}</span>}
-      </div>
-    </div>
-  );
-}
-
-function PridelitCisloRadek({
-  routeId,
-  trasaNazev,
+/** Čekající veřejná registrace: přidělení startovního čísla, oprava e-mailu, opětovné odeslání potvrzení a zamítnutí. */
+function RadekRegistrace({
   registrace,
-  onAssigned,
-  onRejected,
+  trat,
+  onChanged,
+  zamitnout,
 }: {
-  routeId: string;
-  trasaNazev?: string;
   registrace: RegistraceDto;
-  onAssigned: () => void;
-  onRejected: (id: string, jmeno: string) => void;
+  trat?: string;
+  onChanged: () => void;
+  zamitnout: (trasaId: string, registraceId: string, jmeno: string) => void;
 }) {
   const [cislo, setCislo] = useState("");
   const [odesilam, setOdesilam] = useState(false);
-  const [chyba, setChyba] = useState<string | null>(null);
+  const [upravuji, setUpravuji] = useState(false);
+  const [email, setEmail] = useState(registrace.email ?? "");
+  const [zprava, setZprava] = useState<{ text: string; chyba: boolean } | null>(null);
+  const jmeno = `${registrace.prijmeni} ${registrace.jmeno}`;
 
   async function prideleni() {
     if (!cislo) return;
     setOdesilam(true);
-    setChyba(null);
+    setZprava(null);
     try {
-      await api.post(`/routes/${routeId}/registrations/${registrace.id}/prideleni`, { startovniCislo: Number(cislo) });
-      onAssigned();
+      await api.post(`/routes/${registrace.trasaId}/registrations/${registrace.id}/prideleni`, { startovniCislo: Number(cislo) });
+      onChanged();
     } catch (e) {
-      setChyba(chybaZeServeru(e, "Přidělení čísla se nezdařilo"));
+      setZprava({ text: chybaZeServeru(e, "Přidělení čísla se nezdařilo"), chyba: true });
     } finally {
       setOdesilam(false);
     }
   }
 
+  async function ulozitEmail() {
+    setZprava(null);
+    try {
+      await api.patch(`/routes/${registrace.trasaId}/registrations/${registrace.id}`, { email: email.trim() });
+      setUpravuji(false);
+      onChanged();
+    } catch (e) {
+      setZprava({ text: chybaZeServeru(e, "E-mail se nepodařilo uložit"), chyba: true });
+    }
+  }
+
+  async function poslatZnovu() {
+    if (!registrace.email) return;
+    if (!window.confirm(`Znovu odeslat potvrzení registrace na ${registrace.email}?`)) return;
+    setZprava(null);
+    try {
+      await api.post(`/routes/${registrace.trasaId}/registrations/${registrace.id}/potvrzeni-registrace`, {});
+      setZprava({ text: "Potvrzení registrace odesláno", chyba: false });
+    } catch (e) {
+      setZprava({ text: chybaZeServeru(e, "E-mail se nepodařilo odeslat"), chyba: true });
+    }
+  }
+
   return (
-    <tr style={{ borderBottom: "1px solid var(--line)" }}>
-      {trasaNazev && (
-        <td style={{ fontFamily: "var(--font-ui)" }}>
-          <span className="zapis-trat-stitek">{trasaNazev}</span>
+    <tr className="sl-radek">
+      {trat !== undefined && (
+        <td>
+          <span className="stitek stitek-trat">{trat}</span>
         </td>
       )}
-      <td style={{ fontFamily: "var(--font-ui)" }}>
-        {registrace.prijmeni} {registrace.jmeno}
-      </td>
-      <td style={{ fontFamily: "var(--font-ui)" }}>{registrace.kategorieKod ?? "—"}</td>
       <td>
-        <EmailBunka routeId={routeId} druh="registrations" id={registrace.id} email={registrace.email} onChanged={onAssigned} />
+        <div style={{ fontWeight: 700 }}>{jmeno}</div>
+        {upravuji ? (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
+            <input
+              type="email"
+              autoFocus
+              value={email}
+              onChange={(ev) => setEmail(ev.target.value)}
+              onKeyDown={(ev) => ev.key === "Enter" && email.trim() && ulozitEmail()}
+              style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid var(--line)", fontSize: 12.5, minWidth: 200 }}
+            />
+            <button onClick={ulozitEmail} disabled={!email.trim()} className="btn-pill primary" style={{ padding: "3px 10px", fontSize: 11.5 }}>
+              Uložit
+            </button>
+            <button onClick={() => setUpravuji(false)} className="btn-pill" style={{ padding: "3px 10px", fontSize: 11.5 }}>
+              Zrušit
+            </button>
+          </div>
+        ) : (
+          <div className="sl-podtitul" style={{ color: registrace.email ? undefined : "var(--color-danger)", wordBreak: "break-all" }}>
+            {registrace.email ?? "bez e-mailu"}
+          </div>
+        )}
+        {zprava && <div style={{ fontSize: 11.5, marginTop: 2, color: zprava.chyba ? "var(--color-danger)" : "var(--text-secondary)" }}>{zprava.text}</div>}
       </td>
       <td>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        <span className="mono" style={{ fontSize: 12.5 }}>{registrace.kategorieKod ?? "—"}</span>
+      </td>
+      <td className="sl-podtitul">
+        {new Date(registrace.vytvorenoAt).toLocaleString("cs-CZ", { dateStyle: "short", timeStyle: "short" })}
+      </td>
+      <td>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <input
-            placeholder="Číslo"
+            placeholder="Č."
+            inputMode="numeric"
             value={cislo}
             onChange={(e) => setCislo(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && prideleni()}
-            style={{ ...inputStyle, width: 80, padding: "4px 8px" }}
+            style={{ ...inputStyle, width: 72, padding: "5px 8px", fontSize: 13 }}
           />
-          <button onClick={prideleni} disabled={odesilam || !cislo} className="btn-pill primary" style={{ padding: "3px 10px", fontSize: 11.5 }}>
+          <button onClick={prideleni} disabled={odesilam || !cislo} className="btn-pill primary" style={{ padding: "5px 12px", fontSize: 12 }}>
             Přidělit
           </button>
-          <button
-            onClick={() => onRejected(registrace.id, `${registrace.prijmeni} ${registrace.jmeno}`)}
-            disabled={odesilam}
-            className="btn-pill danger"
-            style={{ padding: "3px 10px", fontSize: 11.5 }}
-          >
-            Zamítnout
-          </button>
-          {chyba && <span style={{ color: "var(--color-danger)", fontSize: 11 }}>{chyba}</span>}
         </div>
+      </td>
+      <td style={{ textAlign: "right" }}>
+        <RozbalovaciMenu
+          popisek={`Akce: ${jmeno}`}
+          kompaktni
+          polozky={[
+            {
+              popisek: "Upravit e-mail",
+              akce: () => {
+                setEmail(registrace.email ?? "");
+                setZprava(null);
+                setUpravuji(true);
+              },
+            },
+            ...(registrace.email ? [{ popisek: "Poslat potvrzení registrace znovu", akce: poslatZnovu }] : []),
+            { popisek: "Zamítnout registraci", akce: () => zamitnout(registrace.trasaId, registrace.id, jmeno), nebezpecna: true },
+          ]}
+        />
       </td>
     </tr>
   );
@@ -625,6 +589,7 @@ export function StartList() {
 
   useEffect(() => {
     setNacteno(false);
+    setZapisOtevreny(false);
     setFormTrasaId(routeId ?? "");
     setKategorieId("");
     reload();
@@ -912,7 +877,7 @@ export function StartList() {
   return (
     <AppShell {...shellProps}>
       <BusyOverlay active={busy !== null} label={busy ?? undefined} />
-      <div style={{ maxWidth: 900 }}>
+      <div style={{ maxWidth: 1500 }}>
       <div className="dash-header" style={{ marginBottom: 20 }}>
         <div>
           <h1>Startovní listina</h1>
@@ -1204,38 +1169,41 @@ export function StartList() {
       )}
 
       {registrace.length > 0 && (
-        <section className="dash-card" style={{ marginBottom: 24 }}>
-          <div className="dash-card-head">
-            <h2>K přidělení ({registrace.length})</h2>
+        <section style={{ marginBottom: 28 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
+            <h2 style={{ margin: 0 }}>K přidělení</h2>
+            <span className="stitek stitek-varovani">{registrace.length} čeká na číslo</span>
           </div>
-          <p style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 0 }}>
-            Veřejné registrace čekající na ruční přidělení startovního čísla — dokud se číslo nepřidělí, závodník se
+          <p style={{ color: "var(--text-secondary)", fontSize: 13, margin: "0 0 12px" }}>
+            Veřejné registrace čekající na ruční přidělení startovního čísla. Dokud číslo nepřidělíte, závodník se
             nepočítá do listiny ani do výsledků.
           </p>
-          <div className="table-scroll">
-            <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
-                  {vsechny && <th style={{ fontFamily: "var(--font-ui)" }}>Trať</th>}
-                  <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
-                  <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
-                  <th style={{ fontFamily: "var(--font-ui)" }}>E-mail</th>
-                  <th style={{ fontFamily: "var(--font-ui)" }}>Startovní číslo</th>
-                </tr>
-              </thead>
-              <tbody>
-                {registrace.map((r) => (
-                  <PridelitCisloRadek
-                    key={r.id}
-                    routeId={r.trasaId}
-                    trasaNazev={vsechny ? nazevTrase(r.trasaId) : undefined}
-                    registrace={r}
-                    onAssigned={reload}
-                    onRejected={(id, jmeno) => zamitnoutRegistraci(r.trasaId, id, jmeno)}
-                  />
-                ))}
-              </tbody>
-            </table>
+          <div className="sl-karta">
+            <div className="table-scroll">
+              <table className="sl-tabulka">
+                <thead>
+                  <tr>
+                    {vsechny && <th>Trať</th>}
+                    <th>Závodník</th>
+                    <th>Kat.</th>
+                    <th>Registrace</th>
+                    <th>Startovní číslo</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {registrace.map((r) => (
+                    <RadekRegistrace
+                      key={r.id}
+                      registrace={r}
+                      trat={vsechny ? nazevTrase(r.trasaId) : undefined}
+                      onChanged={reload}
+                      zamitnout={zamitnoutRegistraci}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       )}
