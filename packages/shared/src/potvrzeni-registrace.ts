@@ -157,7 +157,7 @@ export function sestavPotvrzeniPlatby(v: PotvrzeniPlatbyVstup): PotvrzeniRegistr
     `<p style="margin:0;padding-top:12px;border-top:1px solid #e4e7ec;color:#98a2b3;font-size:12px">Tento e-mail byl odeslán automaticky systémem Depo, neodpovídejte na něj.</p>` +
     `</div>`;
 
-  return { predmet: "Platba přijata", text: text.join("\n"), html };
+  return { predmet: `Platba přijata — ${v.udalostNazev} (${v.trasaNazev})`, text: text.join("\n"), html };
 }
 
 export interface OznameniODojezduVstup {
