@@ -89,7 +89,8 @@ export function EmbedRegister() {
             {hotovo.jmeno} {hotovo.prijmeni}, vaše registrace čeká na potvrzení organizátorem.
           </p>
           <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "4px 0 0" }}>
-            Startovní číslo přidělí organizátor ručně.
+            Startovní číslo přidělí organizátor ručně. Potvrzení registrace jsme vám poslali na e-mail. Pokud ho
+            nevidíte, zkontrolujte prosím i složku <strong>Spam</strong> (nevyžádaná pošta).
           </p>
         </div>
       )}

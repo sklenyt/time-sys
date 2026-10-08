@@ -44,4 +44,19 @@ export class UpdateEventDto {
   @ValidateIf((_o, v) => v !== "" && v !== null)
   @IsEmail()
   emailKopie?: string | null;
+
+  /** Vlastní závěrečný pozdrav e-mailů akce; prázdný řetězec vrátí výchozí. */
+  @IsOptional()
+  @IsString()
+  emailPodpis?: string | null;
+
+  /** Zobrazit akci v referencích na webu depotime.cz. */
+  @IsOptional()
+  @IsBoolean()
+  verejnaReference?: boolean;
+
+  /** Místo konání (město) pro mapu referencí; prázdný řetězec místo smaže. */
+  @IsOptional()
+  @IsString()
+  misto?: string | null;
 }

@@ -79,7 +79,13 @@ Shrnutí pro organizátory a dodavatele (např. při zadání tisku startovních
 - **Co nedělat:** neaplikovat gradient/nedeformovat značku, nepoužívat barvy mimo paletu, nepřidávat šachovnici/vlaječky (klišé, se kterým se identita vědomě vymezuje, stejně jako v konkurenční analýze [13-konkurencni-analyza.md](13-konkurencni-analyza.md)), nepřidávat vlastní stíny/efekty na značku.
 - **Hlas značky:** *„Věcně, krátce, v druhém osobě. „Zadej číslo a stiskni Enter." Nikdy vykřičníky, nikdy emoji."* — přímo odpovídá principu jednoduchosti jádrového workflow (F06 v [02-requirements.md](02-requirements.md)).
 
-## 14.5 Odkazy na navazující dokumenty
+## 14.5 Uplatnění identity mimo aplikaci
+
+- **E-maily** (potvrzení registrace, platby a dojezdu): hlavička se značkou (oranžová ikona D), názvem „Depo" a podtitulkem, pod ní **oranžová cílová páska** (Tape 500, `#FF4A17`, 3 px); texty v navy (`#0B1220`) a šedé (`#667085`); startovní čísla, časy a platební údaje v monospace (JetBrains Mono, v e-mailu s fallbackem na Courier New); žádné vykřičníky ani emoji (hlas značky).
+- **Úvodní web** (`depotime.cz`): oranžová páska pod navigací, popisky sekcí (eyebrow) v Tape 700, ikonové dlaždice navy s oranžovou ikonou, karta Kontakt s oranžovým horním okrajem.
+- **Aplikace i veřejné výsledky:** sdílené tabulkové prvky (karta + tabulka, štítky stavů), čísla v monospace, medailová pořadí v akcentu.
+
+## 14.6 Odkazy na navazující dokumenty
 
 - Klíčové obrazovky aplikace v nové identitě: [07-ui-mockups.md §7.12](07-ui-mockups.md) (nová sekce s obrazovkami z „Depo Aplikace").
 - Zdrojová plátna: [design/depo-canvas/](../design/depo-canvas/).

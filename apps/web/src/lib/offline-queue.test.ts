@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TypUdalosti } from "@depo/shared";
 import { api } from "./api";
-import { enqueueZaznam, flushFrontu, listRecent, pullCizi } from "./offline-queue";
+import { doplnCisloLokalne, enqueueZaznam, flushFrontu, listRecent, pullCizi } from "./offline-queue";
 
 vi.mock("./api", () => ({
   api: { post: vi.fn(), get: vi.fn() },
@@ -47,6 +47,35 @@ describe("offline-queue", () => {
       const nedavne = await listRecent(trasaId, 2);
       expect(nedavne).toHaveLength(2);
       expect(nedavne.map((z) => z.startovniCislo)).toEqual([3, 2]);
+    });
+
+    it("keeps time-only entries (no number) on top of the recent list until the number is filled in", async () => {
+      const trasaId = novaTrasa();
+      const bezCisla = await enqueueZaznam(trasaId, null);
+      for (let i = 1; i <= 3; i++) {
+        await new Promise((r) => setTimeout(r, 5));
+        await enqueueZaznam(trasaId, i);
+      }
+
+      const nedavne = await listRecent(trasaId, 2);
+      expect(nedavne[0].localKey).toBe(bezCisla.localKey);
+      expect(nedavne[0].startovniCislo).toBeNull();
+      expect(nedavne).toHaveLength(3);
+
+      expect(await doplnCisloLokalne(bezCisla.localKey, trasaId, 77)).toBe(true);
+      const po = await listRecent(trasaId, 8);
+      expect(po.find((z) => z.localKey === bezCisla.localKey)?.startovniCislo).toBe(77);
+    });
+
+    it("sends a time-only entry to the server without a startovniCislo", async () => {
+      const trasaId = novaTrasa();
+      const zaznam = await enqueueZaznam(trasaId, null);
+      mockedApi.post.mockResolvedValue({ vysledky: [{ klientEventId: zaznam.klientEventId, stav: "OK", zaznam: { id: "srv-1", prihlaskaId: null } }] });
+
+      await flushFrontu(trasaId, "zarizeni-1");
+
+      const [, telo] = mockedApi.post.mock.calls[0] as [string, { events: Record<string, unknown>[] }];
+      expect(telo.events[0]).not.toHaveProperty("startovniCislo");
     });
 
     it("scopes entries to their own trasaId", async () => {

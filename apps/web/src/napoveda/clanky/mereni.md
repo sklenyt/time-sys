@@ -16,6 +16,16 @@ Obrazovka **Měření** je hlavní pracovní nástroj obsluhy v cíli — otevř
 
 Klávesa **⌫** (nebo Backspace) smaže poslední zadanou číslici. Číslo jde zadat max. čtyřmístné.
 
+## Zápis jen s časem (když se sjede víc závodníků)
+
+Když do cíle přibíhá víc lidí najednou a nestíháte psát celá čísla, zapište nejdřív **jen čas**: klikněte na **ZAPSAT JEN ČAS (bez čísla)** nebo stiskněte **mezerník**. Okamžik průjezdu se zapíše stejně přesně jako u normálního zápisu a v seznamu **Poslední zápisy** se objeví řádek s pomlčkou místo čísla a malým polem **č.**
+
+1. Zapisujte časy za sebou, jak závodníci probíhají cílem.
+2. Až budete mít chvilku, napište do pole **č.** u daného času startovní číslo a klikněte na **Doplnit** (nebo stiskněte Enter).
+3. Závodník se tím dostane do výsledků s přesně zapsaným časem průjezdu a (má-li e-mail) mu odejde e-mail o dojezdu.
+
+Řádky bez čísla zůstávají **nahoře seznamu**, dokud je nedoplníte, a nad seznamem je vidět, kolik jich čeká. Doplnění čísla u času, který se už odeslal na server, vyžaduje připojení k internetu (zapíše se jako oprava s původním časem, viz Chybně zadané číslo). U času, který ještě čeká na odeslání, jde číslo doplnit i offline.
+
 ## Offline režim
 
 Zápis se vždy nejdřív uloží lokálně v prohlížeči a teprve pak odešle na server na pozadí — obrazovka nikdy nečeká na odpověď serveru, než dovolí zapsat další číslo. Pokud signál vypadne, nahoře se objeví žlutý štítek „offline — ukládá se lokálně“; appka dál plně funguje, jen se zápisy hromadí lokálně a odešlou se samy, jakmile se připojení obnoví.

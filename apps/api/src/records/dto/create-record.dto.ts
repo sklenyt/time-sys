@@ -6,8 +6,10 @@ import { TypUdalosti } from "@depo/shared";
  * potvrzení na zařízení, nikdy ruční vstup.
  */
 export class CreateRecordDto {
+  /** Chybí-li, jde o zápis jen s časem (průjezd bez čísla) — číslo se doplní dodatečně opravou záznamu. */
+  @IsOptional()
   @IsInt()
-  startovniCislo!: number;
+  startovniCislo?: number;
 
   @IsUUID()
   zarizeniId!: string;

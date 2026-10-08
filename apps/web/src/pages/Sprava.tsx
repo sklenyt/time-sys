@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import type { AuthUserDto, Organizace, StartVlna, Trasa, Udalost, UzivatelRoleDto } from "@depo/shared";
-import { Role, TypStartu, sestavPotvrzeniRegistrace } from "@depo/shared";
+import { MESTA, Role, TypStartu, najdiMisto, sestavPotvrzeniRegistrace } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
@@ -29,12 +29,16 @@ export function Sprava() {
   const [routeDelkaDrafts, setRouteDelkaDrafts] = useState<Record<string, string>>({});
   const [otevrenaPlatba, setOtevrenaPlatba] = useState<Record<string, boolean>>({});
   const [platbaDrafts, setPlatbaDrafts] = useState<
-    Record<string, { potvrzovaciEmailText: string; platbaUcet: string; platbaCastka: string }>
+    Record<string, { potvrzovaciEmailText: string; platbaUcet: string; platbaCastka: string; platbaPodminky: string }>
   >({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [rolesByEvent, setRolesByEvent] = useState<Record<string, UzivatelRoleDto[]>>({});
   const [otevreneRole, setOtevreneRole] = useState<Record<string, boolean>>({});
+  const [otevreneReference, setOtevreneReference] = useState<Record<string, boolean>>({});
+  const [referenceDrafts, setReferenceDrafts] = useState<Record<string, { verejna: boolean; misto: string }>>({});
+  const [otevreneEmaily, setOtevreneEmaily] = useState<Record<string, boolean>>({});
+  const [emailDrafts, setEmailDrafts] = useState<Record<string, { kopie: string; podpis: string }>>({});
   const [inviteEmail, setInviteEmail] = useState<Record<string, string>>({});
   const [inviteRole, setInviteRole] = useState<Record<string, Role>>({});
 
@@ -152,14 +156,32 @@ export function Sprava() {
    * návštěvnost) — tohle nastaví jen heslo, které pak musí sdílet se
    * závodníky, ať se ke jménům a časům nedostane kdokoliv.
    */
-  async function nastavitEmailKopie(eventId: string, soucasna: string | null | undefined) {
-    const adresa = window.prompt(
-      "Kopie potvrzení registrace a platby pošleme na tuto adresu (viditelná kopie, závodník adresu uvidí v e-mailu jako Cc). Nechte prázdné pro zrušení kopie.",
-      soucasna ?? ""
-    );
-    if (adresa === null) return;
+  function otevritNastaveniEmailu(u: Udalost) {
+    setEmailDrafts((d) => ({ ...d, [u.id]: { kopie: u.emailKopie ?? "", podpis: u.emailPodpis ?? "" } }));
+    setOtevreneEmaily((o) => ({ ...o, [u.id]: !o[u.id] }));
+  }
+
+  function otevritNastaveniReference(u: Udalost) {
+    setReferenceDrafts((d) => ({ ...d, [u.id]: { verejna: !!u.verejnaReference, misto: u.misto ?? "" } }));
+    setOtevreneReference((o) => ({ ...o, [u.id]: !o[u.id] }));
+  }
+
+  async function ulozitReferenci(eventId: string) {
+    const draft = referenceDrafts[eventId];
+    if (!draft) return;
     await sBusy("Ukládám…", async () => {
-      await api.patch(`/events/${eventId}`, { emailKopie: adresa.trim() });
+      await api.patch(`/events/${eventId}`, { verejnaReference: draft.verejna, misto: draft.misto.trim() });
+      setOtevreneReference((o) => ({ ...o, [eventId]: false }));
+      await reload();
+    });
+  }
+
+  async function ulozitNastaveniEmailu(eventId: string) {
+    const draft = emailDrafts[eventId];
+    if (!draft) return;
+    await sBusy("Ukládám…", async () => {
+      await api.patch(`/events/${eventId}`, { emailKopie: draft.kopie.trim(), emailPodpis: draft.podpis.trim() });
+      setOtevreneEmaily((o) => ({ ...o, [eventId]: false }));
       await reload();
     });
   }
@@ -267,6 +289,7 @@ export function Sprava() {
           potvrzovaciEmailText: trasa.potvrzovaciEmailText ?? "",
           platbaUcet: trasa.platbaUcet ?? "",
           platbaCastka: trasa.platbaCastka ? String(trasa.platbaCastka) : "",
+          platbaPodminky: trasa.platbaPodminky ?? "",
         },
       }));
     }
@@ -281,6 +304,7 @@ export function Sprava() {
         potvrzovaciEmailText: draft.potvrzovaciEmailText.trim(),
         platbaUcet: draft.platbaUcet.trim(),
         platbaCastka: draft.platbaCastka.trim() ? Number(draft.platbaCastka) : undefined,
+        platbaPodminky: draft.platbaPodminky.trim(),
       });
       await reload();
     });
@@ -452,7 +476,8 @@ export function Sprava() {
                     : [
                         { popisek: "Přejmenovat", akce: () => renameEvent(u.id, u.nazev) },
                         { popisek: "Heslo výsledků", akce: () => nastavitHesloVysledku(u.id) },
-                        { popisek: "Kopie e-mailů", akce: () => nastavitEmailKopie(u.id, u.emailKopie) },
+                        { popisek: "E-maily akce: kopie a podpis", akce: () => otevritNastaveniEmailu(u) },
+                        { popisek: "Reference na webu", akce: () => otevritNastaveniReference(u) },
                       ]),
                   { popisek: u.ukoncena ? "Obnovit akci" : "Ukončit akci", akce: () => toggleUkoncena(u.id, !u.ukoncena) },
                   { popisek: "Smazat akci", akce: () => deleteEvent(u.id, u.nazev), nebezpecna: true },
@@ -464,6 +489,106 @@ export function Sprava() {
             {formatDatum(u.datum)}
             {u.emailKopie && ` · kopie e-mailů na ${u.emailKopie}`}
           </p>
+
+          {otevreneReference[u.id] && referenceDrafts[u.id] && (
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
+                borderRadius: 8,
+                padding: 12,
+                margin: "0 0 12px",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <h4 style={{ margin: 0 }}>Reference na webu depotime.cz</h4>
+              <p style={{ margin: 0, fontSize: 12.5, color: "var(--text-secondary)" }}>
+                Zveřejní se jen název akce, místo, datum a počty (závodníci a tratě), nikdy jména ani časy. Sekce Reference se
+                na webu zobrazí, až bude zveřejněné aspoň 3 akce.
+              </p>
+              <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13.5, cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={referenceDrafts[u.id].verejna}
+                  onChange={(e) => setReferenceDrafts((d) => ({ ...d, [u.id]: { ...d[u.id], verejna: e.target.checked } }))}
+                />
+                Zobrazit tuto akci v referencích na webu
+              </label>
+              <label style={{ fontSize: 12.5, fontWeight: 700, color: "var(--text-secondary)" }}>
+                Místo konání (město)
+                <input
+                  list="seznam-mest"
+                  value={referenceDrafts[u.id].misto}
+                  onChange={(e) => setReferenceDrafts((d) => ({ ...d, [u.id]: { ...d[u.id], misto: e.target.value } }))}
+                  placeholder="např. Mělník"
+                  style={{ ...inputStyle, width: "100%", boxSizing: "border-box", marginTop: 4, fontWeight: 400 }}
+                />
+              </label>
+              <datalist id="seznam-mest">
+                {MESTA.map((m) => (
+                  <option key={m.nazev} value={m.nazev} />
+                ))}
+              </datalist>
+              {referenceDrafts[u.id].misto.trim() && !najdiMisto(referenceDrafts[u.id].misto) && (
+                <p style={{ margin: 0, fontSize: 12, color: "var(--color-attention)" }}>
+                  Toto místo nemám v seznamu měst, akce se zobrazí v seznamu referencí, ale bez bodu na mapě.
+                </p>
+              )}
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => ulozitReferenci(u.id)} className="btn-pill primary">
+                  Uložit
+                </button>
+                <button onClick={() => setOtevreneReference((o) => ({ ...o, [u.id]: false }))} className="btn-pill">
+                  Zrušit
+                </button>
+              </div>
+            </div>
+          )}
+
+          {otevreneEmaily[u.id] && emailDrafts[u.id] && (
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
+                borderRadius: 8,
+                padding: 12,
+                margin: "0 0 12px",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <h4 style={{ margin: 0 }}>E-maily závodníkům u této akce</h4>
+              <label style={{ fontSize: 12.5, fontWeight: 700, color: "var(--text-secondary)" }}>
+                Kopie potvrzení registrace a platby (viditelná kopie, Cc)
+                <input
+                  type="email"
+                  value={emailDrafts[u.id].kopie}
+                  onChange={(e) => setEmailDrafts((d) => ({ ...d, [u.id]: { ...d[u.id], kopie: e.target.value } }))}
+                  placeholder="např. info@vasklub.cz (prázdné = bez kopie)"
+                  style={{ ...inputStyle, width: "100%", boxSizing: "border-box", marginTop: 4, fontWeight: 400 }}
+                />
+              </label>
+              <label style={{ fontSize: 12.5, fontWeight: 700, color: "var(--text-secondary)" }}>
+                Závěrečný pozdrav na konci e-mailů
+                <textarea
+                  value={emailDrafts[u.id].podpis}
+                  onChange={(e) => setEmailDrafts((d) => ({ ...d, [u.id]: { ...d[u.id], podpis: e.target.value } }))}
+                  placeholder={`Prázdné = výchozí: „Těšíme se na vás na startu. Pořadatelé akce ${u.nazev}"`}
+                  rows={3}
+                  style={{ ...inputStyle, width: "100%", boxSizing: "border-box", marginTop: 4, resize: "vertical", fontFamily: "inherit", fontWeight: 400 }}
+                />
+              </label>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => ulozitNastaveniEmailu(u.id)} className="btn-pill primary">
+                  Uložit
+                </button>
+                <button onClick={() => setOtevreneEmaily((o) => ({ ...o, [u.id]: false }))} className="btn-pill">
+                  Zrušit
+                </button>
+              </div>
+            </div>
+          )}
 
           {otevreneRole[u.id] && (
             <div
@@ -622,8 +747,9 @@ export function Sprava() {
                     }}
                   >
                     <p style={{ color: "var(--text-secondary)", fontSize: 12.5, margin: "0 0 8px" }}>
-                      Text se přidá do potvrzovacího e-mailu po registraci. Vyplňte-li číslo účtu i částku, appka do
-                      e-mailu přidá i QR platbu (česká QR Platba, formát „předčíslí-číslo/kódBanky").
+                      Text se přidá do potvrzovacího e-mailu po registraci. Vyplňte-li číslo účtu i částku, e-mail bude
+                      obsahovat údaje pro platbu převodem (číslo účtu, IBAN, částka, zpráva pro příjemce), platební
+                      podmínky a QR platbu pro ty, kdo ji použijí (formát účtu „předčíslí-číslo/kódBanky").
                     </p>
                     <textarea
                       placeholder="Vlastní text do potvrzovacího e-mailu (volitelné)"
@@ -652,6 +778,15 @@ export function Sprava() {
                         Uložit
                       </button>
                     </div>
+                    <textarea
+                      placeholder="Platební podmínky (volitelné), např. splatnost do 14 dnů, startovné se nevrací, platbu označte zprávou pro příjemce"
+                      value={platbaDrafts[t.id].platbaPodminky}
+                      onChange={(e) =>
+                        setPlatbaDrafts((d) => ({ ...d, [t.id]: { ...d[t.id], platbaPodminky: e.target.value } }))
+                      }
+                      rows={2}
+                      style={{ ...inputStyle, width: "100%", resize: "vertical", fontFamily: "inherit", marginTop: 8 }}
+                    />
                     <details style={{ marginTop: 10 }}>
                       <summary style={{ cursor: "pointer", fontSize: 12.5, color: "var(--text-secondary)" }}>
                         Náhled e-mailu
@@ -662,6 +797,8 @@ export function Sprava() {
                         vlastniText={platbaDrafts[t.id].potvrzovaciEmailText}
                         platbaUcet={platbaDrafts[t.id].platbaUcet}
                         platbaCastka={platbaDrafts[t.id].platbaCastka}
+                        platbaPodminky={platbaDrafts[t.id].platbaPodminky}
+                        podpis={u.emailPodpis ?? ""}
                       />
                     </details>
                   </div>
@@ -810,16 +947,20 @@ function EmailNahled(props: {
   vlastniText: string;
   platbaUcet: string;
   platbaCastka: string;
+  platbaPodminky: string;
+  podpis: string;
 }) {
   const castka = Number(props.platbaCastka);
-  const sQr = props.platbaUcet.trim() !== "" && Number.isFinite(castka) && castka > 0;
+  const sPlatbou = props.platbaUcet.trim() !== "" && Number.isFinite(castka) && castka > 0;
+  const sQr = sPlatbou;
   const { predmet, html } = sestavPotvrzeniRegistrace({
     jmeno: "Jan",
     prijmeni: "Novák",
     trasaNazev: props.trasaNazev,
     udalostNazev: props.udalostNazev,
     vlastniText: props.vlastniText,
-    platbaCastkaKc: sQr ? castka : null,
+    podpis: props.podpis,
+    platba: sPlatbou ? { castkaKc: castka, ucet: props.platbaUcet.trim(), podminky: props.platbaPodminky, sQr } : null,
     udaje: {
       rocnik: 1990,
       pohlavi: "M",
@@ -837,7 +978,7 @@ function EmailNahled(props: {
       <div style={{ fontSize: 12.5, marginBottom: 6 }}>
         <strong>Předmět:</strong> {predmet}
       </div>
-      <iframe title="Náhled e-mailu" sandbox="" srcDoc={srcDoc} style={{ width: "100%", height: sQr ? 900 : 660, border: "1px solid var(--line)", borderRadius: 8, background: "#fff" }} />
+      <iframe title="Náhled e-mailu" sandbox="" srcDoc={srcDoc} style={{ width: "100%", height: sPlatbou ? 1080 : 660, border: "1px solid var(--line)", borderRadius: 8, background: "#fff" }} />
       <p style={{ color: "var(--text-secondary)", fontSize: 11.5, margin: "4px 0 0" }}>
         Ukázka s fiktivními údaji závodníka. Skutečný QR kód se vygeneruje při odeslání.
       </p>

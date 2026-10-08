@@ -93,7 +93,8 @@ export function Register() {
             {hotovo.jmeno} {hotovo.prijmeni}, vaše registrace čeká na potvrzení organizátorem.
           </p>
           <p style={{ color: "var(--text-secondary)" }}>
-            Startovní číslo vám přidělí organizátor ručně — pokud jste vyplnili e-mail, přijde vám na něj potvrzení.
+            Startovní číslo vám přidělí organizátor ručně. Potvrzení registrace jsme vám poslali na e-mail. Pokud ho
+            nevidíte, zkontrolujte prosím i složku <strong>Spam</strong> (nevyžádaná pošta).
           </p>
         </div>
       </div>

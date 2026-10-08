@@ -92,7 +92,8 @@ export class EmailService {
     vlastniText?: string | null;
     udaje?: UdajeRegistrace;
     kopie?: string | null;
-    platba?: { castkaKc: number; qrPng: Buffer };
+    podpis?: string | null;
+    platba?: { castkaKc: number; ucet: string; podminky?: string | null; qrPng?: Buffer };
   }): Promise<boolean> {
     const transporter = this.getTransporter();
     if (!transporter) {
@@ -106,11 +107,12 @@ export class EmailService {
       trasaNazev: params.trasaNazev,
       udalostNazev: params.udalostNazev,
       vlastniText: params.vlastniText,
+      podpis: params.podpis,
       udaje: params.udaje,
-      platbaCastkaKc: params.platba?.castkaKc,
+      platba: params.platba ? { castkaKc: params.platba.castkaKc, ucet: params.platba.ucet, podminky: params.platba.podminky, sQr: !!params.platba.qrPng } : null,
     });
     const attachments: NonNullable<Parameters<Transporter["sendMail"]>[0]>["attachments"] = [];
-    if (params.platba) {
+    if (params.platba?.qrPng) {
       attachments.push({ filename: "qr-platba.png", content: params.platba.qrPng, cid: "qr-platba" });
     }
 
@@ -140,6 +142,7 @@ export class EmailService {
     udalostNazev: string;
     platbaCastkaKc?: number | null;
     kopie?: string | null;
+    podpis?: string | null;
   }): Promise<boolean> {
     const transporter = this.getTransporter();
     if (!transporter) {

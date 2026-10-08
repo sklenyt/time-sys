@@ -28,6 +28,12 @@ export interface Udalost {
   ukoncena: boolean;
   /** Kopie (CC) potvrzení registrace a platby; null = bez kopie. */
   emailKopie?: string | null;
+  /** Vlastní závěrečný pozdrav e-mailů akce; null = výchozí. */
+  emailPodpis?: string | null;
+  /** Akce se veřejně zobrazuje v referencích na webu depotime.cz (souhlas pořadatele). */
+  verejnaReference?: boolean;
+  /** Místo konání (město) pro mapu referencí. */
+  misto?: string | null;
   /** Jen pro super admina — název organizace, ke které akce patří. */
   organizaceNazev?: string;
 }
@@ -48,6 +54,7 @@ export interface Trasa {
   platbaUcet?: string | null;
   /** Výše startovného v Kč — bez tohoto pole (nebo 0) appka QR platbu do e-mailu nepřidá. */
   platbaCastka?: number | null;
+  platbaPodminky?: string | null;
 }
 
 export interface Kategorie {
@@ -533,6 +540,18 @@ export interface PersonalResultDto {
   mezicas: string | null;
   stavUkonceni?: StavUkonceni | null;
   clenoveDruzstva?: DruzstvoClen[] | null;
+}
+
+/** GET /events/reference — akce, které pořadatel veřejně zveřejnil jako referenci (úvodní web). */
+export interface ReferenceDto {
+  id: string;
+  nazev: string;
+  datum: string;
+  misto: string | null;
+  lat: number | null;
+  lon: number | null;
+  pocetZavodniku: number;
+  pocetTrati: number;
 }
 
 /** GET /events/verejne — veřejný adresář na vysledky.depotime.cz. */

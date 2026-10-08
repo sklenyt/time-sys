@@ -1,5 +1,6 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import { najdiMisto } from "@depo/shared";
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../prisma/prisma.service";
 import { jeDatumVMinulosti } from "../common/datum-v-minulosti";
@@ -76,6 +77,33 @@ export class EventsService {
     return udalosti.map(bezHesla);
   }
 
+  /** Reference na úvodním webu — jen akce, které pořadatel sám zveřejnil; počty bez jakýchkoli osobních údajů. */
+  async najitReference() {
+    const udalosti = await this.prisma.udalost.findMany({
+      where: { verejnaReference: true },
+      orderBy: { datum: "desc" },
+      select: {
+        id: true,
+        nazev: true,
+        datum: true,
+        misto: true,
+        mistoLat: true,
+        mistoLon: true,
+        trasy: { select: { _count: { select: { prihlasky: true } } } },
+      },
+    });
+    return udalosti.map((u) => ({
+      id: u.id,
+      nazev: u.nazev,
+      datum: u.datum,
+      misto: u.misto,
+      lat: u.mistoLat,
+      lon: u.mistoLon,
+      pocetZavodniku: u.trasy.reduce((soucet, t) => soucet + t._count.prihlasky, 0),
+      pocetTrati: u.trasy.length,
+    }));
+  }
+
   /** Interní — vrací i hesloVysledkuHash, používat jen uvnitř servisu (update, overitHesloUdalosti). */
   private async najdiSHeslem(id: string) {
     const udalost = await this.prisma.udalost.findUnique({
@@ -109,6 +137,15 @@ export class EventsService {
         verejnyVypis: dto.verejnyVypis,
         hesloVysledkuHash,
         emailKopie: dto.emailKopie === undefined ? undefined : dto.emailKopie?.trim() || null,
+        emailPodpis: dto.emailPodpis === undefined ? undefined : dto.emailPodpis?.trim() || null,
+        verejnaReference: dto.verejnaReference,
+        ...(dto.misto === undefined
+          ? {}
+          : (() => {
+              const misto = dto.misto?.trim() || null;
+              const nalezeno = najdiMisto(misto);
+              return { misto: nalezeno?.nazev ?? misto, mistoLat: nalezeno?.lat ?? null, mistoLon: nalezeno?.lon ?? null };
+            })()),
         ukoncena: dto.ukoncena,
       },
     });

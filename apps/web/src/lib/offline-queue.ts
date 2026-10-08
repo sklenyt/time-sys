@@ -21,7 +21,8 @@ export interface FrontaZaznam {
   klientEventId?: string;
   serverId?: string;
   trasaId: string;
-  startovniCislo: number;
+  /** null = zápis jen s časem, číslo se doplní později. */
+  startovniCislo: number | null;
   klientCas: string;
   stav: FrontaStav;
   /** DOJEZD (cíl, výchozí) nebo MEZICAS (kontrolní stanoviště, F17); OPRAVA jen u cizích stažených eventů. */
@@ -93,7 +94,7 @@ function setCursor(trasaId: string, cursor: string) {
 /** Zapíše nový zápis do lokální fronty. Nikdy nečeká na síť (§3.5 bod 2). */
 export async function enqueueZaznam(
   trasaId: string,
-  startovniCislo: number,
+  startovniCislo: number | null,
   typUdalosti: TypUdalosti.DOJEZD | TypUdalosti.MEZICAS = TypUdalosti.DOJEZD
 ): Promise<FrontaZaznam> {
   const id = crypto.randomUUID();
@@ -111,15 +112,43 @@ export async function enqueueZaznam(
   return zaznam;
 }
 
+/** Jen časy bez čísla — vlastní zápisy, které čekají na doplnění startovního čísla. */
+function jeBezCisla(z: FrontaZaznam): boolean {
+  return z.puvod === "VLASTNI" && z.startovniCislo === null && !z.prihlaskaId;
+}
+
+/** Poslední zápisy; zápisy bez čísla jsou vždy nahoře (vlastní čekající na doplnění), ať se neztratí. */
 export async function listRecent(trasaId: string, limit = 8): Promise<FrontaZaznam[]> {
   try {
-    const all = await getAllByTrasa(trasaId);
-    return all
-      .sort((a, b) => new Date(b.klientCas).getTime() - new Date(a.klientCas).getTime())
-      .slice(0, limit);
+    const all = (await getAllByTrasa(trasaId)).sort(
+      (a, b) => new Date(b.klientCas).getTime() - new Date(a.klientCas).getTime()
+    );
+    const bezCisla = all.filter(jeBezCisla).reverse();
+    const ostatni = all.filter((z) => !jeBezCisla(z)).slice(0, limit);
+    return [...bezCisla, ...ostatni];
   } catch {
     return [];
   }
+}
+
+/** Doplní číslo u zápisu, který ještě čeká na odeslání (úprava jen v lokální frontě, na server půjde rovnou s číslem). */
+export async function doplnCisloLokalne(localKey: string, trasaId: string, cislo: number): Promise<boolean> {
+  const zaznam = (await getAllByTrasa(trasaId)).find((z) => z.localKey === localKey);
+  if (!zaznam || zaznam.stav !== "CEKA") return false;
+  await put({ ...zaznam, startovniCislo: cislo });
+  return true;
+}
+
+/** Po opravě na serveru uloží do lokálního záznamu nové číslo a přiřazenou přihlášku. */
+export async function oznacDoplneno(
+  localKey: string,
+  trasaId: string,
+  cislo: number,
+  prihlaskaId: string | null
+): Promise<void> {
+  const zaznam = (await getAllByTrasa(trasaId)).find((z) => z.localKey === localKey);
+  if (!zaznam) return;
+  await put({ ...zaznam, startovniCislo: cislo, prihlaskaId });
 }
 
 /** Odešle čekající vlastní zápisy dávkově. Chyba/výpadek sítě nechá zápisy ve frontě k dalšímu pokusu. */
@@ -137,7 +166,7 @@ export async function flushFrontu(trasaId: string, zarizeniId: string): Promise<
       zarizeniId,
       events: cekajici.map((z) => ({
         klientEventId: z.klientEventId,
-        startovniCislo: z.startovniCislo,
+        ...(z.startovniCislo !== null ? { startovniCislo: z.startovniCislo } : {}),
         klientCas: z.klientCas,
         typUdalosti: z.typUdalosti,
       })),
@@ -173,7 +202,7 @@ export async function pullCizi(trasaId: string, zarizeniId: string): Promise<voi
         localKey: `foreign:${z.id}`,
         serverId: z.id,
         trasaId,
-        startovniCislo: z.startovniCisloRaw ?? 0,
+        startovniCislo: z.startovniCisloRaw ?? null,
         klientCas: z.cas,
         stav: z.stav === "NEEDS_REVIEW" ? "NEEDS_REVIEW" : "CIZI",
         // Server (SyncService.pullEvents) vrací jen DOJEZD/OPRAVA/MEZICAS.

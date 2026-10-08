@@ -20,6 +20,7 @@ import { CategoriesService } from "../categories/categories.service";
 import { decryptSecret, encryptSecret } from "../common/secret-crypto";
 import { EmailService } from "../notifications/email.service";
 import { NeplatnyUcetError, vygenerujQrPlatbuPng } from "../common/cz-qr-platba";
+import { zpravaProPrijemce } from "@depo/shared";
 
 @Injectable()
 export class EntriesService {
@@ -297,6 +298,7 @@ export class EntriesService {
       udalostNazev: trasa.udalost.nazev,
       platbaCastkaKc: trasa.platbaCastka,
       kopie: trasa.udalost.emailKopie,
+      podpis: trasa.udalost.emailPodpis,
     });
     if (!odeslano) {
       throw new ServiceUnavailableException("E-mail se nepodařilo odeslat (zkontrolujte nastavení SMTP)");
@@ -422,19 +424,19 @@ export class EntriesService {
       clenove?: string[];
     }
   ): Promise<boolean> {
-    let platba: { castkaKc: number; qrPng: Buffer } | undefined;
+    // Platba převodem se v e-mailu uvede vždy, když je u trati účet i částka; QR kód
+    // se přidá, jen když jde z účtu vygenerovat (špatný formát účtu e-mail nezablokuje).
+    let platba: { castkaKc: number; ucet: string; podminky?: string | null; qrPng?: Buffer } | undefined;
     if (trasa.platbaUcet && trasa.platbaCastka) {
+      platba = { castkaKc: trasa.platbaCastka, ucet: trasa.platbaUcet, podminky: trasa.platbaPodminky };
       try {
-        const qrPng = await vygenerujQrPlatbuPng({
+        platba.qrPng = await vygenerujQrPlatbuPng({
           ucet: trasa.platbaUcet,
           castkaKc: trasa.platbaCastka,
-          zprava: `Startovne ${d.jmeno} ${d.prijmeni}`,
+          zprava: zpravaProPrijemce(d.jmeno, d.prijmeni),
         });
-        platba = { castkaKc: trasa.platbaCastka, qrPng };
       } catch (err) {
         if (!(err instanceof NeplatnyUcetError)) throw err;
-        // Špatně vyplněné číslo účtu u trati nesmí zablokovat registraci
-        // samotnou — e-mail se pošle jen bez QR platby.
       }
     }
     const kategorie = await this.prisma.kategorie.findUnique({ where: { id: d.kategorieId } });
@@ -446,6 +448,7 @@ export class EntriesService {
       udalostNazev: trasa.udalost.nazev,
       vlastniText: trasa.potvrzovaciEmailText,
       kopie: trasa.udalost.emailKopie,
+      podpis: trasa.udalost.emailPodpis,
       udaje: {
         rocnik: d.rocnik,
         pohlavi: d.pohlavi,

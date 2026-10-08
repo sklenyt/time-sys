@@ -26,6 +26,13 @@ export class EventsController {
    * Veřejný adresář pro vysledky.depotime.cz — musí být před ":id", jinak
    * by ho NestJS routoval jako `findOne("verejne")`.
    */
+  /** Reference pro úvodní web depotime.cz — musí být před ":id". */
+  @Public()
+  @Get("reference")
+  findReference() {
+    return this.events.najitReference();
+  }
+
   @Public()
   @Get("verejne")
   findVerejne() {

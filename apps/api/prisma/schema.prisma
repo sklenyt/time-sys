@@ -134,6 +134,13 @@ model Udalost {
   // Adresa, na kterou se posílá kopie (CC) potvrzení registrace a platby
   // odeslaných ze systémového odesílatele — každá akce může mít jinou.
   emailKopie        String?  @map("email_kopie")
+  // Vlastní závěrečný pozdrav v e-mailech akce (jinak výchozí „Těšíme se na vás na startu. / Pořadatelé akce …").
+  emailPodpis       String?  @map("email_podpis")
+  // Reference na úvodním webu: pořadatel sám zveřejní akci (souhlas) a uvede místo; souřadnice se dohledají ze seznamu měst.
+  verejnaReference  Boolean  @default(false) @map("verejna_reference")
+  misto             String?
+  mistoLat          Float?   @map("misto_lat")
+  mistoLon          Float?   @map("misto_lon")
 
   organizace     Organizace      @relation(fields: [organizaceId], references: [id], onDelete: Restrict)
   trasy          Trasa[]
@@ -159,6 +166,8 @@ model Trasa {
   potvrzovaciEmailText String?   @map("potvrzovaci_email_text")
   platbaUcet           String?   @map("platba_ucet")
   platbaCastka         Int?      @map("platba_castka")
+  // Platební podmínky pro převod (splatnost, storno apod.) — volný text, který se přidá do potvrzení registrace.
+  platbaPodminky       String?   @map("platba_podminky")
 
   udalost    Udalost          @relation(fields: [udalostId], references: [id], onDelete: Cascade)
   kategorie  Kategorie[]

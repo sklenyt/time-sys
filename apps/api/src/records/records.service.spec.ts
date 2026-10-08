@@ -251,6 +251,25 @@ describe("RecordsService", () => {
     });
   });
 
+  describe("create — time only (no bib number yet)", () => {
+    it("records just the time, does not look up an entry and leaves the number empty for later correction", async () => {
+      mockCreateEcho();
+
+      const result = await service.create(TRASA_ID, {
+        zarizeniId: "zarizeni-1",
+        klientCas: iso(10),
+        klientEventId: "evt-time-only",
+      });
+
+      expect(prisma.prihlaska.findFirst).not.toHaveBeenCalled();
+      expect(prisma.zaznamUdalosti.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ startovniCisloRaw: null, prihlaskaId: undefined }),
+      });
+      expect(result.prihlaskaId).toBeNull();
+      expect(result.startovniCisloRaw).toBeNull();
+    });
+  });
+
   describe("createFromChip", () => {
     beforeEach(() => mockCreateEcho());
 

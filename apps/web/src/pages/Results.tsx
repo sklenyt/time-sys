@@ -243,30 +243,30 @@ export function Results() {
           </div>
         )}
 
-        <div className="dash-card" style={{ padding: 0, overflow: "hidden" }}>
+        <div className="sl-karta">
           <div className="table-scroll">
-            <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
+            <table className="sl-tabulka">
               <thead>
-                <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
-                  <th style={{ padding: "12px 16px" }}>Celk.</th>
-                  <th style={{ padding: "12px 8px" }}>Kat.</th>
-                  <th style={{ fontFamily: "var(--font-ui)", padding: "12px 8px" }}>Č.</th>
-                  <th style={{ fontFamily: "var(--font-ui)", padding: "12px 8px" }}>Jméno</th>
-                  <th style={{ fontFamily: "var(--font-ui)", padding: "12px 8px" }}>Klub</th>
-                  <th style={{ fontFamily: "var(--font-ui)", padding: "12px 8px" }}>Kategorie</th>
-                  <th style={{ padding: "12px 16px" }}>Čas</th>
+                <tr>
+                  <th>Celk.</th>
+                  <th>Kat.</th>
+                  <th>Č.</th>
+                  <th>Jméno</th>
+                  <th>Klub</th>
+                  <th>Kategorie</th>
+                  <th style={{ textAlign: "right" }}>Čas</th>
                 </tr>
               </thead>
               <tbody>
                 {klasifikovaniFiltr.map((p) => (
-                  <tr key={p.prihlaskaId} style={{ borderBottom: "1px solid var(--line)" }}>
-                    <td style={{ padding: "10px 16px" }}>
+                  <tr key={p.prihlaskaId} className="sl-radek">
+                    <td>
                       <RankBadge poradi={p.poradiCelkove} />
                     </td>
-                    <td style={{ padding: "10px 8px", color: "var(--text-secondary)" }}>{p.poradiKategorie}</td>
-                    <td style={{ padding: "10px 8px" }}>{p.startovniCislo}</td>
-                    <td style={{ fontFamily: "var(--font-ui)", padding: "10px 8px" }}>
-                      <Link to={`/vysledky/${routeId}/bezec/${p.prihlaskaId}`}>
+                    <td className="mono" style={{ color: "var(--text-secondary)" }}>{p.poradiKategorie}</td>
+                    <td className="mono">{p.startovniCislo}</td>
+                    <td>
+                      <Link to={`/vysledky/${routeId}/bezec/${p.prihlaskaId}`} style={{ fontWeight: 700 }}>
                         {p.prijmeni} {p.jmeno}
                       </Link>
                       {p.clenoveDruzstva && p.clenoveDruzstva.length > 0 && (
@@ -279,16 +279,14 @@ export function Results() {
                         </span>
                       )}
                     </td>
-                    <td style={{ fontFamily: "var(--font-ui)", padding: "10px 8px", color: "var(--text-secondary)", fontSize: 12.5 }}>
-                      {p.klub ?? "—"}
-                    </td>
-                    <td style={{ fontFamily: "var(--font-ui)", padding: "10px 8px" }}>{p.kategorieKod}</td>
-                    <td style={{ fontWeight: 700, padding: "10px 16px" }}>{p.casCelkem}</td>
+                    <td className="sl-podtitul">{p.klub ?? "—"}</td>
+                    <td className="mono">{p.kategorieKod}</td>
+                    <td className="mono" style={{ fontWeight: 800, textAlign: "right" }}>{p.casCelkem}</td>
                   </tr>
                 ))}
                 {klasifikovaniFiltr.length === 0 && (
                   <tr>
-                    <td colSpan={7} style={{ padding: "20px 16px", color: "var(--text-secondary)", fontFamily: "var(--font-ui)" }}>
+                    <td colSpan={7} style={{ padding: "22px 8px", color: "var(--text-secondary)" }}>
                       Nic neodpovídá hledání.
                     </td>
                   </tr>
@@ -299,21 +297,21 @@ export function Results() {
         </div>
 
         {neklasifikovaniFiltr.length > 0 && (
-          <div className="dash-card" style={{ padding: 0, overflow: "hidden", marginTop: 16 }}>
-            <div className="dash-card-head" style={{ padding: "16px 16px 0" }}>
+          <div className="sl-karta" style={{ marginTop: 16 }}>
+            <div className="dash-card-head" style={{ padding: "14px 8px 0" }}>
               <h2>Neklasifikovaní</h2>
             </div>
             <div className="table-scroll">
-              <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
+              <table className="sl-tabulka">
                 <tbody>
                   {neklasifikovaniFiltr.map((p) => (
-                    <tr key={p.prihlaskaId} style={{ borderBottom: "1px solid var(--line)" }}>
-                      <td style={{ padding: "10px 16px" }}>{p.startovniCislo}</td>
-                      <td style={{ fontFamily: "var(--font-ui)", padding: "10px 8px" }}>
+                    <tr key={p.prihlaskaId} className="sl-radek">
+                      <td className="mono">{p.startovniCislo}</td>
+                      <td style={{ fontWeight: 700 }}>
                         {p.prijmeni} {p.jmeno}
                       </td>
-                      <td style={{ fontFamily: "var(--font-ui)", padding: "10px 8px" }}>{p.kategorieKod}</td>
-                      <td style={{ color: "var(--text-secondary)", padding: "10px 16px" }}>
+                      <td className="mono">{p.kategorieKod}</td>
+                      <td className="sl-podtitul">
                         {p.stavUkonceni ??
                           (p.pocetKol > 1 && p.aktualniKolo ? `kolo ${p.aktualniKolo}/${p.pocetKol}` : "v cíli zatím ne")}
                       </td>

@@ -113,4 +113,27 @@ describe("EventsService", () => {
       expect((await service.najitVerejneUdalosti())[0].ukoncena).toBe(false);
     });
   });
+
+  describe("najitReference", () => {
+    it("returns only the public-reference events with counts and coordinates, without personal data", async () => {
+      prisma.udalost.findMany.mockResolvedValue([
+        {
+          id: "e1",
+          nazev: "Jarní běh Mělník",
+          datum: new Date("2026-04-12"),
+          misto: "Mělník",
+          mistoLat: 50.35,
+          mistoLon: 14.47,
+          trasy: [{ _count: { prihlasky: 120 } }, { _count: { prihlasky: 92 } }],
+        },
+      ]);
+
+      const reference = await service.najitReference();
+
+      expect(prisma.udalost.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { verejnaReference: true } }));
+      expect(reference).toEqual([
+        { id: "e1", nazev: "Jarní běh Mělník", datum: new Date("2026-04-12"), misto: "Mělník", lat: 50.35, lon: 14.47, pocetZavodniku: 212, pocetTrati: 2 },
+      ]);
+    });
+  });
 });

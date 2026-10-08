@@ -50,4 +50,9 @@ export class UpdateRouteDto {
   @IsInt()
   @Min(0)
   platbaCastka?: number;
+
+  /** Platební podmínky pro převod (splatnost, storno…) — prázdný řetězec pole vynuluje. */
+  @IsOptional()
+  @IsString()
+  platbaPodminky?: string;
 }

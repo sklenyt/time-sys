@@ -1,8 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { TypUdalosti } from "@depo/shared";
-import { getDeviceId } from "../lib/api";
-import { enqueueZaznam, listRecent, startAutoSync, type FrontaZaznam } from "../lib/offline-queue";
+import { TypOpravy, TypUdalosti } from "@depo/shared";
+import type { RecordResponseDto } from "@depo/shared";
+import { api, getDeviceId } from "../lib/api";
+import { chybaZeServeru } from "../lib/chyby";
+import {
+  doplnCisloLokalne,
+  enqueueZaznam,
+  listRecent,
+  oznacDoplneno,
+  startAutoSync,
+  type FrontaZaznam,
+} from "../lib/offline-queue";
 import { SystemClockWidget } from "../components/SystemClockWidget";
 import { TemaPrepinac } from "../components/TemaPrepinac";
 import { useTema } from "../lib/tema";
@@ -43,6 +52,47 @@ export function Measurement() {
     }
   }, [routeId, cislo, typUdalosti, obnovitPosledni]);
 
+  // Zápis jen s časem (bez čísla) — když se do cíle sjede víc závodníků a
+  // není čas psát celé číslo; číslo se doplní dodatečně v seznamu vpravo.
+  const zapsatJenCas = useCallback(async () => {
+    if (!routeId) return;
+    try {
+      await enqueueZaznam(routeId, null, typUdalosti);
+      setCislo("");
+      setChyba(null);
+      obnovitPosledni();
+    } catch {
+      setChyba("Zápis se nepodařilo uložit ani lokálně — zkuste to prosím znovu.");
+    }
+  }, [routeId, typUdalosti, obnovitPosledni]);
+
+  const doplnitCislo = useCallback(
+    async (z: FrontaZaznam, text: string) => {
+      if (!routeId) return;
+      const cisloNove = Number(text.trim());
+      if (!Number.isInteger(cisloNove) || cisloNove < 1) {
+        setChyba("Zadejte startovní číslo (celé číslo od 1 výš).");
+        return;
+      }
+      try {
+        if (z.stav === "CEKA") {
+          await doplnCisloLokalne(z.localKey, routeId, cisloNove);
+        } else if (z.serverId) {
+          const odpoved = await api.patch<RecordResponseDto>(`/routes/${routeId}/records/${z.serverId}/correct`, {
+            noveStartovniCislo: cisloNove,
+            typOpravy: TypOpravy.PREPIS_NULY_NA_CISLO,
+          });
+          await oznacDoplneno(z.localKey, routeId, cisloNove, odpoved.prihlaskaId);
+        }
+        setChyba(null);
+        obnovitPosledni();
+      } catch (e) {
+        setChyba(chybaZeServeru(e, "Číslo se nepodařilo doplnit (zkontrolujte připojení)."));
+      }
+    },
+    [routeId, obnovitPosledni]
+  );
+
   useEffect(() => {
     if (!routeId) return;
     obnovitPosledni();
@@ -77,10 +127,16 @@ export function Measurement() {
       if (e.key >= "0" && e.key <= "9") stiskniKlavesu(e.key);
       else if (e.key === "Backspace") stiskniKlavesu("⌫");
       else if (e.key === "Enter") zapsat();
+      else if (e.key === " " && !(e.target instanceof HTMLInputElement)) {
+        e.preventDefault();
+        zapsatJenCas();
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [stiskniKlavesu, zapsat]);
+  }, [stiskniKlavesu, zapsat, zapsatJenCas]);
+
+  const pocetBezCisla = posledni.filter((z) => z.puvod === "VLASTNI" && z.startovniCislo === null && !z.prihlaskaId).length;
 
   return (
     <div className="measurement-layout" data-tema={tema}>
@@ -155,7 +211,10 @@ export function Measurement() {
           {KEYS.map((k) => (
             <button
               key={k}
-              onClick={() => stiskniKlavesu(k)}
+              onClick={(e) => {
+                e.currentTarget.blur(); // ať mezerník po kliknutí nespustí znovu stejné tlačítko
+                stiskniKlavesu(k);
+              }}
               className="mono measurement-key"
               aria-label={k === "⌫" ? "Smazat poslední číslici" : undefined}
               style={{
@@ -174,7 +233,10 @@ export function Measurement() {
         </div>
 
         <button
-          onClick={zapsat}
+          onClick={(e) => {
+            e.currentTarget.blur();
+            zapsat();
+          }}
           disabled={!cislo}
           style={{
             width: "100%",
@@ -192,6 +254,27 @@ export function Measurement() {
         >
           ZAPSAT ↵
         </button>
+        <button
+          onClick={(e) => {
+            e.currentTarget.blur();
+            zapsatJenCas();
+          }}
+          title="Zapíše jen čas bez čísla (klávesa Mezerník) — číslo doplníte později v seznamu vpravo"
+          style={{
+            width: "100%",
+            maxWidth: 420,
+            padding: "14px",
+            borderRadius: 14,
+            border: "2px dashed var(--m-key-border)",
+            background: "transparent",
+            color: "var(--m-fg)",
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          ZAPSAT JEN ČAS (bez čísla) ␣
+        </button>
         {chyba && (
           <p role="alert" style={{ color: "var(--color-attention)" }}>
             {chyba}
@@ -203,6 +286,11 @@ export function Measurement() {
         <h3 style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: 1, color: "var(--m-muted)" }}>
           Poslední zápisy
         </h3>
+        {pocetBezCisla > 0 && (
+          <p style={{ fontSize: 12.5, color: "var(--color-attention)", margin: "0 0 8px" }}>
+            {pocetBezCisla} {pocetBezCisla === 1 ? "čas čeká" : "časy čekají"} na doplnění čísla
+          </p>
+        )}
         {posledni.map((z) => (
           <div
             key={z.localKey}
@@ -227,10 +315,14 @@ export function Measurement() {
                 fontWeight: 700,
               }}
             >
-              {z.startovniCislo}
+              {z.startovniCislo ?? "—"}
             </div>
             <div style={{ fontSize: 12, color: "var(--m-muted)" }}>
               {z.casCelkem ?? new Date(z.klientCas).toLocaleTimeString("cs-CZ")}
+              {z.startovniCislo === null && z.puvod === "VLASTNI" && !z.prihlaskaId && (
+                <DoplnitCislo onDoplnit={(text) => doplnitCislo(z, text)} />
+              )}
+              {z.startovniCislo === null && z.puvod === "CIZI" && <div>bez čísla — z jiného zařízení</div>}
               {z.typUdalosti === TypUdalosti.MEZICAS && <div>mezičas</div>}
               {z.typUdalosti === TypUdalosti.DOJEZD && z.pocetKol && z.pocetKol > 1 && (
                 <div style={{ color: z.aktualniKolo === z.pocetKol ? "var(--m-live)" : "var(--m-accent)" }}>
@@ -247,6 +339,38 @@ export function Measurement() {
         ))}
       </div>
     </div>
+  );
+}
+
+/** Malé pole pro doplnění startovního čísla k času zapsanému bez čísla. */
+function DoplnitCislo({ onDoplnit }: { onDoplnit: (text: string) => void }) {
+  const [text, setText] = useState("");
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onDoplnit(text);
+        setText("");
+      }}
+      style={{ display: "flex", gap: 6, marginTop: 4 }}
+    >
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value.replace(/\D/g, "").slice(0, 4))}
+        inputMode="numeric"
+        placeholder="č."
+        aria-label="Doplnit startovní číslo"
+        className="mono"
+        style={{ width: 64, padding: "5px 8px", borderRadius: 8, border: "1px solid var(--m-key-border)", background: "var(--m-key)", color: "var(--m-fg)", fontSize: 14 }}
+      />
+      <button
+        type="submit"
+        disabled={!text}
+        style={{ padding: "5px 10px", borderRadius: 8, border: "none", background: "var(--tape-700)", color: "#fff", fontWeight: 700, fontSize: 12, cursor: text ? "pointer" : "not-allowed", opacity: text ? 1 : 0.5 }}
+      >
+        Doplnit
+      </button>
+    </form>
   );
 }
 

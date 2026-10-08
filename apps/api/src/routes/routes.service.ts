@@ -53,6 +53,7 @@ export class RoutesService {
         potvrzovaciEmailText: dto.potvrzovaciEmailText !== undefined ? dto.potvrzovaciEmailText || null : undefined,
         platbaUcet: dto.platbaUcet !== undefined ? dto.platbaUcet || null : undefined,
         platbaCastka: dto.platbaCastka,
+        platbaPodminky: dto.platbaPodminky !== undefined ? dto.platbaPodminky.trim() || null : undefined,
       },
     });
   }

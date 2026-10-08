@@ -6,8 +6,10 @@ export class SyncEventDto {
   @IsUUID()
   klientEventId!: string;
 
+  /** Bez čísla = zápis jen s časem, číslo se doplní později. */
+  @IsOptional()
   @IsInt()
-  startovniCislo!: number;
+  startovniCislo?: number;
 
   @IsDateString()
   klientCas!: string;

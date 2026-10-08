@@ -50,10 +50,13 @@ export class RecordsService {
 
     const typUdalosti = dto.typUdalosti ?? TypUdalosti.DOJEZD;
 
-    const prihlaska = await this.prisma.prihlaska.findFirst({
-      where: { trasaId, startovniCislo: dto.startovniCislo },
-      include: { startVlna: true },
-    });
+    const prihlaska =
+      dto.startovniCislo === undefined
+        ? null
+        : await this.prisma.prihlaska.findFirst({
+            where: { trasaId, startovniCislo: dto.startovniCislo },
+            include: { startVlna: true },
+          });
 
     const klientCas = new Date(dto.klientCas);
 
@@ -91,7 +94,7 @@ export class RecordsService {
       data: {
         trasaId,
         prihlaskaId: prihlaska?.id,
-        startovniCisloRaw: dto.startovniCislo,
+        startovniCisloRaw: dto.startovniCislo ?? null,
         typUdalosti,
         cas: klientCas,
         zarizeniId: dto.zarizeniId,
@@ -231,8 +234,53 @@ export class RecordsService {
       },
     });
 
+    this.publishTargets.exportPoZaznamuProTrasu(trasaId).catch(() => {});
     this.resultsEvents.oznamZmenu(trasaId);
+    await this.oznamitDojezdPoDoplneniCisla(trasaId, original, novaPrihlaska?.id ?? null);
     return this.toResponse(opravenyZaznam);
+  }
+
+  /**
+   * Průjezd zapsaný jen s časem a doplněný číslem dodatečně: závodník se
+   * v tu chvíli poprvé dostává do výsledků, takže se mu — stejně jako u
+   * normálního zápisu — pošle e-mail o dojezdu (jen při skutečném doběhu,
+   * u víckolové tratě až po posledním kole). Fire-and-forget.
+   */
+  private async oznamitDojezdPoDoplneniCisla(
+    trasaId: string,
+    original: ZaznamUdalosti,
+    novaPrihlaskaId: string | null
+  ): Promise<void> {
+    if (original.typUdalosti !== TypUdalosti.DOJEZD || original.prihlaskaId || !novaPrihlaskaId) return;
+    const [prihlaska, trasa] = await Promise.all([
+      this.prisma.prihlaska.findUnique({ where: { id: novaPrihlaskaId }, include: { startVlna: true } }),
+      this.prisma.trasa.findUnique({ where: { id: trasaId }, include: { udalost: true } }),
+    ]);
+    if (!prihlaska?.email || !prihlaska.startVlna?.casStartu || !trasa) return;
+
+    const zaznamy = await this.prisma.zaznamUdalosti.findMany({
+      where: { prihlaskaId: novaPrihlaskaId, typUdalosti: { in: [TypUdalosti.DOJEZD, TypUdalosti.OPRAVA] } },
+    });
+    const nahrazene = new Set(zaznamy.map((z) => z.nahrazujeZaznamId).filter((id): id is string => id !== null));
+    const platne = zaznamy.filter((z) => !nahrazene.has(z.id));
+    if (platne.length < trasa.pocetKol) return;
+    const serazene = [...platne].sort((a, b) => a.cas.getTime() - b.cas.getTime());
+    const cilovy = serazene[trasa.pocetKol - 1];
+    if (cilovy.cas.getTime() !== original.cas.getTime()) return;
+
+    const vysledkyUrl = process.env.VYSLEDKY_URL ?? "https://vysledky.depotime.cz";
+    this.email
+      .posliOznameniODobehu({
+        komu: prihlaska.email,
+        prijmeni: prihlaska.prijmeni,
+        jmeno: prihlaska.jmeno,
+        startovniCislo: prihlaska.startovniCislo,
+        trasaNazev: trasa.nazev,
+        udalostNazev: trasa.udalost?.nazev,
+        casCelkem: formatDuration(original.cas.getTime() - prihlaska.startVlna.casStartu.getTime()),
+        odkazNaVysledky: `${vysledkyUrl}/?akce=${trasa.udalostId}`,
+      })
+      .catch(() => {});
   }
 
   /**
