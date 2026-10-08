@@ -20,12 +20,12 @@ Povinné údaje jsou ve formuláři označené hvězdičkou (*):
 - **Ročník narození** (čtyřmístný rok) a **pohlaví**.
 - **Kategorie** — závodník ji vybírá sám ze seznamu kategorií dané trati (viz [Kategorie](/napoveda/kategorie)).
 - **E-mail** — dostane na něj potvrzení registrace.
+- **Telefon.**
 - **Souhlas se zpracováním osobních údajů** — zaškrtávací políčko s odkazem na [zásady ochrany osobních údajů](/zasady-ochrany-osobnich-udaju). Bez zaškrtnutí nejde registraci odeslat.
 
 Nepovinné údaje:
 
 - Klub.
-- Telefon.
 - Nouzový kontakt — jméno a telefon osoby pro případ nouze na trati.
 - Zdravotní poznámka (alergie, léky apod.).
 

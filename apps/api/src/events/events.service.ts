@@ -61,7 +61,14 @@ export class EventsService {
     return bezHesla(udalost);
   }
 
-  async findAllForOrganizace(organizaceId: string | null) {
+  async findAllForOrganizace(organizaceId: string | null, superAdmin = false) {
+    if (superAdmin) {
+      const vse = await this.prisma.udalost.findMany({
+        orderBy: { datum: "desc" },
+        include: { organizace: { select: { nazev: true } } },
+      });
+      return vse.map(({ organizace, ...u }) => ({ ...bezHesla(u), organizaceNazev: organizace.nazev }));
+    }
     if (!organizaceId) {
       return [];
     }

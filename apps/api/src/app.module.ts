@@ -13,6 +13,7 @@ import { EntriesModule } from "./entries/entries.module";
 import { ChipsModule } from "./chips/chips.module";
 import { RecordsModule } from "./records/records.module";
 import { EventRolesModule } from "./event-roles/event-roles.module";
+import { UsersModule } from "./users/users.module";
 import { ResultsModule } from "./results/results.module";
 import { StartVlnyModule } from "./start-vlny/start-vlny.module";
 import { PublishTargetsModule } from "./publish-targets/publish-targets.module";
@@ -38,6 +39,7 @@ import { TenantContextInterceptor } from "./auth/interceptors/tenant-context.int
     ChipsModule,
     RecordsModule,
     EventRolesModule,
+    UsersModule,
     ResultsModule,
     StartVlnyModule,
     PublishTargetsModule,

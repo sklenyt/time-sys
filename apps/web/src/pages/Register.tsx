@@ -40,8 +40,8 @@ export function Register() {
 
   async function odeslat(e: React.FormEvent) {
     e.preventDefault();
-    if (!routeId || !prijmeni.trim() || !jmeno.trim() || !kategorieId || !rocnik || !pohlavi || !email.trim()) {
-      setError("Jméno, příjmení, ročník, pohlaví, kategorie a e-mail jsou povinné.");
+    if (!routeId || !prijmeni.trim() || !jmeno.trim() || !kategorieId || !rocnik || !pohlavi || !email.trim() || !telefon.trim()) {
+      setError("Jméno, příjmení, ročník, pohlaví, kategorie, e-mail a telefon jsou povinné.");
       return;
     }
     if (!souhlas) {
@@ -59,7 +59,7 @@ export function Register() {
         klub: klub.trim() || undefined,
         kategorieId,
         email: email.trim(),
-        telefon: telefon.trim() || undefined,
+        telefon: telefon.trim(),
         nouzovyKontakt: nouzovyKontakt.trim() || undefined,
         zdravotniPoznamka: zdravotniPoznamka.trim() || undefined,
         souhlasSeZpracovanim: souhlas,
@@ -144,7 +144,7 @@ export function Register() {
         <input placeholder="Klub" value={klub} onChange={(e) => setKlub(e.target.value)} style={inputStyle} />
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <input placeholder="E-mail *" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: 160 }} />
-          <input placeholder="Telefon" value={telefon} onChange={(e) => setTelefon(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: 140 }} />
+          <input placeholder="Telefon *" type="tel" required value={telefon} onChange={(e) => setTelefon(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: 140 }} />
         </div>
         <input
           placeholder="Nouzový kontakt (jméno + telefon)"

@@ -19,7 +19,7 @@ export class EventsController {
 
   @Get()
   findAll(@CurrentUser() user: AuthenticatedUser) {
-    return this.events.findAllForOrganizace(user.organizaceId);
+    return this.events.findAllForOrganizace(user.organizaceId, user.superAdmin);
   }
 
   /**

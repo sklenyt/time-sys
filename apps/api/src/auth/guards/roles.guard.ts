@@ -35,6 +35,10 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException("Vyžadováno přihlášení");
     }
 
+    if (user.superAdmin) {
+      return true;
+    }
+
     const udalostId = await this.resolveEventId(request.params);
     if (!udalostId) {
       throw new ForbiddenException("Nelze určit událost pro kontrolu oprávnění");

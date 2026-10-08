@@ -452,6 +452,11 @@ export function Sprava() {
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <h3 style={{ margin: 0 }}>{u.nazev}</h3>
+              {u.organizaceNazev && (
+                <span className="mono" style={{ fontSize: 11.5, color: "var(--text-secondary)" }} title="Organizace (zobrazeno jen super adminovi)">
+                  {u.organizaceNazev}
+                </span>
+              )}
               {u.ukoncena && (
                 <span
                   className="mono"

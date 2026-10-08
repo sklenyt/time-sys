@@ -13,7 +13,8 @@ export class TenantContextInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
     const user: AuthenticatedUser | undefined = request.user;
-    const organizaceId = user?.organizaceId ?? null;
+    // Super admin pracuje napříč organizacemi — bez tenant kontextu RLS nic neomezuje.
+    const organizaceId = user?.superAdmin ? null : (user?.organizaceId ?? null);
 
     return new Observable((subscriber) => {
       tenantContext.run(organizaceId, () => {

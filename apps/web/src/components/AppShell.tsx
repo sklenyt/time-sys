@@ -15,7 +15,8 @@ export type NavKey =
   | "kolize"
   | "audit"
   | "publikace"
-  | "reporty";
+  | "reporty"
+  | "uzivatele";
 
 interface NavItem {
   key: NavKey;
@@ -45,6 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "audit", label: "Audit log", needsRoute: true, href: (routeId) => `/audit/${routeId}` },
   { key: "publikace", label: "Publikace", needsEvent: true, href: (_r, eventId) => `/publikace/${eventId}` },
   { key: "reporty", label: "Reporty", href: () => "/reporty" },
+  { key: "uzivatele", label: "Uživatelé", href: () => "/uzivatele" },
 ];
 
 const NAV_BY_KEY = new Map(NAV_ITEMS.map((i) => [i.key, i]));

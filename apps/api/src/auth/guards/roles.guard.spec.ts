@@ -44,6 +44,13 @@ describe("RolesGuard", () => {
     guard = new RolesGuard(reflector as unknown as Reflector, prisma as unknown as PrismaService);
   });
 
+  it("lets a super admin through without any role on the event", async () => {
+    reflector.getAllAndOverride.mockReturnValue([Role.ADMIN]);
+    const allowed = await guard.canActivate(buildContext({ ...USER, superAdmin: true }, { eventId: EVENT_ID }));
+    expect(allowed).toBe(true);
+    expect(prisma.uzivatelRole.findFirst).not.toHaveBeenCalled();
+  });
+
   it("allows the request through when no @Roles() decorator is present", async () => {
     reflector.getAllAndOverride.mockReturnValue(undefined);
     const allowed = await guard.canActivate(buildContext(USER, { eventId: EVENT_ID }));

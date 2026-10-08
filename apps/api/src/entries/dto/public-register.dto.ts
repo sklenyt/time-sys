@@ -36,9 +36,9 @@ export class PublicRegisterDto {
   @IsEmail()
   email!: string;
 
-  @IsOptional()
   @IsString()
-  telefon?: string;
+  @IsNotEmpty()
+  telefon!: string;
 
   @IsOptional()
   @IsString()

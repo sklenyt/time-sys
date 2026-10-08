@@ -22,6 +22,7 @@ import { KioskEvent } from "./pages/KioskEvent";
 import { AuditLog } from "./pages/AuditLog";
 import { Register } from "./pages/Register";
 import { Reports } from "./pages/Reports";
+import { Uzivatele } from "./pages/Uzivatele";
 import { ResultsDirectory } from "./pages/ResultsDirectory";
 import { isLoggedIn } from "./lib/api";
 
@@ -153,6 +154,14 @@ export function App() {
         element={
           <RequireAuth>
             <Conflicts />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/uzivatele"
+        element={
+          <RequireAuth>
+            <Uzivatele />
           </RequireAuth>
         }
       />

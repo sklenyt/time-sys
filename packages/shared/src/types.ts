@@ -28,6 +28,8 @@ export interface Udalost {
   ukoncena: boolean;
   /** Kopie (CC) potvrzení registrace a platby; null = bez kopie. */
   emailKopie?: string | null;
+  /** Jen pro super admina — název organizace, ke které akce patří. */
+  organizaceNazev?: string;
 }
 
 export interface Trasa {
@@ -229,6 +231,18 @@ export interface AuthUserDto {
   email: string;
   jmeno: string;
   poradiMenu: string[];
+  /** Super admin vidí všechny akce všech organizací (viz SUPERADMIN_EMAILS na API). */
+  superAdmin?: boolean;
+}
+
+/** GET /users — účty organizace (správa uživatelů). */
+export interface UzivatelSpravaDto {
+  id: string;
+  email: string;
+  jmeno: string;
+  vytvorenoAt: string;
+  organizaceNazev: string | null;
+  role: { role: Role; akce: string }[];
 }
 
 export interface PublikacniCil {

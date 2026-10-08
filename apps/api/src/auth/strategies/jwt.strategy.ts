@@ -5,6 +5,7 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { PrismaService } from "../../prisma/prisma.service";
 import { AuthenticatedUser } from "../decorators/current-user.decorator";
 import { UserCacheService } from "../user-cache.service";
+import { jeSuperAdmin } from "../../common/superadmin";
 
 export interface AccessTokenPayload {
   sub: string;
@@ -41,6 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jmeno: uzivatel.jmeno,
       organizaceId: uzivatel.organizaceId,
       poradiMenu: uzivatel.poradiMenu,
+      superAdmin: jeSuperAdmin(uzivatel.email),
     };
     this.userCache.set(payload.sub, user);
     return user;
