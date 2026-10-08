@@ -418,16 +418,6 @@ export function Landing() {
             </a>
           </div>
         </div>
-        <div className="landing-pricing-support" style={{ maxWidth: 1100, margin: "20px auto 0" }}>
-          <div>
-            <h3>Podpoř vývoj dobrovolně</h3>
-            <p>Depo píšu a udržuju sám. Pokud ti ušetří práci na závodě, budu rád za dobrovolný příspěvek na další vývoj — libovolnou částkou.</p>
-          </div>
-          <div className="landing-pricing-qr">
-            <img src="/qr-platba.jpg" alt="QR platba na podporu vývoje Depo" width={200} height={200} />
-            <span>Naskenujte bankovní aplikací</span>
-          </div>
-        </div>
       </section>
 
       <section className="landing-cta">
