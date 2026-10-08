@@ -4,6 +4,7 @@ import type { ConflictItemDto } from "@depo/shared";
 import { api, API_BASE, getTokens } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
+import { HlavickaStranky, PrazdnyRadek, Souhrn, TabulkaKarta } from "../components/StrankaPrvky";
 
 export function Conflicts() {
   const { routeId } = useParams<{ routeId: string }>();
@@ -78,66 +79,68 @@ export function Conflicts() {
 
   return (
     <AppShell active="kolize" routeId={routeId}>
-      <div style={{ maxWidth: 720 }}>
-      <h1 style={{ fontWeight: 800, fontSize: 22 }}>Kolize stanovišť</h1>
-      <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-        Dvě zařízení nezávisle zaznamenala doběh stejného startovního čísla ve velmi blízkém čase. Nic se
-        nezahodilo — oba záznamy zůstávají v historii, jen je potřeba potvrdit, že jde o legitimní situaci
-        (např. druhé kolo z jiného stanoviště), ne omyl.
-      </p>
-      {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
+      <div style={{ maxWidth: 1500 }}>
+        <HlavickaStranky
+          titulek="Kolize stanovišť"
+          popis="Dvě zařízení zaznamenala doběh stejného čísla ve velmi blízkém čase"
+        />
+        <p style={{ color: "var(--text-secondary)", fontSize: 13.5, margin: "0 0 16px", maxWidth: 820 }}>
+          Nic se nezahodilo, oba záznamy zůstávají v historii. Je potřeba jen potvrdit, že jde o legitimní situaci
+          (např. druhé kolo z jiného stanoviště), a ne o omyl.
+        </p>
+        {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
-      {konflikty.length === 0 && <p style={{ color: "var(--text-secondary)" }}>Žádné nevyřešené kolize.</p>}
+        <Souhrn
+          polozky={[{ hodnota: konflikty.length, popisek: "Nevyřešených kolizí", zvyrazneni: konflikty.length > 0 ? "pozor" : "ok" }]}
+        />
 
-      {konflikty.map((k) => (
-        <article
-          key={k.id}
-          style={{
-            border: "1px solid #f1dcb0",
-            borderRadius: "var(--radius-lg)",
-            padding: 16,
-            marginBottom: 12,
-            background: "#fffaf1",
-          }}
-        >
-          <p className="mono" style={{ margin: "0 0 4px", fontWeight: 700 }}>
-            Č. {k.startovniCislo ?? "?"} {k.prijmeni ? `— ${k.prijmeni} ${k.jmeno}` : ""}
-          </p>
-          <p style={{ margin: "0 0 8px", fontSize: 13, color: "var(--text-secondary)" }}>
-            Zaznamenáno {new Date(k.cas).toLocaleString("cs-CZ")} · zařízení{" "}
-            <span className="mono">{k.zarizeniId.slice(0, 8)}</span>
-          </p>
-
-          {fotoUrls[k.id] && (
-            <img
-              src={fotoUrls[k.id]}
-              alt="Fotodůkaz doběhu"
-              style={{ maxWidth: "100%", maxHeight: 240, borderRadius: 8, marginBottom: 8, display: "block" }}
-            />
-          )}
-
-          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <button onClick={() => potvrdit(k.id)} className="btn-pill primary">
-              Potvrdit — vyřešeno
-            </button>
-
-            <label className="btn-pill" style={{ cursor: "pointer" }}>
-              {k.maFotodukaz ? "Nahradit fotodůkaz" : "Přidat fotodůkaz"}
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                style={{ display: "none" }}
-                onChange={(e) => {
-                  const soubor = e.target.files?.[0];
-                  if (soubor) nahratFoto(k.id, soubor);
-                  e.target.value = "";
-                }}
-              />
-            </label>
-          </div>
-        </article>
-      ))}
+        <TabulkaKarta>
+          <thead>
+            <tr>
+              <th>Č.</th>
+              <th>Závodník</th>
+              <th>Zaznamenáno</th>
+              <th>Zařízení</th>
+              <th>Fotodůkaz</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {konflikty.map((k) => (
+              <tr key={k.id} className="sl-radek">
+                <td className="sl-cislo">{k.startovniCislo ?? "?"}</td>
+                <td style={{ fontWeight: 700 }}>{k.prijmeni ? `${k.prijmeni} ${k.jmeno}` : "—"}</td>
+                <td>{new Date(k.cas).toLocaleString("cs-CZ")}</td>
+                <td className="mono">{k.zarizeniId.slice(0, 8)}</td>
+                <td>
+                  {fotoUrls[k.id] ? (
+                    <img src={fotoUrls[k.id]} alt="Fotodůkaz doběhu" style={{ maxWidth: 140, maxHeight: 90, borderRadius: 6, display: "block", marginBottom: 6 }} />
+                  ) : null}
+                  <label className="btn-pill" style={{ cursor: "pointer", padding: "3px 10px", fontSize: 11.5 }}>
+                    {k.maFotodukaz ? "Nahradit fotodůkaz" : "Přidat fotodůkaz"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        const soubor = e.target.files?.[0];
+                        if (soubor) nahratFoto(k.id, soubor);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                </td>
+                <td style={{ textAlign: "right" }}>
+                  <button onClick={() => potvrdit(k.id)} className="btn-pill primary">
+                    Potvrdit, vyřešeno
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {konflikty.length === 0 && <PrazdnyRadek sloupcu={6} text="Žádné nevyřešené kolize." />}
+          </tbody>
+        </TabulkaKarta>
       </div>
     </AppShell>
   );

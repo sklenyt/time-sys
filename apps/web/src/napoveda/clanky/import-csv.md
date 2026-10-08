@@ -10,7 +10,7 @@ Import z CSV je rychlejší cesta než ruční zápis, když už máte seznam p�
 
 ## Stažení šablony
 
-Ve **Startovní listině** otevřete záložku dané trati (import je vždy pro jednu trať) a v sekci **Zapsat závodníka** klikněte na **Stáhnout šablonu CSV**. Stáhne se soubor se správnými názvy sloupců a jedním ukázkovým řádkem — upravte ho a doplňte další řádky.
+Ve **Startovní listině** otevřete záložku dané trati (import je vždy pro jednu trať), klikněte na **+ Zapsat závodníka** a v otevřeném formuláři na **Stáhnout šablonu CSV**. Stáhne se soubor se správnými názvy sloupců a jedním ukázkovým řádkem — upravte ho a doplňte další řádky.
 
 ## Sloupce
 

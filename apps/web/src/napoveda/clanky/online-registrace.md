@@ -52,7 +52,7 @@ Když závodník proběhne cílem (u víckolových tratí po posledním kole), a
 
 ## Ruční kontrola platby
 
-Ve Startovní listině má každý závodník zaškrtávátko **Zaplaceno** — jde o čistě ruční evidenci, appka žádnou platbu sama nezpracovává ani neověřuje, jen vám pomáhá sledovat, kdo už startovné uhradil. U zaplaceného závodníka s vyplněným e-mailem se pod zaškrtávátkem objeví tlačítko **Odeslat potvrzení** — appka mu pošle e-mail „Platba přijata" s jeho **startovním číslem** (a případně částkou startovného). E-mail se neposílá automaticky při zaškrtnutí, odešle ho až vaše kliknutí. Po odeslání u závodníka uvidíte **datum a čas odeslání** a tlačítko se změní na **Odeslat znovu** (před opakovaným odesláním se appka zeptá). Pokud odeslání selže (např. není nastavený SMTP), appka to ohlásí a čas odeslání se nezapíše. U závodníka bez e-mailu je jen poznámka „bez e-mailu".
+Ve Startovní listině má každý závodník štítek **zaplaceno / nezaplaceno**, který přepnete kliknutím — jde o čistě ruční evidenci, appka žádnou platbu sama nezpracovává ani neověřuje, jen vám pomáhá sledovat, kdo už startovné uhradil. U zaplaceného závodníka s vyplněným e-mailem se pod zaškrtávátkem objeví tlačítko **Odeslat potvrzení** — appka mu pošle e-mail „Platba přijata" s jeho **startovním číslem** (a případně částkou startovného). E-mail se neposílá automaticky při zaškrtnutí, odešle ho až vaše kliknutí. Po odeslání u závodníka uvidíte **datum a čas odeslání** a tlačítko se změní na **Odeslat znovu** (před opakovaným odesláním se appka zeptá). Pokud odeslání selže (např. není nastavený SMTP), appka to ohlásí a čas odeslání se nezapíše. U závodníka bez e-mailu je jen poznámka „bez e-mailu".
 
 ## Uzavření a otevření registrace
 

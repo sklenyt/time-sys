@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, IsArray, IsBoolean, IsEmail, IsEnum, IsOptional, ValidateNested } from "class-validator";
+import { ArrayMaxSize, IsArray, IsBoolean, IsEmail, IsEnum, IsInt, IsOptional, IsUUID, Min, ValidateNested } from "class-validator";
 import { StavUkonceni } from "@depo/shared";
 import { TeamMemberDto } from "./team-member.dto";
 
@@ -30,4 +30,20 @@ export class UpdateEntryDto {
   @IsOptional()
   @IsEmail()
   email?: string;
+
+  /** Změna startovního čísla (musí být volné na cílové trati). */
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  startovniCislo?: number;
+
+  /** Přesun na jinou trať téže akce — vyžaduje i `kategorieId` kategorie cílové trati; jen bez naměřených záznamů. */
+  @IsOptional()
+  @IsUUID()
+  trasaId?: string;
+
+  /** Změna kategorie (musí patřit k trati, na které závodník po úpravě bude). */
+  @IsOptional()
+  @IsUUID()
+  kategorieId?: string;
 }

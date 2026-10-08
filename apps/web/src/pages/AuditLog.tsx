@@ -4,6 +4,7 @@ import type { AuditLogPolozka } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
+import { HlavickaStranky, PrazdnyRadek, Souhrn, TabulkaKarta } from "../components/StrankaPrvky";
 
 export function AuditLog() {
   const { routeId } = useParams<{ routeId: string }>();
@@ -35,45 +36,46 @@ export function AuditLog() {
 
   return (
     <AppShell active="audit" routeId={routeId}>
-      <div style={{ maxWidth: 820 }}>
-      <h1 style={{ fontWeight: 800, fontSize: 22 }}>Auditní log</h1>
-      {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
+      <div style={{ maxWidth: 1500 }}>
+        <HlavickaStranky titulek="Auditní log" popis="Kdo a kdy co změnil na této trati" />
+        {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-        <input type="date" value={od} onChange={(e) => setOd(e.target.value)} style={inputStyle} />
-        <input type="date" value={doData} onChange={(e) => setDoData(e.target.value)} style={inputStyle} />
-        <input
-          placeholder="Filtr podle uživatele (jméno/e-mail)"
-          value={uzivatel}
-          onChange={(e) => setUzivatel(e.target.value)}
-          style={{ ...inputStyle, minWidth: 220 }}
-        />
-      </div>
+        <Souhrn polozky={[{ hodnota: filtrovane.length, popisek: "Záznamů" }]} />
 
-      {filtrovane.length === 0 && <p style={{ color: "var(--text-secondary)" }}>Žádné záznamy.</p>}
+        <div className="sl-nastroje">
+          <input type="date" value={od} onChange={(e) => setOd(e.target.value)} className="sl-hledani" style={{ minWidth: 0 }} aria-label="Od data" />
+          <input type="date" value={doData} onChange={(e) => setDoData(e.target.value)} className="sl-hledani" style={{ minWidth: 0 }} aria-label="Do data" />
+          <input
+            type="search"
+            placeholder="Filtr podle uživatele (jméno nebo e-mail)"
+            value={uzivatel}
+            onChange={(e) => setUzivatel(e.target.value)}
+            className="sl-hledani"
+            style={{ minWidth: 280 }}
+          />
+        </div>
 
-      <div className="table-scroll">
-        <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
+        <TabulkaKarta>
           <thead>
-            <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
-              <th style={{ fontFamily: "var(--font-ui)" }}>Čas</th>
-              <th style={{ fontFamily: "var(--font-ui)" }}>Uživatel</th>
-              <th style={{ fontFamily: "var(--font-ui)" }}>Změna</th>
+            <tr>
+              <th>Čas</th>
+              <th>Uživatel</th>
+              <th>Změna</th>
             </tr>
           </thead>
           <tbody>
             {filtrovane.map((p) => (
-              <tr key={p.id} style={{ borderBottom: "1px solid var(--line)", verticalAlign: "top" }}>
-                <td style={{ padding: "8px 4px", whiteSpace: "nowrap" }}>{new Date(p.cas).toLocaleString("cs-CZ")}</td>
-                <td style={{ padding: "8px 4px", fontFamily: "var(--font-ui)" }}>{p.uzivatelJmeno ?? p.uzivatelEmail ?? "—"}</td>
-                <td style={{ padding: "8px 4px", fontFamily: "var(--font-ui)" }}>
+              <tr key={p.id} className="sl-radek" style={{ verticalAlign: "top" }}>
+                <td style={{ whiteSpace: "nowrap" }}>{new Date(p.cas).toLocaleString("cs-CZ")}</td>
+                <td style={{ fontWeight: 700 }}>{p.uzivatelJmeno ?? p.uzivatelEmail ?? "—"}</td>
+                <td>
                   <Diff puvodni={p.puvodniHodnota} novy={p.novaHodnota} />
                 </td>
               </tr>
             ))}
+            {filtrovane.length === 0 && <PrazdnyRadek sloupcu={3} text="Žádné záznamy." />}
           </tbody>
-        </table>
-      </div>
+        </TabulkaKarta>
       </div>
     </AppShell>
   );
@@ -109,10 +111,3 @@ function Diff({ puvodni, novy }: { puvodni: Record<string, unknown> | null; novy
     </>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  padding: "8px 12px",
-  borderRadius: 8,
-  border: "1px solid var(--line)",
-  fontSize: 14,
-};

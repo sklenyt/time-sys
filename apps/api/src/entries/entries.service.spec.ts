@@ -1,5 +1,6 @@
 import { Test } from "@nestjs/testing";
-import { BadRequestException, NotFoundException, ServiceUnavailableException } from "@nestjs/common";
+import { BadRequestException, ConflictException, NotFoundException, ServiceUnavailableException } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { Pohlavi, StavUkonceni } from "@depo/shared";
 import { EntriesService } from "./entries.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -15,6 +16,7 @@ describe("EntriesService", () => {
     kategorie: { findMany: jest.Mock; findUnique: jest.Mock };
     trasa: { findUnique: jest.Mock };
     auditLog: { create: jest.Mock };
+    zaznamUdalosti: { count: jest.Mock };
     $transaction: jest.Mock;
   };
   let categories: { navrhniKategorii: jest.Mock };
@@ -27,6 +29,7 @@ describe("EntriesService", () => {
       kategorie: { findMany: jest.fn().mockResolvedValue([]), findUnique: jest.fn().mockResolvedValue({ kod: "MUZ", nazev: "Muži" }) },
       trasa: { findUnique: jest.fn().mockResolvedValue({ typStartu: "VLNOVY" }) },
       auditLog: { create: jest.fn().mockResolvedValue({}) },
+      zaznamUdalosti: { count: jest.fn().mockResolvedValue(0) },
       $transaction: jest.fn(),
     };
     categories = { navrhniKategorii: jest.fn() };
@@ -361,6 +364,57 @@ describe("EntriesService", () => {
       prisma.registrace.update.mockResolvedValue({ id: "r1", email: "spravne@x.cz" });
       await expect(service.upravitRegistraci("trasa-1", "r1", { email: " spravne@x.cz " })).resolves.toEqual({ id: "r1", email: "spravne@x.cz" });
       expect(prisma.registrace.update).toHaveBeenCalledWith({ where: { id: "r1" }, data: { email: "spravne@x.cz" } });
+    });
+  });
+
+  describe("úprava startovního čísla, tratě a kategorie závodníka", () => {
+    const PRIHLASKA = { id: "p1", trasaId: "trasa-1", startovniCislo: 5, kategorieId: "kat-1", email: "a@x.cz", zaplaceno: false, clenoveDruzstva: null };
+
+    beforeEach(() => {
+      prisma.prihlaska.findFirst.mockResolvedValue(PRIHLASKA);
+      prisma.$transaction.mockResolvedValue([{ id: "p1" }, {}]);
+    });
+
+    it("changes the start number and logs both values", async () => {
+      await service.update("trasa-1", "p1", { startovniCislo: 77 }, "user-1");
+      expect(prisma.prihlaska.update).toHaveBeenCalledWith({ where: { id: "p1" }, data: { startovniCislo: 77 } });
+      const [{ data }] = prisma.auditLog.create.mock.calls[0];
+      expect(data.puvodniHodnota).toMatchObject({ startovniCislo: 5 });
+      expect(data.novaHodnota).toMatchObject({ startovniCislo: 77 });
+    });
+
+    it("reports a taken start number as a conflict", async () => {
+      prisma.$transaction.mockRejectedValue(new Prisma.PrismaClientKnownRequestError("dup", { code: "P2002", clientVersion: "x" }));
+      await expect(service.update("trasa-1", "p1", { startovniCislo: 77 }, "user-1")).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it("moves a runner without measurements to another route of the same event with a category of that route", async () => {
+      prisma.trasa.findUnique.mockImplementation(async ({ where }: { where: { id: string } }) =>
+        where.id === "trasa-1" ? { id: "trasa-1", udalostId: "ev-1" } : { id: "trasa-2", udalostId: "ev-1", typStartu: "VLNOVY" }
+      );
+      prisma.kategorie.findUnique.mockResolvedValue({ id: "kat-2", trasaId: "trasa-2" });
+
+      await service.update("trasa-1", "p1", { trasaId: "trasa-2", kategorieId: "kat-2" }, "user-1");
+
+      expect(prisma.prihlaska.update).toHaveBeenCalledWith({
+        where: { id: "p1" },
+        data: expect.objectContaining({ trasaId: "trasa-2", kategorieId: "kat-2" }),
+      });
+    });
+
+    it("refuses a move to another event, without a category, or when the runner already has measurements", async () => {
+      await expect(service.update("trasa-1", "p1", { trasaId: "trasa-2" }, "user-1")).rejects.toBeInstanceOf(BadRequestException);
+
+      prisma.kategorie.findUnique.mockResolvedValue({ id: "kat-2", trasaId: "trasa-2" });
+      prisma.trasa.findUnique.mockImplementation(async ({ where }: { where: { id: string } }) =>
+        where.id === "trasa-1" ? { id: "trasa-1", udalostId: "ev-1" } : { id: "trasa-2", udalostId: "ev-JINA", typStartu: "VLNOVY" }
+      );
+      await expect(service.update("trasa-1", "p1", { trasaId: "trasa-2", kategorieId: "kat-2" }, "user-1")).rejects.toBeInstanceOf(BadRequestException);
+
+      prisma.trasa.findUnique.mockImplementation(async ({ where }: { where: { id: string } }) => ({ id: where.id, udalostId: "ev-1", typStartu: "VLNOVY" }));
+      prisma.zaznamUdalosti.count.mockResolvedValue(3);
+      await expect(service.update("trasa-1", "p1", { trasaId: "trasa-2", kategorieId: "kat-2" }, "user-1")).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.prihlaska.update).not.toHaveBeenCalled();
     });
   });
 });

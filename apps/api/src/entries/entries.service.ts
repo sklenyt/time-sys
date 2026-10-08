@@ -167,7 +167,7 @@ export class EntriesService {
       throw new NotFoundException("Přihláška nenalezena na této trati");
     }
 
-    const zmeny: Prisma.PrihlaskaUpdateInput = {};
+    const zmeny: Prisma.PrihlaskaUncheckedUpdateInput = {};
     // trasaId v puvodniHodnota je nutný, aby AuditLogService.listForRoute
     // (entita="prihlaska" nemá vlastní sloupec trasa_id) tenhle záznam
     // vůbec dohledal — stejná konvence jako GdprService.anonymizovatPrihlasku.
@@ -184,6 +184,53 @@ export class EntriesService {
       puvodniHodnota.zaplaceno = prihlaska.zaplaceno;
       novaHodnota.zaplaceno = dto.zaplaceno;
     }
+    // Změna trati, čísla a kategorie. Číslo musí být volné na cílové trati; přesun na
+    // jinou trať jen v rámci téže akce, s kategorií cílové trati a bez naměřených
+    // záznamů (jejich trať by jinak přestala odpovídat přihlášce).
+    const cilTrasaId = dto.trasaId ?? prihlaska.trasaId;
+    const meniTrat = cilTrasaId !== prihlaska.trasaId;
+    const noveCislo = dto.startovniCislo ?? prihlaska.startovniCislo;
+    const meniCislo = noveCislo !== prihlaska.startovniCislo;
+    const novaKategorieId = dto.kategorieId ?? (meniTrat ? undefined : prihlaska.kategorieId);
+    const meniKategorii = novaKategorieId !== undefined && novaKategorieId !== prihlaska.kategorieId;
+
+    if (meniTrat || meniKategorii) {
+      if (!novaKategorieId) {
+        throw new BadRequestException("Při přesunu na jinou trať vyberte kategorii cílové trati");
+      }
+      const kategorie = await this.prisma.kategorie.findUnique({ where: { id: novaKategorieId } });
+      if (!kategorie || kategorie.trasaId !== cilTrasaId) {
+        throw new BadRequestException("Kategorie nepatří k cílové trati");
+      }
+    }
+    if (meniTrat) {
+      const [aktualniTrasa, cilovaTrasa] = await Promise.all([
+        this.prisma.trasa.findUnique({ where: { id: prihlaska.trasaId } }),
+        this.prisma.trasa.findUnique({ where: { id: cilTrasaId } }),
+      ]);
+      if (!cilovaTrasa || cilovaTrasa.udalostId !== aktualniTrasa?.udalostId) {
+        throw new BadRequestException("Závodníka jde přesunout jen na jinou trať téže akce");
+      }
+      const pocetZaznamu = await this.prisma.zaznamUdalosti.count({ where: { prihlaskaId: entryId } });
+      if (pocetZaznamu > 0) {
+        throw new BadRequestException("Závodník už má naměřené záznamy, přesun na jinou trať není možný");
+      }
+      zmeny.trasaId = cilTrasaId;
+      zmeny.startVlnaId = (await this.vychoziVlnaProHromadnyStart(cilTrasaId)) ?? null;
+      puvodniHodnota.trasaId = prihlaska.trasaId;
+      novaHodnota.trasaId = cilTrasaId;
+    }
+    if (meniCislo) {
+      zmeny.startovniCislo = noveCislo;
+      puvodniHodnota.startovniCislo = prihlaska.startovniCislo;
+      novaHodnota.startovniCislo = noveCislo;
+    }
+    if (meniKategorii) {
+      zmeny.kategorieId = novaKategorieId;
+      puvodniHodnota.kategorieId = prihlaska.kategorieId;
+      novaHodnota.kategorieId = novaKategorieId;
+    }
+
     if (dto.email !== undefined && dto.email.trim() !== (prihlaska.email ?? "")) {
       zmeny.email = dto.email.trim();
       puvodniHodnota.email = prihlaska.email;
@@ -201,18 +248,26 @@ export class EntriesService {
       return odsifrovatPrihlasku(prihlaska);
     }
 
-    const [aktualizovana] = await this.prisma.$transaction([
-      this.prisma.prihlaska.update({ where: { id: entryId }, data: zmeny }),
-      this.prisma.auditLog.create({
-        data: {
-          uzivatelId,
-          entita: "prihlaska",
-          entitaId: entryId,
-          puvodniHodnota: puvodniHodnota as Prisma.InputJsonObject,
-          novaHodnota: novaHodnota as Prisma.InputJsonObject,
-        },
-      }),
-    ]);
+    let aktualizovana;
+    try {
+      [aktualizovana] = await this.prisma.$transaction([
+        this.prisma.prihlaska.update({ where: { id: entryId }, data: zmeny }),
+        this.prisma.auditLog.create({
+          data: {
+            uzivatelId,
+            entita: "prihlaska",
+            entitaId: entryId,
+            puvodniHodnota: puvodniHodnota as Prisma.InputJsonObject,
+            novaHodnota: novaHodnota as Prisma.InputJsonObject,
+          },
+        }),
+      ]);
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        throw new ConflictException(`Startovní číslo ${noveCislo} už je na cílové trati obsazené`);
+      }
+      throw err;
+    }
 
     return odsifrovatPrihlasku(aktualizovana);
   }

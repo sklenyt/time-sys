@@ -362,6 +362,7 @@ type RadekPrihlasky = Prihlaska & { kategorie?: Kategorie; cip?: Cip | null };
 function RadekZavodnika({
   e,
   trat,
+  trasy,
   onChanged,
   nastavitStav,
   nastavitZaplaceno,
@@ -370,6 +371,7 @@ function RadekZavodnika({
 }: {
   e: RadekPrihlasky;
   trat?: string;
+  trasy: (Trasa & { kategorie: Kategorie[] })[];
   onChanged: () => void;
   nastavitStav: (trasaId: string, entryId: string, stav: StavUkonceni | null) => void;
   nastavitZaplaceno: (trasaId: string, entryId: string, zaplaceno: boolean) => void;
@@ -379,6 +381,47 @@ function RadekZavodnika({
   const [upravuji, setUpravuji] = useState(false);
   const [email, setEmail] = useState(e.email ?? "");
   const [zprava, setZprava] = useState<{ text: string; chyba: boolean } | null>(null);
+  const [upravujiUdaje, setUpravujiUdaje] = useState(false);
+  const [noveCislo, setNoveCislo] = useState(String(e.startovniCislo));
+  const [novaTrasaId, setNovaTrasaId] = useState(e.trasaId);
+  const [novaKategorieId, setNovaKategorieId] = useState(e.kategorieId);
+
+  const kategorieCile = trasy.find((t) => t.id === novaTrasaId)?.kategorie ?? [];
+
+  function zmenitTrat(id: string) {
+    setNovaTrasaId(id);
+    if (id === e.trasaId) {
+      setNovaKategorieId(e.kategorieId);
+      return;
+    }
+    // Při přesunu předvyplní kategorii se stejným kódem na cílové trati, jinak první.
+    const kategorie = trasy.find((t) => t.id === id)?.kategorie ?? [];
+    setNovaKategorieId((kategorie.find((k) => k.kod === e.kategorie?.kod) ?? kategorie[0])?.id ?? "");
+  }
+
+  async function ulozitUdaje() {
+    setZprava(null);
+    const cislo = Number(noveCislo);
+    if (!Number.isInteger(cislo) || cislo < 1) {
+      setZprava({ text: "Startovní číslo musí být celé číslo od 1 výš", chyba: true });
+      return;
+    }
+    const zmeny: { startovniCislo?: number; trasaId?: string; kategorieId?: string } = {};
+    if (cislo !== e.startovniCislo) zmeny.startovniCislo = cislo;
+    if (novaTrasaId !== e.trasaId) zmeny.trasaId = novaTrasaId;
+    if (novaKategorieId && novaKategorieId !== e.kategorieId) zmeny.kategorieId = novaKategorieId;
+    if (Object.keys(zmeny).length === 0) {
+      setUpravujiUdaje(false);
+      return;
+    }
+    try {
+      await api.patch(`/routes/${e.trasaId}/entries/${e.id}`, zmeny);
+      setUpravujiUdaje(false);
+      onChanged();
+    } catch (err) {
+      setZprava({ text: chybaZeServeru(err, "Úprava se nezdařila"), chyba: true });
+    }
+  }
 
   async function ulozitEmail() {
     setZprava(null);
@@ -439,6 +482,42 @@ function RadekZavodnika({
         {e.clenoveDruzstva?.length ? (
           <div className="sl-podtitul">družstvo: {e.clenoveDruzstva.map((c) => `${c.prijmeni} ${c.jmeno}`).join(", ")}</div>
         ) : null}
+        {upravujiUdaje && (
+          <div className="sl-editor">
+            <label>
+              Č.
+              <input value={noveCislo} inputMode="numeric" onChange={(ev) => setNoveCislo(ev.target.value)} style={{ width: 70 }} />
+            </label>
+            {trasy.length > 1 && (
+              <label>
+                Trať
+                <select value={novaTrasaId} onChange={(ev) => zmenitTrat(ev.target.value)}>
+                  {trasy.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.nazev}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <label>
+              Kategorie
+              <select value={novaKategorieId} onChange={(ev) => setNovaKategorieId(ev.target.value)}>
+                {kategorieCile.map((k) => (
+                  <option key={k.id} value={k.id}>
+                    {k.kod} — {k.nazev}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button onClick={ulozitUdaje} disabled={!novaKategorieId} className="btn-pill primary" style={{ padding: "3px 10px", fontSize: 11.5 }}>
+              Uložit
+            </button>
+            <button onClick={() => setUpravujiUdaje(false)} className="btn-pill" style={{ padding: "3px 10px", fontSize: 11.5 }}>
+              Zrušit
+            </button>
+          </div>
+        )}
         {zprava && <div style={{ fontSize: 11.5, marginTop: 2, color: zprava.chyba ? "var(--color-danger)" : "var(--text-secondary)" }}>{zprava.text}</div>}
       </td>
       <td>
@@ -493,6 +572,16 @@ function RadekZavodnika({
                 setEmail(e.email ?? "");
                 setZprava(null);
                 setUpravuji(true);
+              },
+            },
+            {
+              popisek: "Upravit číslo, trať a kategorii",
+              akce: () => {
+                setNoveCislo(String(e.startovniCislo));
+                setNovaTrasaId(e.trasaId);
+                setNovaKategorieId(e.kategorieId);
+                setZprava(null);
+                setUpravujiUdaje(true);
               },
             },
             ...(e.email ? [{ popisek: "Poslat potvrzení registrace znovu", akce: poslatRegistraci }] : []),
@@ -1281,6 +1370,7 @@ export function StartList() {
                   key={e.id}
                   e={e}
                   trat={vsechny ? nazevTrase(e.trasaId) : undefined}
+                  trasy={trasy}
                   onChanged={reload}
                   nastavitStav={nastavitStav}
                   nastavitZaplaceno={nastavitZaplaceno}

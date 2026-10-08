@@ -5,6 +5,7 @@ import { StavCipu } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
+import { PrazdnyRadek, Souhrn, TabulkaKarta } from "../components/StrankaPrvky";
 
 const CIP_STAV_LABEL: Record<StavCipu, string> = {
   [StavCipu.PRIREZEN]: "přiřazen",
@@ -165,13 +166,11 @@ export function Chips() {
 
   return (
     <AppShell active="cipy" routeId={routeId} eventId={trasa.udalostId}>
+      <div style={{ maxWidth: 1500 }}>
       <div className="dash-header" style={{ marginBottom: 20 }}>
         <div>
           <h1>Čipy</h1>
-          <div className="meta mono">
-            {trasa.nazev} · {cipy.length} {cipy.length === 1 ? "přiřazený čip" : "přiřazených čipů"} ·{" "}
-            {nevracenoPocet} nevráceno
-          </div>
+          <div className="meta mono">{trasa.nazev}</div>
         </div>
         <div className="dash-header-actions">
           <button onClick={stahnoutExportNevracenych} className="btn-pill" disabled={nevracenoPocet === 0}>
@@ -181,7 +180,16 @@ export function Chips() {
       </div>
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
-      <p style={{ color: "var(--text-secondary)", fontSize: 13.5, maxWidth: 640 }}>
+      <Souhrn
+        polozky={[
+          { hodnota: cipy.length, popisek: "Přiřazených čipů" },
+          { hodnota: cipy.length - nevracenoPocet, popisek: "Vráceno", zvyrazneni: "ok" },
+          { hodnota: nevracenoPocet, popisek: "Nevráceno", zvyrazneni: nevracenoPocet > 0 ? "pozor" : undefined },
+          { hodnota: cipy.filter((c) => c.stav === StavCipu.ZTRACEN).length, popisek: "Ztraceno" },
+        ]}
+      />
+
+      <p style={{ color: "var(--text-secondary)", fontSize: 13.5, maxWidth: 820, margin: "0 0 16px" }}>
         Přiřazení čipu ke konkrétnímu závodníkovi se dělá ve Startovní listině. Tady je přehled nad stavem všech
         vydaných čipů této trati — kdo je pořád venku, kdo ho vrátil nebo ztratil, a kolik se za nevrácené vybralo na
         záloze.
@@ -258,81 +266,62 @@ export function Chips() {
         )}
       </section>
 
-      {cipy.length === 0 ? (
-        <div className="dash-card" style={{ maxWidth: 480 }}>
-          <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: 13.5 }}>
-            Zatím žádný přiřazený čip. Přiřaďte čipy závodníkům ve Startovní listině.
-          </p>
-        </div>
-      ) : (
-        <div className="table-scroll">
-          <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
-                <th>Č.</th>
-                <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
-                <th>Sériové číslo</th>
-                <th style={{ fontFamily: "var(--font-ui)" }}>Stav</th>
-                <th style={{ fontFamily: "var(--font-ui)" }}>Záloha (Kč)</th>
-                <th style={{ fontFamily: "var(--font-ui)" }}>Vydáno</th>
-                <th style={{ fontFamily: "var(--font-ui)" }}>Vráceno</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cipy.map((c) => (
-                <tr key={c.id} style={{ borderBottom: "1px solid var(--line)" }}>
-                  <td>{c.startovniCislo}</td>
-                  <td style={{ fontFamily: "var(--font-ui)" }}>
-                    {c.prijmeni} {c.jmeno}
-                  </td>
-                  <td>{c.kodCipu}</td>
-                  <td>
-                    <select
-                      value={c.stav}
-                      onChange={(e) => upravitStav(c.id, e.target.value as StavCipu)}
-                      style={{
-                        padding: "4px 8px",
-                        borderRadius: 8,
-                        border: "1px solid var(--line)",
-                        fontSize: 12.5,
-                        fontFamily: "var(--font-mono)",
-                        color: CIP_STAV_BARVA[c.stav],
-                        fontWeight: 700,
-                      }}
-                    >
-                      {Object.values(StavCipu).map((s) => (
-                        <option key={s} value={s}>
-                          {CIP_STAV_LABEL[s]}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min={0}
-                      defaultValue={c.vratnaZaloha ?? ""}
-                      onBlur={(e) => {
-                        const hodnota = e.target.value ? Number(e.target.value) : 0;
-                        if (hodnota !== (c.vratnaZaloha ?? 0)) upravitZalohu(c.id, hodnota);
-                      }}
-                      style={{
-                        width: 80,
-                        padding: "4px 8px",
-                        borderRadius: 8,
-                        border: "1px solid var(--line)",
-                        fontSize: 12.5,
-                      }}
-                    />
-                  </td>
-                  <td style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>{formatCas(c.vydanoAt)}</td>
-                  <td style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>{formatCas(c.vracenoAt)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <TabulkaKarta>
+        <thead>
+          <tr>
+            <th>Č.</th>
+            <th>Závodník</th>
+            <th>Sériové číslo</th>
+            <th>Stav</th>
+            <th>Záloha (Kč)</th>
+            <th>Vydáno</th>
+            <th>Vráceno</th>
+          </tr>
+        </thead>
+        <tbody>
+          {cipy.map((c) => (
+            <tr key={c.id} className="sl-radek">
+              <td className="sl-cislo">{c.startovniCislo}</td>
+              <td style={{ fontWeight: 700 }}>
+                {c.prijmeni} {c.jmeno}
+              </td>
+              <td className="mono">{c.kodCipu}</td>
+              <td>
+                <select
+                  value={c.stav}
+                  onChange={(e) => upravitStav(c.id, e.target.value as StavCipu)}
+                  className="sl-stav"
+                  style={{ color: CIP_STAV_BARVA[c.stav] }}
+                >
+                  {Object.values(StavCipu).map((s) => (
+                    <option key={s} value={s}>
+                      {CIP_STAV_LABEL[s]}
+                    </option>
+                  ))}
+                </select>
+              </td>
+              <td>
+                <input
+                  type="number"
+                  min={0}
+                  defaultValue={c.vratnaZaloha ?? ""}
+                  onBlur={(e) => {
+                    const hodnota = e.target.value ? Number(e.target.value) : 0;
+                    if (hodnota !== (c.vratnaZaloha ?? 0)) upravitZalohu(c.id, hodnota);
+                  }}
+                  style={{ width: 90, padding: "5px 8px", borderRadius: 8, border: "1px solid var(--line)", fontSize: 13 }}
+                />
+              </td>
+              <td className="sl-podtitul">{formatCas(c.vydanoAt)}</td>
+              <td className="sl-podtitul">{formatCas(c.vracenoAt)}</td>
+            </tr>
+          ))}
+          {cipy.length === 0 && (
+            <PrazdnyRadek sloupcu={7} text="Zatím žádný přiřazený čip. Přiřaďte čipy závodníkům ve Startovní listině." />
+          )}
+        </tbody>
+      </TabulkaKarta>
+      </div>
     </AppShell>
   );
 }
