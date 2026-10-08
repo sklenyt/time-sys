@@ -1,3 +1,4 @@
+import { PatickaCopyright } from "../components/PatickaCopyright";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, type NavigateFunction } from "react-router-dom";
 import type { VerejnaUdalostDto, OveritPristupResponseDto } from "@depo/shared";
@@ -253,6 +254,7 @@ export function ResultsDirectory() {
           </div>
         )}
       </section>
+      <PatickaCopyright />
     </div>
   );
 }

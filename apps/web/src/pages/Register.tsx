@@ -4,6 +4,7 @@ import type { RegistrationInfoDto, RegistrationResponseDto } from "@depo/shared"
 import { Pohlavi } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
+import { PatickaCopyright } from "../components/PatickaCopyright";
 import { PublicHeader } from "../components/PublicHeader";
 
 /**
@@ -179,7 +180,8 @@ export function Register() {
         Registrace probíhá přes platformu Depo — závodní časomíra.
       </p>
       </div>
-    </div>
+    <PatickaCopyright />
+      </div>
   );
 }
 

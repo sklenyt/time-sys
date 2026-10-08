@@ -20,7 +20,9 @@ const OBECNY_ODESILATEL = "vysledky@depo.app";
  * jinak e-maily končí ve spamu. Kopii (CC, viditelná příjemci) určuje akce (`Udalost.emailKopie`).
  */
 export function odesilatelAKopie(typ: TypEmailu, kopie?: string | null): { from: string; cc?: string } {
-  const from = process.env[`SMTP_FROM_${typ}`]?.trim() || process.env.SMTP_FROM?.trim() || OBECNY_ODESILATEL;
+  const adresa = process.env[`SMTP_FROM_${typ}`]?.trim() || process.env.SMTP_FROM?.trim() || OBECNY_ODESILATEL;
+  // Jméno odesílatele v poštovním klientu: „Depo", pokud env nemá vlastní „Jméno <adresa>".
+  const from = adresa.includes("<") ? adresa : `Depo <${adresa}>`;
   return { from, cc: kopie?.trim() || undefined };
 }
 

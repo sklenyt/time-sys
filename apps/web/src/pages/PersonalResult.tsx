@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { PersonalResultDto } from "@depo/shared";
 import { api, ApiError, API_BASE } from "../lib/api";
+import { PatickaCopyright } from "../components/PatickaCopyright";
 import { PublicHeader } from "../components/PublicHeader";
 
 /**
@@ -110,7 +111,8 @@ export function PersonalResult() {
         <Link to={`/vysledky/${routeId}`}>Zpět na celkové výsledky</Link>
       </p>
     </div>
-    </div>
+    <PatickaCopyright />
+      </div>
   );
 }
 

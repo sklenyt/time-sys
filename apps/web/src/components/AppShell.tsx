@@ -1,3 +1,4 @@
+import { PatickaCopyright } from "./PatickaCopyright";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { AuthUserDto, Trasa, Udalost } from "@depo/shared";
@@ -491,6 +492,7 @@ export function AppShell({ active, routeId, eventId, vsechnyTrate, children }: A
           </div>
         )}
         {children}
+        <PatickaCopyright />
       </main>
     </div>
   );

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { VysledekPolozka, VysledkyResponseDto } from "@depo/shared";
 import { api, API_BASE } from "../lib/api";
+import { PatickaCopyright } from "../components/PatickaCopyright";
 import { PublicHeader } from "../components/PublicHeader";
 
 const VSE_KATEGORIE = "__vse__";
@@ -322,6 +323,7 @@ export function Results() {
             </div>
           </div>
         )}
+        <PatickaCopyright />
       </div>
     </div>
   );
