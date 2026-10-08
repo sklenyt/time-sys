@@ -211,6 +211,102 @@ function ChipBunka({
   );
 }
 
+/** E-mail závodníka s opravou (špatně zadaná adresa) a opětovným odesláním potvrzení registrace. */
+function EmailBunka({
+  routeId,
+  druh,
+  id,
+  email,
+  onChanged,
+}: {
+  routeId: string;
+  druh: "entries" | "registrations";
+  id: string;
+  email?: string | null;
+  onChanged: () => void;
+}) {
+  const [upravuji, setUpravuji] = useState(false);
+  const [hodnota, setHodnota] = useState(email ?? "");
+  const [odesilam, setOdesilam] = useState(false);
+  const [zprava, setZprava] = useState<{ text: string; chyba: boolean } | null>(null);
+
+  async function ulozit() {
+    setOdesilam(true);
+    setZprava(null);
+    try {
+      await api.patch(`/routes/${routeId}/${druh}/${id}`, { email: hodnota.trim() });
+      setUpravuji(false);
+      onChanged();
+    } catch (e) {
+      setZprava({ text: chybaZeServeru(e, "E-mail se nepodařilo uložit"), chyba: true });
+    } finally {
+      setOdesilam(false);
+    }
+  }
+
+  async function poslatZnovu() {
+    if (!email) return;
+    if (!window.confirm(`Znovu odeslat potvrzení registrace na ${email}?`)) return;
+    setOdesilam(true);
+    setZprava(null);
+    try {
+      await api.post(`/routes/${routeId}/${druh}/${id}/potvrzeni-registrace`, {});
+      setZprava({ text: "Potvrzení odesláno", chyba: false });
+    } catch (e) {
+      setZprava({ text: chybaZeServeru(e, "E-mail se nepodařilo odeslat"), chyba: true });
+    } finally {
+      setOdesilam(false);
+    }
+  }
+
+  if (upravuji) {
+    return (
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+        <input
+          type="email"
+          value={hodnota}
+          autoFocus
+          onChange={(e) => setHodnota(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && hodnota.trim() && ulozit()}
+          style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid var(--line)", fontSize: 12.5, minWidth: 190 }}
+        />
+        <button onClick={ulozit} disabled={odesilam || !hodnota.trim()} className="btn-pill primary" style={{ padding: "3px 10px", fontSize: 11.5 }}>
+          Uložit
+        </button>
+        <button onClick={() => setUpravuji(false)} disabled={odesilam} className="btn-pill" style={{ padding: "3px 10px", fontSize: 11.5 }}>
+          Zrušit
+        </button>
+        {zprava && <span style={{ fontSize: 11, color: zprava.chyba ? "var(--color-danger)" : "var(--text-secondary)" }}>{zprava.text}</span>}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ fontFamily: "var(--font-ui)", fontSize: 12.5 }}>
+      <div style={{ color: email ? undefined : "var(--text-secondary)", wordBreak: "break-all" }}>{email ?? "bez e-mailu"}</div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 3, alignItems: "center" }}>
+        <button
+          onClick={() => {
+            setHodnota(email ?? "");
+            setZprava(null);
+            setUpravuji(true);
+          }}
+          className="btn-pill"
+          style={{ padding: "2px 8px", fontSize: 11 }}
+        >
+          Upravit e-mail
+        </button>
+        {email && (
+          <button onClick={poslatZnovu} disabled={odesilam} className="btn-pill" style={{ padding: "2px 8px", fontSize: 11 }}>
+            Poslat potvrzení znovu
+          </button>
+        )}
+        {zprava && <span style={{ fontSize: 11, color: zprava.chyba ? "var(--color-danger)" : "var(--text-secondary)" }}>{zprava.text}</span>}
+      </div>
+    </div>
+  );
+}
+
 function PridelitCisloRadek({
   routeId,
   trasaNazev,
@@ -253,7 +349,9 @@ function PridelitCisloRadek({
         {registrace.prijmeni} {registrace.jmeno}
       </td>
       <td style={{ fontFamily: "var(--font-ui)" }}>{registrace.kategorieKod ?? "—"}</td>
-      <td style={{ fontFamily: "var(--font-ui)" }}>{registrace.email ?? "—"}</td>
+      <td>
+        <EmailBunka routeId={routeId} druh="registrations" id={registrace.id} email={registrace.email} onChanged={onAssigned} />
+      </td>
       <td>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <input
@@ -973,6 +1071,7 @@ export function StartList() {
               <th>Č.</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
+              <th style={{ fontFamily: "var(--font-ui)" }}>E-mail</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Družstvo</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Čip</th>
               <th style={{ fontFamily: "var(--font-ui)" }}>Zaplaceno</th>
@@ -995,6 +1094,9 @@ export function StartList() {
                   {e.prijmeni} {e.jmeno}
                 </td>
                 <td style={{ fontFamily: "var(--font-ui)" }}>{e.kategorie?.kod ?? "—"}</td>
+                <td>
+                  <EmailBunka routeId={e.trasaId} druh="entries" id={e.id} email={e.email} onChanged={reload} />
+                </td>
                 <td style={{ fontFamily: "var(--font-ui)", fontSize: 12.5, color: "var(--text-secondary)" }}>
                   {e.clenoveDruzstva?.length
                     ? e.clenoveDruzstva.map((c) => `${c.prijmeni} ${c.jmeno}`).join(", ")

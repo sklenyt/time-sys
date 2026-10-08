@@ -372,69 +372,10 @@ export function Sprava() {
     });
   }
 
-  return (
-    <AppShell active="sprava">
-      <BusyOverlay active={busy !== null} label={busy ?? undefined} />
-      <div className="dash-header" style={{ marginBottom: 20 }}>
-        <div>
-          <h1>Správa akcí a tratí</h1>
-          <div className="meta mono">Organizace, akce, tratě — start, registrace, embed kódy, mazání</div>
-        </div>
-      </div>
+  const aktivniAkce = udalosti.filter((u) => !u.ukoncena);
+  const ukonceneAkce = udalosti.filter((u) => u.ukoncena);
 
-      {hint && (
-        <div className="hint-banner">
-          <span>{hint}</span>
-          <button type="button" onClick={() => setHint(null)} aria-label="Zavřít">
-            ×
-          </button>
-        </div>
-      )}
-
-      {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
-
-      {organizace.length === 0 && (
-        <section className="dash-card" style={{ maxWidth: 480, marginBottom: 24 }}>
-          <div className="dash-card-head">
-            <h2>Nejdřív založte organizaci</h2>
-          </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input
-              value={orgNazev}
-              onChange={(e) => setOrgNazev(e.target.value)}
-              placeholder="Název organizace"
-              style={inputStyle}
-            />
-            <button onClick={createOrg} className="btn-pill primary">
-              Založit
-            </button>
-          </div>
-        </section>
-      )}
-
-      {organizace.length > 0 && (
-        <div className="dash-card" style={{ marginBottom: 16, maxWidth: 640 }}>
-          <div className="dash-card-head">
-            <h2>Nová akce</h2>
-          </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input
-              value={eventNazev}
-              onChange={(e) => setEventNazev(e.target.value)}
-              placeholder="Např. Jarní běh Mělník 2026"
-              style={inputStyle}
-            />
-            <input type="date" value={eventDatum} onChange={(e) => setEventDatum(e.target.value)} style={inputStyle} />
-            <button onClick={createEvent} className="btn-pill primary">
-              Založit akci
-            </button>
-          </div>
-        </div>
-      )}
-
-      {[...udalosti]
-        .sort((a, b) => Number(a.ukoncena) - Number(b.ukoncena))
-        .map((u) => (
+  const vykreslitAkci = (u: Udalost) => (
         <article
           key={u.id}
           className="dash-card"
@@ -759,7 +700,77 @@ export function Sprava() {
             </div>
           )}
         </article>
-      ))}
+  );
+
+  return (
+    <AppShell active="sprava">
+      <BusyOverlay active={busy !== null} label={busy ?? undefined} />
+      <div className="dash-header" style={{ marginBottom: 20 }}>
+        <div>
+          <h1>Správa akcí a tratí</h1>
+          <div className="meta mono">Organizace, akce, tratě — start, registrace, embed kódy, mazání</div>
+        </div>
+      </div>
+
+      {hint && (
+        <div className="hint-banner">
+          <span>{hint}</span>
+          <button type="button" onClick={() => setHint(null)} aria-label="Zavřít">
+            ×
+          </button>
+        </div>
+      )}
+
+      {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
+
+      {organizace.length === 0 && (
+        <section className="dash-card" style={{ maxWidth: 480, marginBottom: 24 }}>
+          <div className="dash-card-head">
+            <h2>Nejdřív založte organizaci</h2>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input
+              value={orgNazev}
+              onChange={(e) => setOrgNazev(e.target.value)}
+              placeholder="Název organizace"
+              style={inputStyle}
+            />
+            <button onClick={createOrg} className="btn-pill primary">
+              Založit
+            </button>
+          </div>
+        </section>
+      )}
+
+      {organizace.length > 0 && (
+        <div className="dash-card" style={{ marginBottom: 16, maxWidth: 640 }}>
+          <div className="dash-card-head">
+            <h2>Nová akce</h2>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input
+              value={eventNazev}
+              onChange={(e) => setEventNazev(e.target.value)}
+              placeholder="Např. Jarní běh Mělník 2026"
+              style={inputStyle}
+            />
+            <input type="date" value={eventDatum} onChange={(e) => setEventDatum(e.target.value)} style={inputStyle} />
+            <button onClick={createEvent} className="btn-pill primary">
+              Založit akci
+            </button>
+          </div>
+        </div>
+      )}
+
+      {aktivniAkce.map(vykreslitAkci)}
+      {ukonceneAkce.length > 0 && (
+        <details className="sprava-ukoncene" style={{ marginTop: 8 }}>
+          <summary style={{ cursor: "pointer", fontSize: 14, fontWeight: 700, color: "var(--text-secondary)", padding: "8px 0" }}>
+            Ukončené akce ({ukonceneAkce.length})
+          </summary>
+          <div style={{ marginTop: 12 }}>{ukonceneAkce.map(vykreslitAkci)}</div>
+        </details>
+      )}
     </AppShell>
   );
 }

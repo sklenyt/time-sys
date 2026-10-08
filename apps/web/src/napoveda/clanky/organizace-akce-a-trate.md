@@ -50,7 +50,7 @@ U jednotlivé trati (v seznamu pod akcí) vidíte u názvu stav registrace („r
 
 ## Aktivní vs. ukončená akce
 
-Startovní listina, měření a další pracovní obrazovky jdou otevřít jen pro **aktivní** (neukončenou) akci — je to záměrná pojistka, ať vám omylem nepřijde na obrazovku ukončeného, dávno hotového závodu při procházení přes poslední navštívenou trať. Pokud otevřete odkaz na trať z ukončené akce, appka vás vyzve k výběru jiné aktivní akce.
+Ve Správě akcí jsou **ukončené akce** schované v rozbalovací sekci **Ukončené akce (N)** pod aktivními, ať nezabírají místo. Startovní listina, měření a další pracovní obrazovky jdou otevřít jen pro **aktivní** (neukončenou) akci — je to záměrná pojistka, ať vám omylem nepřijde na obrazovku ukončeného, dávno hotového závodu při procházení přes poslední navštívenou trať. Pokud otevřete odkaz na trať z ukončené akce, appka vás vyzve k výběru jiné aktivní akce.
 
 ## Upozornění „Datum proběhlo“
 

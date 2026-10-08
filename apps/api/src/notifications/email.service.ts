@@ -93,11 +93,11 @@ export class EmailService {
     udaje?: UdajeRegistrace;
     kopie?: string | null;
     platba?: { castkaKc: number; qrPng: Buffer };
-  }): Promise<void> {
+  }): Promise<boolean> {
     const transporter = this.getTransporter();
     if (!transporter) {
       this.logger.debug(`SMTP nenakonfigurováno — přeskakuji potvrzení registrace pro ${params.komu}`);
-      return;
+      return false;
     }
 
     const potvrzeni = sestavPotvrzeniRegistrace({
@@ -123,8 +123,10 @@ export class EmailService {
         html: potvrzeni.html,
         attachments,
       });
+      return true;
     } catch (err) {
       this.logger.warn(`Odeslání potvrzení registrace na ${params.komu} selhalo: ${err}`);
+      return false;
     }
   }
 

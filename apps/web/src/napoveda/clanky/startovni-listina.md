@@ -33,7 +33,11 @@ Pokud používáte [online registraci](/napoveda/online-registrace), objeví se 
 
 ## Přehled listiny
 
-Tabulka pod formulářem ukazuje všechny zapsané závodníky (v pohledu „Všechny tratě" i s tratí) — číslo, jméno, kategorii, členy družstva (pokud jde o štafetu), přiřazený RFID čip, zaplaceno a stav.
+Tabulka pod formulářem ukazuje všechny zapsané závodníky (v pohledu „Všechny tratě" i s tratí) — číslo, jméno, kategorii, e-mail, členy družstva (pokud jde o štafetu), přiřazený RFID čip, zaplaceno a stav.
+
+## E-mail závodníka: oprava a opětovné odeslání
+
+Ve sloupci **E-mail** vidíte adresu každého závodníka (stejně v sekci **K přidělení**). Napsal-li ji špatně, klikněte na **Upravit e-mail**, opravte ji a uložte. Tlačítkem **Poslat potvrzení znovu** pak odešlete potvrzení registrace (stejné jako po registraci, včetně QR platby a kopie, pokud ji u akce máte nastavenou) na opravenou adresu — před odesláním se appka zeptá a po odeslání ohlásí výsledek. Pokud odeslání selže (např. není nastavený SMTP), appka to ohlásí.
 
 ## Zaplaceno
 

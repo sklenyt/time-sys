@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException, ServiceUnavailableException } from "@nestjs/common";
-import { Prisma, type Prihlaska, type Registrace } from "@prisma/client";
+import { Prisma, type Prihlaska, type Registrace, type Trasa, type Udalost } from "@prisma/client";
 import { parse } from "csv-parse/sync";
 import ExcelJS from "exceljs";
 import {
@@ -14,6 +14,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { CreateEntryDto } from "./dto/create-entry.dto";
 import { UpdateEntryDto } from "./dto/update-entry.dto";
 import { PublicRegisterDto } from "./dto/public-register.dto";
+import { UpdateRegistrationDto } from "./dto/update-registration.dto";
 import { StartVlnyService } from "../start-vlny/start-vlny.service";
 import { CategoriesService } from "../categories/categories.service";
 import { decryptSecret, encryptSecret } from "../common/secret-crypto";
@@ -183,6 +184,11 @@ export class EntriesService {
       puvodniHodnota.zaplaceno = prihlaska.zaplaceno;
       novaHodnota.zaplaceno = dto.zaplaceno;
     }
+    if (dto.email !== undefined && dto.email.trim() !== (prihlaska.email ?? "")) {
+      zmeny.email = dto.email.trim();
+      puvodniHodnota.email = prihlaska.email;
+      novaHodnota.email = dto.email.trim();
+    }
     if (dto.clenoveDruzstva !== undefined) {
       zmeny.clenoveDruzstva = dto.clenoveDruzstva?.length
         ? (dto.clenoveDruzstva.map((c) => ({ prijmeni: c.prijmeni, jmeno: c.jmeno, rocnik: c.rocnik ?? null, klub: c.klub ?? null })) as Prisma.InputJsonValue)
@@ -322,46 +328,130 @@ export class EntriesService {
     });
 
     if (dto.email) {
-      let platba: { castkaKc: number; qrPng: Buffer } | undefined;
-      if (trasa.platbaUcet && trasa.platbaCastka) {
-        try {
-          const qrPng = await vygenerujQrPlatbuPng({
-            ucet: trasa.platbaUcet,
-            castkaKc: trasa.platbaCastka,
-            zprava: `Startovne ${dto.jmeno} ${dto.prijmeni}`,
-          });
-          platba = { castkaKc: trasa.platbaCastka, qrPng };
-        } catch (err) {
-          if (!(err instanceof NeplatnyUcetError)) throw err;
-          // Špatně vyplněné číslo účtu u trati nesmí zablokovat registraci
-          // samotnou — e-mail se pošle jen bez QR platby.
-        }
-      }
-      const kategorie = await this.prisma.kategorie.findUnique({ where: { id: dto.kategorieId } });
-      await this.email.posliPotvrzeniRegistrace({
+      await this.odeslatPotvrzeniRegistrace(trasa, {
         komu: dto.email,
         jmeno: dto.jmeno,
         prijmeni: dto.prijmeni,
-        trasaNazev: trasa.nazev,
-        udalostNazev: trasa.udalost.nazev,
-        vlastniText: trasa.potvrzovaciEmailText,
-        kopie: trasa.udalost.emailKopie,
-        udaje: {
-          rocnik: dto.rocnik,
-          pohlavi: dto.pohlavi,
-          kategorie: kategorie ? `${kategorie.kod} — ${kategorie.nazev}` : null,
-          klub: dto.klub,
-          email: dto.email,
-          telefon: dto.telefon,
-          nouzovyKontakt: dto.nouzovyKontakt,
-          zdravotniPoznamkaUvedena: !!dto.zdravotniPoznamka?.trim(),
-          clenoveDruzstva: dto.clenoveDruzstva?.map((c) => `${c.jmeno} ${c.prijmeni}`),
-        },
-        platba,
+        rocnik: dto.rocnik,
+        pohlavi: dto.pohlavi,
+        kategorieId: dto.kategorieId,
+        klub: dto.klub,
+        telefon: dto.telefon,
+        nouzovyKontakt: dto.nouzovyKontakt,
+        zdravotniPoznamka: dto.zdravotniPoznamka,
+        clenove: dto.clenoveDruzstva?.map((c) => `${c.jmeno} ${c.prijmeni}`),
       });
     }
 
     return { prijmeni: registrace.prijmeni, jmeno: registrace.jmeno };
+  }
+
+  /**
+   * Sestaví a odešle potvrzení registrace (s QR platbou, pokud je u trati
+   * nastavená) — sdílené mezi první registrací a ručním opětovným odesláním.
+   * Vrací, zda se e-mail opravdu odeslal.
+   */
+  private async odeslatPotvrzeniRegistrace(
+    trasa: Trasa & { udalost: Udalost },
+    d: {
+      komu: string;
+      jmeno: string;
+      prijmeni: string;
+      rocnik?: number | null;
+      pohlavi?: Pohlavi | null;
+      kategorieId: string;
+      klub?: string | null;
+      telefon?: string | null;
+      nouzovyKontakt?: string | null;
+      zdravotniPoznamka?: string | null;
+      clenove?: string[];
+    }
+  ): Promise<boolean> {
+    let platba: { castkaKc: number; qrPng: Buffer } | undefined;
+    if (trasa.platbaUcet && trasa.platbaCastka) {
+      try {
+        const qrPng = await vygenerujQrPlatbuPng({
+          ucet: trasa.platbaUcet,
+          castkaKc: trasa.platbaCastka,
+          zprava: `Startovne ${d.jmeno} ${d.prijmeni}`,
+        });
+        platba = { castkaKc: trasa.platbaCastka, qrPng };
+      } catch (err) {
+        if (!(err instanceof NeplatnyUcetError)) throw err;
+        // Špatně vyplněné číslo účtu u trati nesmí zablokovat registraci
+        // samotnou — e-mail se pošle jen bez QR platby.
+      }
+    }
+    const kategorie = await this.prisma.kategorie.findUnique({ where: { id: d.kategorieId } });
+    return this.email.posliPotvrzeniRegistrace({
+      komu: d.komu,
+      jmeno: d.jmeno,
+      prijmeni: d.prijmeni,
+      trasaNazev: trasa.nazev,
+      udalostNazev: trasa.udalost.nazev,
+      vlastniText: trasa.potvrzovaciEmailText,
+      kopie: trasa.udalost.emailKopie,
+      udaje: {
+        rocnik: d.rocnik,
+        pohlavi: d.pohlavi,
+        kategorie: kategorie ? `${kategorie.kod} — ${kategorie.nazev}` : null,
+        klub: d.klub,
+        email: d.komu,
+        telefon: d.telefon,
+        nouzovyKontakt: d.nouzovyKontakt,
+        zdravotniPoznamkaUvedena: !!d.zdravotniPoznamka?.trim(),
+        clenoveDruzstva: d.clenove,
+      },
+      platba,
+    });
+  }
+
+  /** Ruční opětovné odeslání potvrzení registrace (např. po opravě e-mailu) — pro přihlášku i čekající registraci. */
+  async posliPotvrzeniRegistraceZnovu(trasaId: string, id: string, druh: "prihlaska" | "registrace") {
+    const trasa = await this.prisma.trasa.findUnique({ where: { id: trasaId }, include: { udalost: true } });
+    if (!trasa) {
+      throw new NotFoundException("Trasa nenalezena");
+    }
+    const zaznam =
+      druh === "prihlaska"
+        ? await this.prisma.prihlaska.findFirst({ where: { id, trasaId } })
+        : await this.prisma.registrace.findFirst({ where: { id, trasaId } });
+    if (!zaznam) {
+      throw new NotFoundException("Záznam nenalezen na této trati");
+    }
+    if (!zaznam.email) {
+      throw new BadRequestException("Závodník nemá vyplněný e-mail");
+    }
+    const odeslano = await this.odeslatPotvrzeniRegistrace(trasa, {
+      komu: zaznam.email,
+      jmeno: zaznam.jmeno,
+      prijmeni: zaznam.prijmeni,
+      rocnik: zaznam.rocnik,
+      pohlavi: zaznam.pohlavi as Pohlavi | null,
+      kategorieId: zaznam.kategorieId,
+      klub: zaznam.klub,
+      telefon: zaznam.telefon,
+      nouzovyKontakt: zaznam.nouzovyKontakt ? bezpecneDesifrovat(zaznam.nouzovyKontakt) : undefined,
+      zdravotniPoznamka: zaznam.zdravotniPoznamka ? bezpecneDesifrovat(zaznam.zdravotniPoznamka) : undefined,
+      clenove: (zaznam.clenoveDruzstva as { prijmeni: string; jmeno: string }[] | null)?.map((c) => `${c.jmeno} ${c.prijmeni}`),
+    });
+    if (!odeslano) {
+      throw new ServiceUnavailableException("E-mail se nepodařilo odeslat (zkontrolujte nastavení SMTP)");
+    }
+    return { odeslano: true };
+  }
+
+  /** Oprava e-mailu čekající registrace (před přidělením čísla). */
+  async upravitRegistraci(trasaId: string, registraceId: string, dto: UpdateRegistrationDto) {
+    const registrace = await this.prisma.registrace.findFirst({ where: { id: registraceId, trasaId } });
+    if (!registrace) {
+      throw new NotFoundException("Čekající registrace nenalezena na této trati");
+    }
+    const upravena = await this.prisma.registrace.update({
+      where: { id: registraceId },
+      data: { email: dto.email.trim() },
+    });
+    return { id: upravena.id, email: upravena.email };
   }
 
   /** Čekající registrace této trati (Startovní listina, sekce "K přidělení") — nejstarší první. */

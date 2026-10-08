@@ -23,6 +23,7 @@ import { CreateEntryManualDto } from "./dto/create-entry.dto";
 import { UpdateEntryDto } from "./dto/update-entry.dto";
 import { PublicRegisterDto } from "./dto/public-register.dto";
 import { PairChipDto } from "./dto/pair-chip.dto";
+import { UpdateRegistrationDto } from "./dto/update-registration.dto";
 import { AssignNumberDto } from "./dto/assign-number.dto";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { CurrentUser, AuthenticatedUser } from "../auth/decorators/current-user.decorator";
@@ -73,6 +74,14 @@ export class EntriesController {
   }
 
   /** Odeslání e-mailu s potvrzením platby a startovním číslem — vědomě ručně, ne automaticky při zaškrtnutí. */
+  /** Opětovné odeslání potvrzení registrace (např. po opravě e-mailu). */
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Post(":entryId/potvrzeni-registrace")
+  @HttpCode(HttpStatus.OK)
+  posliPotvrzeniRegistrace(@Param("routeId", ParseUUIDPipe) routeId: string, @Param("entryId", ParseUUIDPipe) entryId: string) {
+    return this.entries.posliPotvrzeniRegistraceZnovu(routeId, entryId, "prihlaska");
+  }
+
   @Roles(Role.ADMIN, Role.ORGANIZATOR)
   @Post(":entryId/potvrzeni-platby")
   @HttpCode(HttpStatus.OK)
@@ -150,6 +159,26 @@ export class RegistrationsController {
     @Body() dto: AssignNumberDto
   ) {
     return this.entries.prideliCislo(routeId, registrationId, dto);
+  }
+
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Patch(":registrationId")
+  update(
+    @Param("routeId", ParseUUIDPipe) routeId: string,
+    @Param("registrationId", ParseUUIDPipe) registrationId: string,
+    @Body() dto: UpdateRegistrationDto
+  ) {
+    return this.entries.upravitRegistraci(routeId, registrationId, dto);
+  }
+
+  @Roles(Role.ADMIN, Role.ORGANIZATOR)
+  @Post(":registrationId/potvrzeni-registrace")
+  @HttpCode(HttpStatus.OK)
+  posliPotvrzeniRegistrace(
+    @Param("routeId", ParseUUIDPipe) routeId: string,
+    @Param("registrationId", ParseUUIDPipe) registrationId: string
+  ) {
+    return this.entries.posliPotvrzeniRegistraceZnovu(routeId, registrationId, "registrace");
   }
 
   @Roles(Role.ADMIN, Role.ORGANIZATOR)

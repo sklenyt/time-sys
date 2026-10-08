@@ -11,7 +11,7 @@ describe("EntriesService", () => {
   let service: EntriesService;
   let prisma: {
     prihlaska: { findFirst: jest.Mock; create: jest.Mock; update: jest.Mock };
-    registrace: { create: jest.Mock; findFirst: jest.Mock; findMany: jest.Mock; delete: jest.Mock };
+    registrace: { create: jest.Mock; findFirst: jest.Mock; findMany: jest.Mock; delete: jest.Mock; update: jest.Mock };
     kategorie: { findMany: jest.Mock; findUnique: jest.Mock };
     trasa: { findUnique: jest.Mock };
     auditLog: { create: jest.Mock };
@@ -23,7 +23,7 @@ describe("EntriesService", () => {
   beforeEach(async () => {
     prisma = {
       prihlaska: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn() },
-      registrace: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), delete: jest.fn() },
+      registrace: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), delete: jest.fn(), update: jest.fn() },
       kategorie: { findMany: jest.fn().mockResolvedValue([]), findUnique: jest.fn().mockResolvedValue({ kod: "MUZ", nazev: "Muži" }) },
       trasa: { findUnique: jest.fn().mockResolvedValue({ typStartu: "VLNOVY" }) },
       auditLog: { create: jest.fn().mockResolvedValue({}) },
@@ -315,6 +315,52 @@ describe("EntriesService", () => {
 
       await expect(service.posliPotvrzeniPlatby("trasa-1", "p1")).rejects.toBeInstanceOf(ServiceUnavailableException);
       expect(prisma.prihlaska.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("oprava e-mailu a opětovné odeslání potvrzení registrace", () => {
+    const TRASA = { id: "trasa-1", nazev: "Trasa A", platbaUcet: null, platbaCastka: null, potvrzovaciEmailText: null, udalost: { nazev: "Podzimní běh", emailKopie: "info@x.cz" } };
+    const PRIHLASKA = { id: "p1", trasaId: "trasa-1", email: "spatne@x.cz", jmeno: "Petr", prijmeni: "Novák", rocnik: 1990, pohlavi: "M", kategorieId: "kat-1", klub: null, telefon: null, nouzovyKontakt: null, zdravotniPoznamka: null, clenoveDruzstva: null };
+
+    it("changes the e-mail of an entry through update() and writes it to the audit log", async () => {
+      prisma.prihlaska.findFirst.mockResolvedValue({ id: "p1", email: "spatne@x.cz", zaplaceno: false, clenoveDruzstva: null });
+      prisma.$transaction.mockResolvedValue([{ id: "p1", email: "spravne@x.cz" }, {}]);
+
+      await service.update("trasa-1", "p1", { email: " spravne@x.cz " }, "user-1");
+
+      expect(prisma.prihlaska.update).toHaveBeenCalledWith({ where: { id: "p1" }, data: { email: "spravne@x.cz" } });
+      const [{ data }] = prisma.auditLog.create.mock.calls[0];
+      expect(data.novaHodnota).toMatchObject({ email: "spravne@x.cz" });
+    });
+
+    it("resends the registration confirmation to the corrected e-mail with the event copy", async () => {
+      prisma.trasa.findUnique.mockResolvedValue(TRASA);
+      prisma.prihlaska.findFirst.mockResolvedValue({ ...PRIHLASKA, email: "spravne@x.cz" });
+      email.posliPotvrzeniRegistrace.mockResolvedValue(true);
+
+      const vysledek = await service.posliPotvrzeniRegistraceZnovu("trasa-1", "p1", "prihlaska");
+
+      expect(vysledek).toEqual({ odeslano: true });
+      expect(email.posliPotvrzeniRegistrace).toHaveBeenCalledWith(
+        expect.objectContaining({ komu: "spravne@x.cz", kopie: "info@x.cz", udaje: expect.objectContaining({ kategorie: "MUZ — Muži" }) })
+      );
+    });
+
+    it("reports a failure when the e-mail could not be sent, and rejects an entry without e-mail", async () => {
+      prisma.trasa.findUnique.mockResolvedValue(TRASA);
+      prisma.prihlaska.findFirst.mockResolvedValue(PRIHLASKA);
+      email.posliPotvrzeniRegistrace.mockResolvedValue(false);
+      await expect(service.posliPotvrzeniRegistraceZnovu("trasa-1", "p1", "prihlaska")).rejects.toBeInstanceOf(ServiceUnavailableException);
+
+      prisma.prihlaska.findFirst.mockResolvedValue({ ...PRIHLASKA, email: null });
+      await expect(service.posliPotvrzeniRegistraceZnovu("trasa-1", "p1", "prihlaska")).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it("updates the e-mail of a pending registration", async () => {
+      prisma.registrace.findFirst.mockResolvedValue({ id: "r1" });
+      prisma.registrace.update.mockResolvedValue({ id: "r1", email: "spravne@x.cz" });
+      await expect(service.upravitRegistraci("trasa-1", "r1", { email: " spravne@x.cz " })).resolves.toEqual({ id: "r1", email: "spravne@x.cz" });
+      expect(prisma.registrace.update).toHaveBeenCalledWith({ where: { id: "r1" }, data: { email: "spravne@x.cz" } });
     });
   });
 });

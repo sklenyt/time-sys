@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsOptional, ValidateNested } from "class-validator";
+import { ArrayMaxSize, IsArray, IsBoolean, IsEmail, IsEnum, IsOptional, ValidateNested } from "class-validator";
 import { StavUkonceni } from "@depo/shared";
 import { TeamMemberDto } from "./team-member.dto";
 
@@ -25,4 +25,9 @@ export class UpdateEntryDto {
   @IsOptional()
   @IsBoolean()
   zaplaceno?: boolean;
+
+  /** Oprava špatně zadaného e-mailu závodníka. */
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 }
