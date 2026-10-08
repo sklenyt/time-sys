@@ -1002,3 +1002,261 @@
   font-size: 12.5px;
   background: var(--paper);
 }
+
+/* Formulářové řádky ve Správě: vstupy stejně vysoké, název se roztáhne */
+.form-radek {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+}
+.form-radek input,
+.form-radek select {
+  box-sizing: border-box;
+  height: 42px;
+}
+.form-radek .btn-pill {
+  height: 42px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+}
+.form-radek .siroke {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+/* ---------- Postranní panel (varianta A tmavá / B světlá, přepíná se tlačítkem dole) ---------- */
+.app-sidebar {
+  width: 252px;
+  padding: 16px 12px 14px;
+  gap: 0;
+  --pn-text: #c7cfdd;
+  --pn-text-silna: #fff;
+  --pn-tlumena: #8a97b3;
+  --pn-karta: #141d33;
+  --pn-okraj: #243150;
+  --pn-aktivni: #1d2a4a;
+  --pn-nadpis: #6b7896;
+  --pn-oddelovac: #1f2a45;
+  --pn-hover: rgba(255, 255, 255, 0.06);
+}
+.app-sidebar.panel-tmavy {
+  background: #0b1220;
+  color: var(--pn-text);
+}
+.app-sidebar.panel-svetly {
+  background: #fff;
+  color: #3a455c;
+  border-right: 1px solid var(--line);
+  --pn-text: #3a455c;
+  --pn-text-silna: #0b1220;
+  --pn-tlumena: #7b879f;
+  --pn-karta: #f4f6fa;
+  --pn-okraj: #e3e7ee;
+  --pn-aktivni: #eef1f8;
+  --pn-nadpis: #98a2b8;
+  --pn-oddelovac: #e9edf3;
+  --pn-hover: rgba(11, 18, 32, 0.05);
+}
+.app-sidebar-brand {
+  padding: 2px 8px 14px;
+}
+.app-sidebar-brand-name {
+  color: var(--pn-text-silna);
+}
+.app-akce {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 12px;
+  padding: 9px 10px;
+  background: var(--pn-karta);
+  border: 1px solid var(--pn-okraj);
+  border-radius: 10px;
+  color: var(--pn-tlumena);
+}
+.app-akce .app-ikona:first-child {
+  color: var(--tape-500);
+}
+.app-akce-text {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
+}
+.app-akce-text strong {
+  display: block;
+  color: var(--pn-text-silna);
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-akce-text small {
+  font-size: 11.5px;
+  color: var(--pn-tlumena);
+}
+.app-akce-select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.app-sidebar-nav {
+  gap: 0;
+}
+.app-skupina {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 2px;
+}
+.app-skupina-nadpis {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--pn-nadpis);
+  padding: 12px 10px 4px;
+}
+.app-nav-item {
+  position: relative;
+}
+.app-sidebar .app-nav-link {
+  gap: 10px;
+  padding: 7px 10px;
+  border-left: none;
+  border-radius: 8px;
+  color: var(--pn-text);
+  font-weight: 600;
+  font-size: 13.5px;
+}
+.app-sidebar .app-nav-link:hover {
+  background: var(--pn-hover);
+  color: var(--pn-text-silna);
+}
+.app-sidebar .app-nav-link.active {
+  background: var(--pn-aktivni);
+  color: var(--pn-text-silna);
+  border-left: none;
+  position: relative;
+}
+.app-sidebar .app-nav-link.active::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--tape-500);
+}
+.app-sidebar .app-nav-link.disabled {
+  color: var(--pn-text);
+}
+.app-ikona {
+  flex-shrink: 0;
+  color: var(--pn-tlumena);
+}
+.app-nav-link.active .app-ikona {
+  color: var(--tape-500);
+}
+.app-nav-popisek {
+  flex: 1;
+  min-width: 0;
+}
+.app-nav-odznak {
+  background: var(--tape-500);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.app-nav-handle {
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0;
+  opacity: 0;
+  color: var(--pn-tlumena);
+}
+.app-nav-item:hover .app-nav-handle {
+  opacity: 0.7;
+}
+.app-sidebar-footer {
+  border-top: 1px solid var(--pn-oddelovac);
+  margin-top: auto;
+  padding-top: 12px;
+}
+.app-sidebar .app-user {
+  gap: 9px;
+  padding: 0 4px 8px;
+  color: var(--pn-text-silna);
+}
+.app-sidebar .app-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--pn-aktivni);
+  color: var(--pn-text-silna);
+}
+.app-user-text {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
+  font-size: 13px;
+}
+.app-user-text strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-user-text small {
+  font-size: 11px;
+  color: var(--pn-tlumena);
+}
+.app-sidebar .tema-prepinac {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  border-color: var(--pn-okraj);
+  color: var(--pn-tlumena);
+}
+
+@media (max-width: 900px) {
+  .app-sidebar.panel-svetly {
+    background: #fff;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .app-sidebar {
+    width: 100%;
+  }
+  .app-akce,
+  .app-skupina-nadpis {
+    display: none;
+  }
+  .app-skupina {
+    display: contents;
+  }
+  .app-nav-handle {
+    display: none;
+  }
+  .app-sidebar .app-nav-link.active::before {
+    display: none;
+  }
+  .app-sidebar .app-nav-link {
+    border-bottom: 3px solid transparent;
+    border-radius: 8px 8px 0 0;
+    white-space: nowrap;
+    padding: 8px 10px;
+  }
+  .app-sidebar .app-nav-link.active {
+    border-bottom-color: var(--tape-500);
+  }
+}

@@ -12,7 +12,16 @@ klicova: sprava akci zalozit zavod trasa smazat prejmenovat ukoncit datum probeh
 - **Akce** — konkrétní závod v konkrétní den (např. „Jarní běh Mělník 2026“).
 - **Trať** — jedna disciplína/trasa v rámci akce (např. „10 km“, „21 km“). Akce může mít víc tratí zároveň.
 
-Všechno se spravuje na jednom místě — ve **Správě akcí** (`/sprava`), do které se dostanete z levého menu. Máte-li víc aktivních akcí, je v levém menu nahoře pole **Akce**, kterým přepínáte, se kterou akcí pracujete. Trať se vybírá přímo na obrazovce záložkami nad obsahem (Startovní listina, Čipy, Kdo ještě běží, Kolize, Audit log) — aktuální trať je zvýrazněná. Ukončené akce v nabídce nejsou.
+Všechno se spravuje na jednom místě — ve **Správě akcí** (`/sprava`), do které se dostanete z levého menu.
+
+## Levé menu
+
+Menu je rozdělené do sekcí: **Přehled akce**, **Příprava** (Správa akcí, Startovní listina, Čipy), **Závod** (Měření, Kdo ještě běží, Kolize), **Výsledky a data** (Výsledky, Publikace, Reporty, Audit log) a **Organizace** (Uživatelé). Každá položka má ikonu.
+
+- **Karta akce nahoře** ukazuje, se kterou akcí právě pracujete (název, datum, počet tratí). Máte-li víc aktivních akcí, kliknutím na ni akci přepnete. Trať se vybírá záložkami nad obsahem obrazovek vázaných na trať (Startovní listina, Čipy, Kdo ještě běží, Kolize, Audit log). Ukončené akce v nabídce nejsou.
+- **Odznaky** upozorní, co čeká: u Startovní listiny počet registrací čekajících na startovní číslo, u Kolizí počet nevyřešených kolizí (obnovují se zhruba jednou za minutu).
+- **Pořadí položek** jde měnit přetažením (úchyt se ukáže po najetí myší) v rámci jedné sekce a ukládá se k vašemu účtu.
+- **Tmavý nebo světlý panel:** tlačítkem s měsícem nebo sluncem vedle vašeho jména dole v menu přepnete vzhled panelu. Volba se pamatuje v daném prohlížeči.
 
 ## Založení akce a tratě
 

@@ -671,11 +671,12 @@ export function Sprava() {
           </ul>
 
           {!u.ukoncena && (
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div className="form-radek">
               <input
                 value={routeDrafts[u.id] ?? ""}
                 onChange={(e) => setRouteDrafts((d) => ({ ...d, [u.id]: e.target.value }))}
                 placeholder="Nová trasa, např. 10 km"
+                className="siroke"
                 style={inputStyle}
               />
               <input
@@ -684,7 +685,7 @@ export function Sprava() {
                 placeholder="Počet kol"
                 inputMode="numeric"
                 title="Kolikrát závodník objede okruh, než doběhne — nechte prázdné pro trať bez kol (1)"
-                style={{ ...inputStyle, width: 100 }}
+                style={{ ...inputStyle, width: 120 }}
               />
               <input
                 value={routeDelkaDrafts[u.id] ?? ""}
@@ -692,7 +693,7 @@ export function Sprava() {
                 placeholder="Délka kola (km)"
                 inputMode="decimal"
                 title="Nepovinné — délka jednoho kola (u trati bez kol celé trati) v km, slouží ke kontrole podezřelých časů"
-                style={{ ...inputStyle, width: 130 }}
+                style={{ ...inputStyle, width: 160 }}
               />
               <button onClick={() => createRoute(u.id)} className="btn-pill primary">
                 Přidat trasu
@@ -724,15 +725,16 @@ export function Sprava() {
       {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
       {organizace.length === 0 && (
-        <section className="dash-card" style={{ maxWidth: 480, marginBottom: 24 }}>
+        <section className="dash-card" style={{ maxWidth: 560, marginBottom: 24 }}>
           <div className="dash-card-head">
             <h2>Nejdřív založte organizaci</h2>
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className="form-radek">
             <input
               value={orgNazev}
               onChange={(e) => setOrgNazev(e.target.value)}
               placeholder="Název organizace"
+              className="siroke"
               style={inputStyle}
             />
             <button onClick={createOrg} className="btn-pill primary">
@@ -743,18 +745,19 @@ export function Sprava() {
       )}
 
       {organizace.length > 0 && (
-        <div className="dash-card" style={{ marginBottom: 16, maxWidth: 640 }}>
+        <div className="dash-card" style={{ marginBottom: 16, maxWidth: 760 }}>
           <div className="dash-card-head">
             <h2>Nová akce</h2>
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className="form-radek">
             <input
               value={eventNazev}
               onChange={(e) => setEventNazev(e.target.value)}
               placeholder="Např. Jarní běh Mělník 2026"
+              className="siroke"
               style={inputStyle}
             />
-            <input type="date" value={eventDatum} onChange={(e) => setEventDatum(e.target.value)} style={inputStyle} />
+            <input type="date" value={eventDatum} onChange={(e) => setEventDatum(e.target.value)} style={{ ...inputStyle, width: 170 }} />
             <button onClick={createEvent} className="btn-pill primary">
               Založit akci
             </button>
