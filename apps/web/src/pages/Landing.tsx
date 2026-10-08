@@ -435,6 +435,7 @@ export function Landing() {
           <div className="landing-footer-brand">
             <img src="/depo-mark.svg" alt="" width={28} height={28} />
             Depo
+            <span className="landing-footer-copy">© {new Date().getFullYear()}</span>
           </div>
           <div className="landing-footer-links">
             <Link to="/napoveda">Nápověda</Link>

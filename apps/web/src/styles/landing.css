@@ -1151,3 +1151,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+.landing-footer-copy {
+  margin-left: 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--steel-400);
+}
