@@ -9,10 +9,12 @@ export interface PolozkaMenu {
 interface RozbalovaciMenuProps {
   popisek: string;
   polozky: PolozkaMenu[];
+  /** Jen tři tečky místo textu a šipky (popisek zůstává jako aria-label). */
+  kompaktni?: boolean;
 }
 
 /** Tlačítko s rozbalovací nabídkou — zavírá se klikem mimo a klávesou Escape. */
-export function RozbalovaciMenu({ popisek, polozky }: RozbalovaciMenuProps) {
+export function RozbalovaciMenu({ popisek, polozky, kompaktni }: RozbalovaciMenuProps) {
   const [otevrene, setOtevrene] = useState(false);
   const korenRef = useRef<HTMLSpanElement>(null);
 
@@ -32,8 +34,16 @@ export function RozbalovaciMenu({ popisek, polozky }: RozbalovaciMenuProps) {
 
   return (
     <span ref={korenRef} style={{ position: "relative", display: "inline-block" }}>
-      <button className="btn-pill" aria-haspopup="menu" aria-expanded={otevrene} onClick={() => setOtevrene((o) => !o)}>
-        {popisek} ▾
+      <button
+        className="btn-pill"
+        aria-haspopup="menu"
+        aria-expanded={otevrene}
+        aria-label={kompaktni ? popisek : undefined}
+        title={kompaktni ? popisek : undefined}
+        onClick={() => setOtevrene((o) => !o)}
+        style={kompaktni ? { padding: "4px 10px", fontSize: 16, lineHeight: 1 } : undefined}
+      >
+        {kompaktni ? "⋯" : `${popisek} ▾`}
       </button>
       {otevrene && (
         <div

@@ -15,6 +15,7 @@ import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
 import { BusyOverlay } from "../components/BusyOverlay";
+import { RozbalovaciMenu } from "../components/RozbalovaciMenu";
 
 /**
  * Trať bez aktivní (neukončené) akce nesmí tiše ukázat startovní listinu —
@@ -132,6 +133,7 @@ function ChipBunka({
   onChanged: () => void;
 }) {
   const [kod, setKod] = useState("");
+  const [otevrene, setOtevrene] = useState(false);
   const [odesilam, setOdesilam] = useState(false);
   const [chyba, setChyba] = useState<string | null>(null);
 
@@ -188,6 +190,17 @@ function ChipBunka({
           Odebrat
         </button>
         {chyba && <span style={{ color: "var(--color-danger)", fontSize: 11 }}>{chyba}</span>}
+      </div>
+    );
+  }
+
+  if (!otevrene) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        <span className="stitek stitek-neutralni">bez čipu</span>
+        <button onClick={() => setOtevrene(true)} className="btn-pill" style={{ padding: "2px 8px", fontSize: 11 }}>
+          Přiřadit
+        </button>
       </div>
     );
   }
@@ -379,6 +392,154 @@ function PridelitCisloRadek({
   );
 }
 
+type RadekPrihlasky = Prihlaska & { kategorie?: Kategorie; cip?: Cip | null };
+
+/** Jeden závodník v tabulce: název, e-mail s opravou, štítky stavů a nabídka akcí. */
+function RadekZavodnika({
+  e,
+  trat,
+  onChanged,
+  nastavitStav,
+  nastavitZaplaceno,
+  poslatPotvrzeniPlatby,
+  smazat,
+}: {
+  e: RadekPrihlasky;
+  trat?: string;
+  onChanged: () => void;
+  nastavitStav: (trasaId: string, entryId: string, stav: StavUkonceni | null) => void;
+  nastavitZaplaceno: (trasaId: string, entryId: string, zaplaceno: boolean) => void;
+  poslatPotvrzeniPlatby: (entry: RadekPrihlasky) => void;
+  smazat: (trasaId: string, entryId: string, jmeno: string) => void;
+}) {
+  const [upravuji, setUpravuji] = useState(false);
+  const [email, setEmail] = useState(e.email ?? "");
+  const [zprava, setZprava] = useState<{ text: string; chyba: boolean } | null>(null);
+
+  async function ulozitEmail() {
+    setZprava(null);
+    try {
+      await api.patch(`/routes/${e.trasaId}/entries/${e.id}`, { email: email.trim() });
+      setUpravuji(false);
+      onChanged();
+    } catch (err) {
+      setZprava({ text: chybaZeServeru(err, "E-mail se nepodařilo uložit"), chyba: true });
+    }
+  }
+
+  async function poslatRegistraci() {
+    if (!e.email) return;
+    if (!window.confirm(`Znovu odeslat potvrzení registrace na ${e.email}?`)) return;
+    setZprava(null);
+    try {
+      await api.post(`/routes/${e.trasaId}/entries/${e.id}/potvrzeni-registrace`, {});
+      setZprava({ text: "Potvrzení registrace odesláno", chyba: false });
+    } catch (err) {
+      setZprava({ text: chybaZeServeru(err, "E-mail se nepodařilo odeslat"), chyba: true });
+    }
+  }
+
+  const jmeno = `${e.prijmeni} ${e.jmeno}`;
+  return (
+    <tr className="sl-radek">
+      {trat !== undefined && (
+        <td>
+          <span className="stitek stitek-trat">{trat}</span>
+        </td>
+      )}
+      <td className="sl-cislo">{e.startovniCislo}</td>
+      <td>
+        <div style={{ fontWeight: 700 }}>{jmeno}</div>
+        {upravuji ? (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
+            <input
+              type="email"
+              autoFocus
+              value={email}
+              onChange={(ev) => setEmail(ev.target.value)}
+              onKeyDown={(ev) => ev.key === "Enter" && email.trim() && ulozitEmail()}
+              style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid var(--line)", fontSize: 12.5, minWidth: 200 }}
+            />
+            <button onClick={ulozitEmail} disabled={!email.trim()} className="btn-pill primary" style={{ padding: "3px 10px", fontSize: 11.5 }}>
+              Uložit
+            </button>
+            <button onClick={() => setUpravuji(false)} className="btn-pill" style={{ padding: "3px 10px", fontSize: 11.5 }}>
+              Zrušit
+            </button>
+          </div>
+        ) : (
+          <div className="sl-podtitul" style={{ color: e.email ? undefined : "var(--color-danger)", wordBreak: "break-all" }}>
+            {e.email ?? "bez e-mailu"}
+          </div>
+        )}
+        {e.clenoveDruzstva?.length ? (
+          <div className="sl-podtitul">družstvo: {e.clenoveDruzstva.map((c) => `${c.prijmeni} ${c.jmeno}`).join(", ")}</div>
+        ) : null}
+        {zprava && <div style={{ fontSize: 11.5, marginTop: 2, color: zprava.chyba ? "var(--color-danger)" : "var(--text-secondary)" }}>{zprava.text}</div>}
+      </td>
+      <td>
+        <span className="mono" style={{ fontSize: 12.5 }}>{e.kategorie?.kod ?? "—"}</span>
+      </td>
+      <td>
+        <ChipBunka routeId={e.trasaId} entry={e} onChanged={onChanged} />
+      </td>
+      <td>
+        <button
+          type="button"
+          onClick={() => nastavitZaplaceno(e.trasaId, e.id, !e.zaplaceno)}
+          className={`stitek ${e.zaplaceno ? "stitek-ok" : "stitek-varovani"} stitek-tlacitko`}
+          title={e.zaplaceno ? "Kliknutím označíte jako nezaplaceno" : "Kliknutím označíte jako zaplaceno"}
+        >
+          {e.zaplaceno ? "✓ zaplaceno" : "nezaplaceno"}
+        </button>
+        {e.zaplaceno && e.email && (
+          <div className="sl-podtitul" style={{ marginTop: 3 }}>
+            {e.potvrzeniPlatbyOdeslanoAt
+              ? `potvrzení ${new Date(e.potvrzeniPlatbyOdeslanoAt).toLocaleString("cs-CZ", { dateStyle: "short", timeStyle: "short" })}`
+              : "potvrzení neodesláno"}{" "}
+            <button onClick={() => poslatPotvrzeniPlatby(e)} className="sl-odkaz">
+              {e.potvrzeniPlatbyOdeslanoAt ? "odeslat znovu" : "odeslat"}
+            </button>
+          </div>
+        )}
+        {e.zaplaceno && !e.email && <div className="sl-podtitul">bez e-mailu</div>}
+      </td>
+      <td>
+        <select
+          value={e.stavUkonceni ?? ""}
+          onChange={(ev) => nastavitStav(e.trasaId, e.id, (ev.target.value as StavUkonceni) || null)}
+          className={`sl-stav${e.stavUkonceni ? " sl-stav-problem" : ""}`}
+        >
+          <option value="">v pořádku</option>
+          {Object.values(StavUkonceni).map((s) => (
+            <option key={s} value={s}>
+              {STAV_LABEL[s]}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td style={{ textAlign: "right" }}>
+        <RozbalovaciMenu
+          popisek={`Akce: ${jmeno}`}
+          kompaktni
+          polozky={[
+            {
+              popisek: "Upravit e-mail",
+              akce: () => {
+                setEmail(e.email ?? "");
+                setZprava(null);
+                setUpravuji(true);
+              },
+            },
+            ...(e.email ? [{ popisek: "Poslat potvrzení registrace znovu", akce: poslatRegistraci }] : []),
+            { popisek: "Smazat závodníka", akce: () => smazat(e.trasaId, e.id, jmeno), nebezpecna: true },
+          ]}
+        />
+      </td>
+    </tr>
+  );
+}
+
 const STAV_LABEL: Record<StavUkonceni, string> = {
   [StavUkonceni.DNS]: "DNS",
   [StavUkonceni.DNF]: "DNF",
@@ -418,6 +579,9 @@ export function StartList() {
   const [importVysledek, setImportVysledek] = useState<ImportEntriesResponseDto | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [pridatKategorii, setPridatKategorii] = useState(false);
+  const [zapisOtevreny, setZapisOtevreny] = useState(false);
+  const [hledani, setHledani] = useState("");
+  const [filtr, setFiltr] = useState<"vse" | "nezaplaceno" | "bez-cipu" | "stav">("vse");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const vsechny = !routeId;
@@ -668,7 +832,7 @@ export function StartList() {
   async function anonymizovatZavodnika(trasaId: string, entryId: string, jmeno: string) {
     if (
       !window.confirm(
-        `Opravdu trvale smazat osobní údaje závodníka "${jmeno}" (jméno, kontakty, zdravotní poznámka)? Naměřený čas zůstane ve výsledcích jako anonymní. Tuto akci nelze vrátit zpět.`
+        `Opravdu smazat závodníka "${jmeno}"? Smaže se jeho přihláška včetně osobních údajů a startovní číslo se uvolní. Naměřené časy zůstanou v logu měření jako nepřiřazené. Tuto akci nelze vrátit zpět.`
       )
     ) {
       return;
@@ -677,7 +841,7 @@ export function StartList() {
       await api.del(`/routes/${trasaId}/entries/${entryId}`);
       reload();
     } catch (e) {
-      setError(chybaZeServeru(e, "Smazání údajů se nezdařilo"));
+      setError(chybaZeServeru(e, "Smazání závodníka se nezdařilo"));
     }
   }
 
@@ -723,6 +887,26 @@ export function StartList() {
   }
 
   const kategorieFormulare = formTrasa?.kategorie ?? [];
+  const zaplaceno = entries.filter((e) => e.zaplaceno).length;
+  const bezEmailu = entries.filter((e) => !e.email).length;
+  const dotaz = hledani.trim().toLowerCase();
+  const zobrazene = [...entries]
+    .filter((e) => {
+      if (filtr === "nezaplaceno" && e.zaplaceno) return false;
+      if (filtr === "bez-cipu" && e.cip) return false;
+      if (filtr === "stav" && !e.stavUkonceni) return false;
+      if (!dotaz) return true;
+      return (
+        `${e.prijmeni} ${e.jmeno}`.toLowerCase().includes(dotaz) ||
+        String(e.startovniCislo).includes(dotaz) ||
+        (e.email ?? "").toLowerCase().includes(dotaz)
+      );
+    })
+    .sort(
+      (a, b) =>
+        (vsechny ? nazevTrase(a.trasaId).localeCompare(nazevTrase(b.trasaId), "cs", { numeric: true }) : 0) ||
+        a.startovniCislo - b.startovniCislo
+    );
   const poctyNaTrasu = (id: string) => entries.filter((e) => e.trasaId === id).length;
 
   return (
@@ -811,6 +995,7 @@ export function StartList() {
       </section>
       )}
 
+      {zapisOtevreny && (
       <section className="dash-card" style={{ marginBottom: 24 }}>
         <div className="dash-card-head">
           <h2>Zapsat závodníka</h2>
@@ -1016,6 +1201,7 @@ export function StartList() {
           </p>
         )}
       </section>
+      )}
 
       {registrace.length > 0 && (
         <section className="dash-card" style={{ marginBottom: 24 }}>
@@ -1054,116 +1240,96 @@ export function StartList() {
         </section>
       )}
 
-      <div className="dash-card-head" style={{ marginBottom: 8 }}>
-        <h2 style={{ margin: 0 }}>Startovní listina</h2>
-        {trasa && (
-          <button type="button" onClick={exportovatXlsx} className="btn-pill">
-            Export do XLSX
-          </button>
-        )}
+      <div className="sl-souhrn">
+        <div>
+          <b>{entries.length}</b>
+          <span>Závodníků</span>
+        </div>
+        <div>
+          <b>
+            {zaplaceno} <small>/ {entries.length}</small>
+          </b>
+          <span>Zaplaceno</span>
+        </div>
+        <div>
+          <b>{registrace.length}</b>
+          <span>Čeká na číslo</span>
+        </div>
+        <div>
+          <b>{bezEmailu}</b>
+          <span>Bez e-mailu</span>
+        </div>
       </div>
 
-      <div className="table-scroll">
-        <table className="mono" style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ textAlign: "left", borderBottom: "2px solid var(--line)" }}>
-              {vsechny && <th style={{ fontFamily: "var(--font-ui)" }}>Trať</th>}
-              <th>Č.</th>
-              <th style={{ fontFamily: "var(--font-ui)" }}>Jméno</th>
-              <th style={{ fontFamily: "var(--font-ui)" }}>Kategorie</th>
-              <th style={{ fontFamily: "var(--font-ui)" }}>E-mail</th>
-              <th style={{ fontFamily: "var(--font-ui)" }}>Družstvo</th>
-              <th style={{ fontFamily: "var(--font-ui)" }}>Čip</th>
-              <th style={{ fontFamily: "var(--font-ui)" }}>Zaplaceno</th>
-              <th style={{ fontFamily: "var(--font-ui)" }}>Stav</th>
-              <th style={{ fontFamily: "var(--font-ui)" }}>GDPR</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...entries]
-              .sort((a, b) => (vsechny ? nazevTrase(a.trasaId).localeCompare(nazevTrase(b.trasaId), "cs", { numeric: true }) : 0) || a.startovniCislo - b.startovniCislo)
-              .map((e) => (
-              <tr key={e.id} style={{ borderBottom: "1px solid var(--line)" }}>
-                {vsechny && (
-                  <td style={{ fontFamily: "var(--font-ui)" }}>
-                    <span className="zapis-trat-stitek">{nazevTrase(e.trasaId)}</span>
-                  </td>
-                )}
-                <td>{e.startovniCislo}</td>
-                <td style={{ fontFamily: "var(--font-ui)" }}>
-                  {e.prijmeni} {e.jmeno}
-                </td>
-                <td style={{ fontFamily: "var(--font-ui)" }}>{e.kategorie?.kod ?? "—"}</td>
-                <td>
-                  <EmailBunka routeId={e.trasaId} druh="entries" id={e.id} email={e.email} onChanged={reload} />
-                </td>
-                <td style={{ fontFamily: "var(--font-ui)", fontSize: 12.5, color: "var(--text-secondary)" }}>
-                  {e.clenoveDruzstva?.length
-                    ? e.clenoveDruzstva.map((c) => `${c.prijmeni} ${c.jmeno}`).join(", ")
-                    : "—"}
-                </td>
-                <td>
-                  <ChipBunka routeId={e.trasaId} entry={e} onChanged={reload} />
-                </td>
-                <td>
-                  <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
-                    <input
-                      type="checkbox"
-                      checked={e.zaplaceno}
-                      onChange={(ev) => nastavitZaplaceno(e.trasaId, e.id, ev.target.checked)}
-                    />
-                  </label>
-                  {e.zaplaceno && !e.email && (
-                    <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>bez e-mailu</div>
-                  )}
-                  {e.zaplaceno && e.email && (
-                    <div style={{ fontSize: 11.5, marginTop: 4 }}>
-                      {e.potvrzeniPlatbyOdeslanoAt && (
-                        <div style={{ color: "var(--text-secondary)" }}>
-                          ✓ Odesláno {new Date(e.potvrzeniPlatbyOdeslanoAt).toLocaleString("cs-CZ", { dateStyle: "short", timeStyle: "short" })}
-                        </div>
-                      )}
-                      <button onClick={() => poslatPotvrzeniPlatby(e)} className="btn-pill" style={{ padding: "3px 8px", fontSize: 11.5 }}>
-                        {e.potvrzeniPlatbyOdeslanoAt ? "Odeslat znovu" : "Odeslat potvrzení"}
-                      </button>
-                    </div>
-                  )}
-                </td>
-                <td>
-                  <select
-                    value={e.stavUkonceni ?? ""}
-                    onChange={(ev) => nastavitStav(e.trasaId, e.id, (ev.target.value as StavUkonceni) || null)}
-                    style={{
-                      ...inputStyle,
-                      padding: "4px 8px",
-                      fontSize: 12.5,
-                      color: e.stavUkonceni ? "var(--color-danger)" : "var(--text-secondary)",
-                      borderColor: e.stavUkonceni ? "var(--color-danger)" : "var(--line)",
-                    }}
-                  >
-                    <option value="">v pořádku</option>
-                    {Object.values(StavUkonceni).map((s) => (
-                      <option key={s} value={s}>
-                        {STAV_LABEL[s]}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    onClick={() => anonymizovatZavodnika(e.trasaId, e.id, `${e.prijmeni} ${e.jmeno}`)}
-                    className="btn-pill danger"
-                    style={{ padding: "3px 8px", fontSize: 11 }}
-                    title="Trvale smazat jméno, kontakty a zdravotní poznámku (naměřený čas zůstane anonymně)"
-                  >
-                    Smazat údaje
-                  </button>
-                </td>
+      <div className="sl-nastroje">
+        <input
+          type="search"
+          value={hledani}
+          onChange={(ev) => setHledani(ev.target.value)}
+          placeholder="Hledat jméno, číslo nebo e-mail…"
+          className="sl-hledani"
+        />
+        {(
+          [
+            ["vse", "Všichni"],
+            ["nezaplaceno", "Nezaplaceno"],
+            ["bez-cipu", "Bez čipu"],
+            ["stav", "DNS / DNF / DQ"],
+          ] as const
+        ).map(([klic, popisek]) => (
+          <button key={klic} type="button" onClick={() => setFiltr(klic)} className={`sl-filtr${filtr === klic ? " aktivni" : ""}`}>
+            {popisek}
+          </button>
+        ))}
+        <span style={{ flex: 1 }} />
+        {trasa && (
+          <button type="button" onClick={exportovatXlsx} className="btn-pill">
+            Export XLSX
+          </button>
+        )}
+        <button type="button" onClick={() => setZapisOtevreny((v) => !v)} className="btn-pill primary">
+          {zapisOtevreny ? "Zavřít zápis" : "+ Zapsat závodníka"}
+        </button>
+      </div>
+
+      <div className="sl-karta">
+        <div className="table-scroll">
+          <table className="sl-tabulka">
+            <thead>
+              <tr>
+                {vsechny && <th>Trať</th>}
+                <th>Č.</th>
+                <th>Závodník</th>
+                <th>Kat.</th>
+                <th>Čip</th>
+                <th>Platba</th>
+                <th>Stav</th>
+                <th />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {zobrazene.map((e) => (
+                <RadekZavodnika
+                  key={e.id}
+                  e={e}
+                  trat={vsechny ? nazevTrase(e.trasaId) : undefined}
+                  onChanged={reload}
+                  nastavitStav={nastavitStav}
+                  nastavitZaplaceno={nastavitZaplaceno}
+                  poslatPotvrzeniPlatby={poslatPotvrzeniPlatby}
+                  smazat={anonymizovatZavodnika}
+                />
+              ))}
+              {zobrazene.length === 0 && (
+                <tr>
+                  <td colSpan={vsechny ? 8 : 7} style={{ padding: "20px 8px", color: "var(--text-secondary)" }}>
+                    {entries.length === 0 ? "Zatím nikdo není zapsaný." : "Nikdo neodpovídá hledání nebo filtru."}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       </div>
     </AppShell>

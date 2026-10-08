@@ -18,7 +18,7 @@ Veřejný [registrační formulář](/napoveda/online-registrace) vyžaduje zaš
 
 ## Právo na výmaz
 
-Pokud po vás závodník požádá o smazání svých osobních údajů, otevřete [Startovní listinu](/napoveda/startovni-listina) dané trati a u jeho jména klikněte na **Smazat údaje** (sloupec GDPR úplně vpravo v tabulce). Appka se zeptá na potvrzení a poté trvale smaže jméno, kontakty i zdravotní poznámku. Naměřený čas v historii zůstává, ale jako anonymní záznam bez vazby na jméno — výsledky a audit log tím neztratí integritu (pořadí ostatních se nezmění).
+Pokud po vás závodník požádá o smazání svých osobních údajů, otevřete [Startovní listinu](/napoveda/startovni-listina) dané trati a u jeho jména v nabídce **⋯** u jeho řádku zvolte **Smazat závodníka**. Appka se zeptá na potvrzení a poté trvale smaže přihlášku včetně jména, kontaktů a zdravotní poznámky (a uvolní startovní číslo). Naměřený čas v historii zůstává, ale jako anonymní záznam bez vazby na jméno — výsledky a audit log tím neztratí integritu (pořadí ostatních se nezmění).
 
 Tahle akce se **nedá vrátit zpět**.
 

@@ -33,11 +33,17 @@ Pokud používáte [online registraci](/napoveda/online-registrace), objeví se 
 
 ## Přehled listiny
 
-Tabulka pod formulářem ukazuje všechny zapsané závodníky (v pohledu „Všechny tratě" i s tratí) — číslo, jméno, kategorii, e-mail, členy družstva (pokud jde o štafetu), přiřazený RFID čip, zaplaceno a stav.
+Nahoře je souhrn: počet **závodníků**, kolik je **zaplaceno**, kolik registrací **čeká na číslo** a kolik závodníků je **bez e-mailu**. Pod ním je vyhledávání (jméno, startovní číslo nebo e-mail) a rychlé filtry **Všichni / Nezaplaceno / Bez čipu / DNS, DNF, DQ**. Tlačítko **+ Zapsat závodníka** otevře formulář pro ruční zápis (viz výše), **Export XLSX** stáhne listinu (na záložce konkrétní tratě).
+
+Tabulka má jeden řádek na závodníka: startovní číslo, jméno s e-mailem pod ním (v pohledu „Všechny tratě" i štítek tratě), kategorii, RFID čip (**Přiřadit**, pokud ještě nemá), stav platby a stav **v pořádku / DNS / DNF / DQ**. U družstva je pod jménem seznam členů. Ostatní akce jsou v nabídce **⋯** na konci řádku.
+
+## Smazání závodníka
+
+V nabídce **⋯** u řádku zvolte **Smazat závodníka**. Appka se zeptá na potvrzení a pak smaže jeho přihlášku včetně osobních údajů a **uvolní startovní číslo**, takže ho můžete hned přidělit někomu jinému. Naměřené časy (průjezdy cílem) se nesmažou, zůstanou v logu měření jako nepřiřazené; ve výsledcích závodník zmizí. Čekající registraci (ještě bez čísla) smažete tlačítkem **Zamítnout** v sekci K přidělení. Akci nejde vrátit.
 
 ## E-mail závodníka: oprava a opětovné odeslání
 
-Ve sloupci **E-mail** vidíte adresu každého závodníka (stejně v sekci **K přidělení**). Napsal-li ji špatně, klikněte na **Upravit e-mail**, opravte ji a uložte. Tlačítkem **Poslat potvrzení znovu** pak odešlete potvrzení registrace (stejné jako po registraci, včetně QR platby a kopie, pokud ji u akce máte nastavenou) na opravenou adresu — před odesláním se appka zeptá a po odeslání ohlásí výsledek. Pokud odeslání selže (např. není nastavený SMTP), appka to ohlásí.
+E-mail závodníka je vidět pod jeho jménem (a v sekci **K přidělení**). Napsal-li ho špatně, otevřete nabídku **⋯** u řádku a zvolte **Upravit e-mail**, opravte ho a uložte. Volbou **Poslat potvrzení registrace znovu** pak odešlete potvrzení registrace (stejné jako po registraci, včetně QR platby a kopie, pokud ji u akce máte nastavenou) na opravenou adresu — před odesláním se appka zeptá a po odeslání ohlásí výsledek. Pokud odeslání selže (např. není nastavený SMTP), appka to ohlásí.
 
 ## Zaplaceno
 
