@@ -94,10 +94,10 @@ export function sestavPotvrzeniRegistrace(v: PotvrzeniRegistraceVstup): Potvrzen
   }
   if (v.platbaCastkaKc) {
     html +=
-      `<div style="margin:0 0 14px;padding:14px 16px;border:1px solid #d9dee7;border-radius:8px">` +
-      `<p style="margin:0 0 8px"><strong>Startovné: ${v.platbaCastkaKc} Kč</strong></p>` +
-      `<p style="margin:0 0 10px;color:#667085;font-size:14px">Pro platbu naskenujte QR kód v bankovní aplikaci.</p>` +
-      `<img src="cid:qr-platba" alt="QR platba" width="220" height="220"></div>`;
+      `<div style="margin:0 0 14px;padding:16px;border:1px solid #d9dee7;border-radius:8px;max-width:300px;text-align:center">` +
+      `<p style="margin:0 0 6px;font-size:17px"><strong>Startovné: ${v.platbaCastkaKc} Kč</strong></p>` +
+      `<p style="margin:0 0 12px;color:#667085;font-size:13px">Pro platbu naskenujte QR kód v bankovní aplikaci.</p>` +
+      `<img src="cid:qr-platba" alt="QR platba" width="200" height="200" style="display:block;margin:0 auto;width:200px;height:200px"></div>`;
   }
   html +=
     `<p style="margin:0 0 4px">Těšíme se na vás na startu.</p>` +
