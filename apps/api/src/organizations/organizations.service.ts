@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import type { ClenOrganizaceDto, OrganizacePrehledDto } from "@depo/shared";
+import type { ClenOrganizaceDto, MojeOrganizaceDto, OrganizacePrehledDto } from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { UserCacheService } from "../auth/user-cache.service";
 import { AuthenticatedUser } from "../auth/decorators/current-user.decorator";
@@ -30,13 +30,24 @@ export class OrganizationsService {
   }
 
   /** Organizace uživatele, aktivní první (kód, který zakládá akce, bere první položku). Super admin vidí všechny. */
-  async findAllForUser(user: AuthenticatedUser) {
+  async findAllForUser(user: AuthenticatedUser): Promise<MojeOrganizaceDto[]> {
     const vsechny = user.organizace;
     if (vsechny.length === 0) return [];
     const aktivni = vsechny.find((o) => o.id === user.organizaceId);
     const ostatni = vsechny.filter((o) => o.id !== user.organizaceId);
     const serazene = aktivni ? [aktivni, ...ostatni] : ostatni;
-    return serazene.map((o) => ({ id: o.id, nazev: o.nazev, aktivni: o.id === user.organizaceId }));
+    const pocty = await this.prisma.organizace.findMany({
+      where: { id: { in: serazene.map((o) => o.id) } },
+      select: { id: true, _count: { select: { udalosti: true, clenove: true } } },
+    });
+    const poctyPodleId = new Map(pocty.map((o) => [o.id, o._count]));
+    return serazene.map((o) => ({
+      id: o.id,
+      nazev: o.nazev,
+      aktivni: o.id === user.organizaceId,
+      pocetAkci: poctyPodleId.get(o.id)?.udalosti ?? 0,
+      pocetClenu: poctyPodleId.get(o.id)?.clenove ?? 0,
+    }));
   }
 
   private overitSuperAdmina(user: AuthenticatedUser) {

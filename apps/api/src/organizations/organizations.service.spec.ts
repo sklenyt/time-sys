@@ -35,8 +35,14 @@ describe("OrganizationsService", () => {
 
   it("findAllForUser dává aktivní organizaci na první místo", async () => {
     const user = { ...BEZNY, organizaceId: "o2", organizace: [{ id: "o1", nazev: "A" }, { id: "o2", nazev: "B" }] };
+    prisma.organizace.findMany.mockResolvedValue([
+      { id: "o1", _count: { udalosti: 1, clenove: 4 } },
+      { id: "o2", _count: { udalosti: 3, clenove: 2 } },
+    ]);
     const r = await service.findAllForUser(user);
     expect(r.map((o) => o.id)).toEqual(["o2", "o1"]);
+    expect(r[0]).toMatchObject({ aktivni: true, pocetAkci: 3, pocetClenu: 2 });
+    expect(r[1]).toMatchObject({ aktivni: false, pocetAkci: 1, pocetClenu: 4 });
   });
 
   it("správu organizací smí jen super admin", async () => {

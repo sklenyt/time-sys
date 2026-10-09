@@ -10,9 +10,9 @@ klicova: ucet smazat smazani zrusit ucet gdpr vymaz organizace prepnout clen cle
 
 V levém menu dole je položka **Můj účet**. Najdete na ní:
 
-- jméno a e-mail, pod kterým jste přihlášení,
-- seznam **organizací**, ve kterých jste členem, a tlačítko **Přepnout**,
-- možnost **smazat svůj účet**.
+- nahoře čtyři karty: jméno a e-mail, počet organizací, aktivní organizace a oprávnění,
+- tabulku **Moje organizace** s počtem akcí a členů a tlačítkem **Přepnout** u těch, které nejsou aktivní,
+- kartu **Smazání účtu**.
 
 ## Organizace a přepínání
 
@@ -35,7 +35,7 @@ U každé organizace vidíte počet akcí, členů a čipů ve skladu. Sklad či
 
 Na stránce **Můj účet** v sekci **Smazat účet**:
 
-1. Klikněte na **Chci smazat svůj účet**.
+1. Klikněte na **Smazat účet…**.
 2. Zadejte své **heslo** a pro potvrzení napište svůj **e-mail**.
 3. Klikněte na **Smazat účet navždy**.
 

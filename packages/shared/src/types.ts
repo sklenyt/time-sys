@@ -275,6 +275,15 @@ export interface AuthUserDto {
   organizace?: OrganizaceCilDto[];
 }
 
+/** Organizace přihlášeného uživatele (GET /organizations), aktivní první. */
+export interface MojeOrganizaceDto {
+  id: string;
+  nazev: string;
+  aktivni: boolean;
+  pocetAkci: number;
+  pocetClenu: number;
+}
+
 /** Člen organizace ve správě organizací. */
 export interface ClenOrganizaceDto {
   uzivatelId: string;

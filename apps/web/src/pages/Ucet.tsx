@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import type { AuthUserDto } from "@depo/shared";
+import type { AuthUserDto, MojeOrganizaceDto } from "@depo/shared";
 import { api, clearTokens } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
-import { HlavickaStranky } from "../components/StrankaPrvky";
+import { HlavickaStranky, PrazdnyRadek, Souhrn, TabulkaKarta } from "../components/StrankaPrvky";
 
 /** Můj účet: přehled organizací, přepnutí aktivní a smazání vlastního účtu (právo na výmaz). */
 export function Ucet() {
-  const navigate = useNavigate();
   const [user, setUser] = useState<AuthUserDto | null>(null);
+  const [organizace, setOrganizace] = useState<MojeOrganizaceDto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rozbalitSmazani, setRozbalitSmazani] = useState(false);
   const [heslo, setHeslo] = useState("");
@@ -17,9 +16,11 @@ export function Ucet() {
   const [mazu, setMazu] = useState(false);
 
   useEffect(() => {
-    api
-      .get<AuthUserDto>("/auth/me")
-      .then(setUser)
+    Promise.all([api.get<AuthUserDto>("/auth/me"), api.get<MojeOrganizaceDto[]>("/organizations")])
+      .then(([u, o]) => {
+        setUser(u);
+        setOrganizace(o);
+      })
       .catch((e) => setError(chybaZeServeru(e, "Účet se nepodařilo načíst")));
   }, []);
 
@@ -48,96 +49,122 @@ export function Ucet() {
   }
 
   const potvrzeniOk = !!user && potvrzeni.trim().toLowerCase() === user.email.toLowerCase();
+  const aktivni = organizace?.find((o) => o.aktivni);
 
   return (
     <AppShell active="ucet">
-      <div style={{ maxWidth: 820 }}>
+      <div style={{ maxWidth: 1500 }}>
         <HlavickaStranky titulek="Můj účet" popis="Přihlášení, organizace a smazání účtu" />
         {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
 
-        <section className="dash-card" style={{ marginBottom: 20 }}>
-          <div className="dash-card-head">
-            <h2>Přihlášen jako</h2>
-          </div>
-          {user ? (
-            <div style={{ fontSize: 14 }}>
-              <div style={{ fontWeight: 700 }}>{user.jmeno}</div>
-              <div style={{ color: "var(--text-secondary)" }}>{user.email}</div>
-              {user.superAdmin && <div style={{ marginTop: 6, fontSize: 12.5 }}>Super admin</div>}
-            </div>
-          ) : (
-            <div>Načítám…</div>
-          )}
-        </section>
+        <Souhrn
+          polozky={[
+            { hodnota: user?.jmeno ?? "…", popisek: user?.email ?? "Přihlášen jako" },
+            { hodnota: organizace?.length ?? "…", popisek: "Organizací" },
+            { hodnota: aktivni?.nazev ?? "—", popisek: "Aktivní organizace" },
+            { hodnota: user?.superAdmin ? "Super admin" : "Uživatel", popisek: "Oprávnění" },
+          ]}
+        />
 
-        <section className="dash-card" style={{ marginBottom: 20 }}>
-          <div className="dash-card-head">
-            <h2>Moje organizace</h2>
-          </div>
-          {user && (user.organizace ?? []).length === 0 && (
-            <p style={{ color: "var(--text-secondary)", fontSize: 13.5 }}>Zatím nejste členem žádné organizace.</p>
-          )}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {(user?.organizace ?? []).map((o) => {
-              const aktivni = o.id === user?.organizaceId;
-              return (
-                <div key={o.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: "1px solid var(--line)" }}>
-                  <span style={{ fontWeight: 700, flex: 1 }}>{o.nazev}</span>
-                  {aktivni ? (
-                    <span className="stitek stitek-neutralni">aktivní</span>
+        <div style={{ fontSize: 13, fontWeight: 700, margin: "4px 0 8px" }}>Moje organizace</div>
+        <TabulkaKarta>
+          <thead>
+            <tr>
+              <th>Organizace</th>
+              <th style={{ textAlign: "right" }}>Akcí</th>
+              <th style={{ textAlign: "right" }}>Členů</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {(organizace ?? []).map((o) => (
+              <tr key={o.id} className="sl-radek">
+                <td style={{ fontWeight: 700 }}>{o.nazev}</td>
+                <td className="mono" style={{ textAlign: "right" }}>
+                  {o.pocetAkci}
+                </td>
+                <td className="mono" style={{ textAlign: "right" }}>
+                  {o.pocetClenu}
+                </td>
+                <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                  {o.aktivni ? (
+                    <span className="sl-stav" style={{ color: "var(--color-live-700)" }}>
+                      aktivní
+                    </span>
                   ) : (
                     <button className="btn-pill" onClick={() => prepnout(o.id)}>
                       Přepnout
                     </button>
                   )}
-                </div>
-              );
-            })}
-          </div>
-          {user && (user.organizace ?? []).length > 1 && (
-            <p style={{ color: "var(--text-secondary)", fontSize: 12.5, margin: "10px 0 0" }}>
-              Vidíte akce té organizace, která je aktivní. Přepnout ji jde i v levém horním rohu menu.
-            </p>
-          )}
-        </section>
-
-        <section className="dash-card" style={{ borderColor: "var(--color-danger)" }}>
-          <div className="dash-card-head">
-            <h2 style={{ color: "var(--color-danger)" }}>Smazat účet</h2>
-          </div>
-          <p style={{ color: "var(--text-secondary)", fontSize: 13.5, margin: "0 0 10px" }}>
-            Smazání účtu nejde vrátit. Zmizí vaše přihlášení, členství v organizacích a role na akcích. Akce, výsledky a
-            časy závodníků zůstanou, jen u nich nebude vaše jméno jako autora zápisu.
+                </td>
+              </tr>
+            ))}
+            {!organizace && !error && <PrazdnyRadek sloupcu={4} text="Načítám…" />}
+            {organizace && organizace.length === 0 && <PrazdnyRadek sloupcu={4} text="Zatím nejste členem žádné organizace." />}
+          </tbody>
+        </TabulkaKarta>
+        {organizace && organizace.length > 1 && (
+          <p style={{ color: "var(--text-secondary)", fontSize: 12.5, margin: "8px 0 0" }}>
+            Vidíte akce té organizace, která je aktivní. Přepnout ji jde i v levém horním rohu menu.
           </p>
-          {!rozbalitSmazani ? (
-            <button className="btn-pill" onClick={() => setRozbalitSmazani(true)} style={{ color: "var(--color-danger)" }}>
-              Chci smazat svůj účet
-            </button>
-          ) : (
-            <form onSubmit={smazatUcet} style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 420 }}>
-              <label style={{ fontSize: 13, fontWeight: 700, display: "flex", flexDirection: "column", gap: 4 }}>
-                Heslo
-                <input type="password" value={heslo} onChange={(e) => setHeslo(e.target.value)} autoComplete="current-password" style={inputStyle} required />
-              </label>
-              <label style={{ fontSize: 13, fontWeight: 700, display: "flex", flexDirection: "column", gap: 4 }}>
-                Pro potvrzení napište svůj e-mail ({user?.email})
-                <input value={potvrzeni} onChange={(e) => setPotvrzeni(e.target.value)} autoComplete="off" style={inputStyle} required />
-              </label>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button type="submit" className="btn-pill" disabled={mazu || !heslo || !potvrzeniOk} style={{ color: "var(--color-danger)" }}>
-                  {mazu ? "Mažu…" : "Smazat účet navždy"}
-                </button>
-                <button type="button" className="btn-pill" onClick={() => navigate("/dashboard")} disabled={mazu}>
-                  Zrušit
-                </button>
+        )}
+
+        <div style={{ fontSize: 13, fontWeight: 700, margin: "24px 0 8px" }}>Smazání účtu</div>
+        <div className="sl-karta" style={{ borderColor: "var(--color-danger)", padding: "14px 18px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ maxWidth: 760 }}>
+              <div style={{ fontWeight: 700 }}>Smazat můj účet</div>
+              <div style={{ color: "var(--text-secondary)", fontSize: 13.5, lineHeight: 1.5 }}>
+                Zmizí přihlášení, členství v organizacích a role na akcích. Akce, výsledky a časy závodníků zůstanou, jen bez
+                vašeho jména u zápisů. Nejde to vrátit.
               </div>
+            </div>
+            {!rozbalitSmazani && (
+              <button className="btn-pill" onClick={() => setRozbalitSmazani(true)} style={{ color: "var(--color-danger)" }}>
+                Smazat účet…
+              </button>
+            )}
+          </div>
+          {rozbalitSmazani && (
+            <form onSubmit={smazatUcet} style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", marginTop: 14 }}>
+              <label style={popisekStyle}>
+                Heslo
+                <input type="password" value={heslo} onChange={(e) => setHeslo(e.target.value)} autoComplete="current-password" style={{ ...inputStyle, width: 220 }} required />
+              </label>
+              <label style={popisekStyle}>
+                Pro potvrzení napište svůj e-mail ({user?.email})
+                <input value={potvrzeni} onChange={(e) => setPotvrzeni(e.target.value)} autoComplete="off" style={{ ...inputStyle, width: 300 }} required />
+              </label>
+              <button type="submit" className="btn-pill" disabled={mazu || !heslo || !potvrzeniOk} style={{ color: "var(--color-danger)" }}>
+                {mazu ? "Mažu…" : "Smazat účet navždy"}
+              </button>
+              <button
+                type="button"
+                className="btn-pill"
+                onClick={() => {
+                  setRozbalitSmazani(false);
+                  setHeslo("");
+                  setPotvrzeni("");
+                }}
+                disabled={mazu}
+              >
+                Zrušit
+              </button>
             </form>
           )}
-        </section>
+        </div>
       </div>
     </AppShell>
   );
 }
+
+const popisekStyle: React.CSSProperties = {
+  fontSize: 12.5,
+  fontWeight: 700,
+  display: "flex",
+  flexDirection: "column",
+  gap: 4,
+};
 
 const inputStyle: React.CSSProperties = {
   padding: "8px 12px",
