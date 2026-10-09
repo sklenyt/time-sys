@@ -72,6 +72,18 @@ enum StavCipu {
   ZALOZNI
 }
 
+enum TypCipu {
+  OPAKOVANY
+  JEDNORAZOVY
+}
+
+enum StavSkladuCipu {
+  SKLADEM
+  VYDAN
+  ZTRACEN
+  VYRAZEN
+}
+
 enum ProtokolPublikace {
   FTP
   FTPS
@@ -90,6 +102,7 @@ model Organizace {
 
   uzivatele Uzivatel[]
   udalosti  Udalost[]
+  cipySklad CipSklad[]
 
   @@map("organizace")
 }
@@ -275,9 +288,28 @@ model Prihlaska {
   @@map("prihlaska")
 }
 
+/// Fyzický čip ve skladu organizace — vydání konkrétní přihlášce je záznam `Cip`.
+model CipSklad {
+  id           String         @id @default(uuid())
+  organizaceId String         @map("organizace_id")
+  kodCipu      String         @map("kod_cipu")
+  stitek       String?
+  poznamka     String?
+  typ          TypCipu        @default(OPAKOVANY)
+  stav         StavSkladuCipu @default(SKLADEM)
+  vytvorenoAt  DateTime       @default(now()) @map("vytvoreno_at")
+
+  organizace Organizace @relation(fields: [organizaceId], references: [id], onDelete: Cascade)
+  vydani     Cip[]
+
+  @@unique([organizaceId, kodCipu])
+  @@map("cip_sklad")
+}
+
 model Cip {
   id           String    @id @default(uuid())
   prihlaskaId  String    @unique @map("prihlaska_id")
+  skladId      String?   @map("sklad_id")
   kodCipu      String    @map("kod_cipu")
   stav         StavCipu  @default(PRIREZEN)
   zalozni      Boolean   @default(false)
@@ -286,6 +318,7 @@ model Cip {
   vracenoAt    DateTime? @map("vraceno_at")
 
   prihlaska Prihlaska @relation(fields: [prihlaskaId], references: [id], onDelete: Cascade)
+  sklad     CipSklad? @relation(fields: [skladId], references: [id], onDelete: SetNull)
 
   @@unique([kodCipu, stav])
   @@map("cip")

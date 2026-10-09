@@ -5,5 +5,6 @@ import { ChipsService } from "./chips.service";
 @Module({
   controllers: [ChipsController],
   providers: [ChipsService],
+  exports: [ChipsService],
 })
 export class ChipsModule {}

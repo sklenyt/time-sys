@@ -19,8 +19,9 @@ import { StartVlnyService } from "../start-vlny/start-vlny.service";
 import { CategoriesService } from "../categories/categories.service";
 import { decryptSecret, encryptSecret } from "../common/secret-crypto";
 import { EmailService } from "../notifications/email.service";
+import { ChipsService } from "../chips/chips.service";
 import { NeplatnyUcetError, vygenerujQrPlatbuPng } from "../common/cz-qr-platba";
-import { zpravaProPrijemce } from "@depo/shared";
+import { TypCipu, zpravaProPrijemce } from "@depo/shared";
 
 @Injectable()
 export class EntriesService {
@@ -28,7 +29,8 @@ export class EntriesService {
     private readonly prisma: PrismaService,
     private readonly startVlny: StartVlnyService,
     private readonly categories: CategoriesService,
-    private readonly email: EmailService
+    private readonly email: EmailService,
+    private readonly chips: ChipsService
   ) {}
 
   async create(trasaId: string, dto: CreateEntryDto) {
@@ -635,31 +637,12 @@ export class EntriesService {
    * dohledá startovní číslo. `@@unique([kodCipu, stav])` v schema.prisma
    * zabraňuje dvěma zároveň aktivně přiřazeným čipům se stejným kódem.
    */
-  async pairChip(trasaId: string, prihlaskaId: string, kodCipu: string) {
-    const prihlaska = await this.prisma.prihlaska.findFirst({ where: { id: prihlaskaId, trasaId } });
-    if (!prihlaska) {
-      throw new NotFoundException("Přihláška nenalezena na této trati");
-    }
-    try {
-      return await this.prisma.cip.upsert({
-        where: { prihlaskaId },
-        create: { prihlaskaId, kodCipu, stav: "PRIREZEN", vydanoAt: new Date() },
-        update: { kodCipu, stav: "PRIREZEN", vydanoAt: new Date(), vracenoAt: null },
-      });
-    } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-        throw new ConflictException(`Čip ${kodCipu} je už přiřazený jiné aktivní přihlášce`);
-      }
-      throw err;
-    }
+  async pairChip(trasaId: string, prihlaskaId: string, kodCipu: string, typ?: TypCipu) {
+    return this.chips.priraditCip(trasaId, prihlaskaId, kodCipu, typ);
   }
 
   async unpairChip(trasaId: string, prihlaskaId: string): Promise<void> {
-    const prihlaska = await this.prisma.prihlaska.findFirst({ where: { id: prihlaskaId, trasaId } });
-    if (!prihlaska) {
-      throw new NotFoundException("Přihláška nenalezena na této trati");
-    }
-    await this.prisma.cip.deleteMany({ where: { prihlaskaId } });
+    await this.chips.uvolnitCip(trasaId, prihlaskaId);
   }
 
   /**

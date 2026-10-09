@@ -217,6 +217,19 @@ Entita `cip` nese pole potřebná pro reálný provoz s fyzickými čipy jako sp
 | `vratna_zaloha` | Částka vybrané vratné zálohy (běžná praxe u vícepoužitelných UHF čipů) |
 | `vydano_at` / `vraceno_at` | Časové razítko výdeje a vrácení — podklad pro vyúčtování nevrácených záloh po závodě |
 
+### Sklad čipů organizace (`cip_sklad`)
+
+Fyzický čip je samostatná entita ve skladu organizace a přežívá jednotlivé akce. `cip` zůstává záznamem o **výdeji** čipu konkrétní přihlášce a odkazuje na sklad (`sklad_id`).
+
+| Pole `cip_sklad` | Účel |
+|---|---|
+| `organizace_id` + `kod_cipu` | `UNIQUE` — kód je jedinečný v rámci organizace |
+| `typ` | `OPAKOVANY` (vrací se do skladu) / `JEDNORAZOVY` (zůstává závodníkovi, nepočítá se mezi nevrácené) |
+| `stav` | `SKLADEM` / `VYDAN` / `ZTRACEN` / `VYRAZEN` — stav fyzického čipu napříč akcemi |
+| `stitek`, `poznamka` | Volné označení čipu (např. číslo natištěné na těle) |
+
+Stav skladu se odvozuje z výdeje: přiřazení → `VYDAN`, odebrání nebo vrácení → `SKLADEM`, ztráta → `ZTRACEN`. Neznámý kód se při prvním přiřazení do skladu sám založí. Ztracený a vyřazený čip nejde přiřadit. Přesun volných čipů mezi organizacemi smí jen super admin. Tabulka má stejnou RLS politiku jako ostatní tenantové tabulky.
+
 Podrobný návrh workflow párování, hardwarové varianty a doporučený "local capture agent" pro napojení RFID decodérů viz **[12-rfid-a-doporuceni.md](12-rfid-a-doporuceni.md)**.
 
 ## 4.10 Publikační cíl — export výsledků na FTP/SFTP (F34–F37)

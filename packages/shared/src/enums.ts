@@ -59,6 +59,20 @@ export enum StavCipu {
   ZALOZNI = "ZALOZNI",
 }
 
+/** Jednorázový čip zůstává závodníkovi, opakovaný se po závodě vrací do skladu. */
+export enum TypCipu {
+  OPAKOVANY = "OPAKOVANY",
+  JEDNORAZOVY = "JEDNORAZOVY",
+}
+
+/** Stav čipu ve skladu organizace (nezávislý na stavu konkrétního výdeje u přihlášky). */
+export enum StavSkladuCipu {
+  SKLADEM = "SKLADEM",
+  VYDAN = "VYDAN",
+  ZTRACEN = "ZTRACEN",
+  VYRAZEN = "VYRAZEN",
+}
+
 export enum ProtokolPublikace {
   FTP = "FTP",
   FTPS = "FTPS",

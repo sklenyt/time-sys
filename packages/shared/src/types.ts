@@ -3,9 +3,11 @@ import {
   ProtokolPublikace,
   Role,
   StavCipu,
+  StavSkladuCipu,
   StavExportu,
   StavUkonceni,
   StavZaznamu,
+  TypCipu,
   TypOpravy,
   TypStartu,
   TypUdalosti,
@@ -166,7 +168,34 @@ export interface Cip {
 }
 
 /** Řádek evidence čipů trati (F22/F29/F30) — Cip doplněný o identifikaci závodníka pro přehled ve stránce Čipy. */
+/** Čip ve skladu organizace — fyzický čip nezávislý na konkrétním závodě. */
+export interface CipSkladDto {
+  id: string;
+  organizaceId: string;
+  kodCipu: string;
+  stitek: string | null;
+  poznamka: string | null;
+  typ: TypCipu;
+  stav: StavSkladuCipu;
+  /** Komu je čip právě vydaný (jen u stavu VYDAN). */
+  vydanoKomu?: { startovniCislo: number; prijmeni: string; jmeno: string; trasaNazev: string; udalostNazev: string } | null;
+}
+
+/** Výsledek hledání kódu čipu v Čipech: kde se čip nachází. */
+export interface CipNalezenDto {
+  vysledek: "VYDAN_NA_TRATI" | "VYDAN_JINDE" | "SKLADEM" | "NEDOSTUPNY" | "NEZNAMY";
+  sklad?: CipSkladDto;
+  cip?: CipSListem;
+}
+
+export interface OrganizaceCilDto {
+  id: string;
+  nazev: string;
+}
+
 export interface CipSListem extends Cip {
+  /** Opakovaný se po závodě vrací, jednorázový zůstává závodníkovi. */
+  typ?: TypCipu;
   startovniCislo: number;
   prijmeni: string;
   jmeno: string;

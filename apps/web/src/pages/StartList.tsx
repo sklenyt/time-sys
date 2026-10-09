@@ -10,7 +10,8 @@ import type {
   Trasa,
   Udalost,
 } from "@depo/shared";
-import { Pohlavi, StavCipu, StavUkonceni } from "@depo/shared";
+import { Pohlavi, StavCipu, StavSkladuCipu, StavUkonceni, TypCipu } from "@depo/shared";
+import type { CipSkladDto } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
 import { AppShell } from "../components/AppShell";
@@ -136,13 +137,25 @@ function ChipBunka({
   const [otevrene, setOtevrene] = useState(false);
   const [odesilam, setOdesilam] = useState(false);
   const [chyba, setChyba] = useState<string | null>(null);
+  const [volne, setVolne] = useState<string[] | null>(null);
+  const [typ, setTyp] = useState<TypCipu>(TypCipu.OPAKOVANY);
+
+  useEffect(() => {
+    if (!otevrene || volne) return;
+    api
+      .get<CipSkladDto[]>(`/routes/${routeId}/chips/sklad`)
+      .then((sklad) => setVolne(sklad.filter((c) => c.stav === StavSkladuCipu.SKLADEM).map((c) => c.kodCipu)))
+      .catch(() => setVolne([]));
+  }, [otevrene, volne, routeId]);
+
+  const jeVeSkladu = !!volne?.some((k) => k.toLowerCase() === kod.trim().toLowerCase());
 
   async function parovat() {
     if (!kod.trim()) return;
     setOdesilam(true);
     setChyba(null);
     try {
-      await api.post(`/routes/${routeId}/entries/${entry.id}/chip`, { kodCipu: kod.trim() });
+      await api.post(`/routes/${routeId}/entries/${entry.id}/chip`, { kodCipu: kod.trim(), typ });
       setKod("");
       onChanged();
     } catch (e) {
@@ -213,9 +226,27 @@ function ChipBunka({
         onKeyDown={(e) => e.key === "Enter" && parovat()}
         placeholder="Sériové číslo (čtečka)"
         autoComplete="off"
+        list={`cipy-sklad-${entry.id}`}
         className="mono"
         style={{ width: 150, padding: "3px 6px", borderRadius: 6, border: "1px solid var(--line)", fontSize: 12 }}
       />
+      <datalist id={`cipy-sklad-${entry.id}`}>
+        {(volne ?? []).slice(0, 200).map((k) => (
+          <option key={k} value={k} />
+        ))}
+      </datalist>
+      {kod.trim() && volne && !jeVeSkladu && (
+        <select
+          value={typ}
+          onChange={(e) => setTyp(e.target.value as TypCipu)}
+          aria-label="Typ nového čipu"
+          title="Čip ještě není ve skladu — přidá se"
+          style={{ padding: "2px 4px", borderRadius: 6, border: "1px solid var(--line)", fontSize: 11 }}
+        >
+          <option value={TypCipu.OPAKOVANY}>opakovaný</option>
+          <option value={TypCipu.JEDNORAZOVY}>jednorázový</option>
+        </select>
+      )}
       <button onClick={parovat} disabled={odesilam || !kod.trim()} className="btn-pill" style={{ padding: "2px 8px", fontSize: 11 }}>
         Přiřadit
       </button>

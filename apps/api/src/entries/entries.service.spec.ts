@@ -6,6 +6,7 @@ import { EntriesService } from "./entries.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { StartVlnyService } from "../start-vlny/start-vlny.service";
 import { CategoriesService } from "../categories/categories.service";
+import { ChipsService } from "../chips/chips.service";
 import { EmailService } from "../notifications/email.service";
 
 describe("EntriesService", () => {
@@ -42,6 +43,7 @@ describe("EntriesService", () => {
         { provide: StartVlnyService, useValue: {} },
         { provide: CategoriesService, useValue: categories },
         { provide: EmailService, useValue: email },
+        { provide: ChipsService, useValue: { priraditCip: jest.fn(), uvolnitCip: jest.fn() } },
       ],
     }).compile();
 

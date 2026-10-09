@@ -113,7 +113,7 @@ export class EntriesController {
     @Param("entryId", ParseUUIDPipe) entryId: string,
     @Body() dto: PairChipDto
   ) {
-    return this.entries.pairChip(routeId, entryId, dto.kodCipu);
+    return this.entries.pairChip(routeId, entryId, dto.kodCipu, dto.typ);
   }
 
   @Roles(Role.ADMIN, Role.ORGANIZATOR)
