@@ -9,10 +9,13 @@ import { Ikona } from "../components/IkonyMenu";
 import { HeroMockup } from "../components/HeroMockup";
 
 const FUNKCE: { ikona: string; nazev: string; text: string }[] = [
-  { ikona: "registrace", nazev: "Online registrace", text: "Veřejný formulář nebo widget na tvém webu. Závodník dostane potvrzení e-mailem a zaplatí převodem nebo QR kódem." },
+  { ikona: "registrace", nazev: "Online registrace", text: "Veřejný formulář, nebo vložený na tvůj web. Závodník dostane potvrzení e-mailem a zaplatí převodem nebo QR kódem." },
   { ikona: "offline", nazev: "Měření bez signálu", text: "Zapiš číslo a stiskni Enter, i offline. Když se v cíli sjede víc lidí, zapiš jen čas a číslo doplň později." },
   { ikona: "cipy", nazev: "RFID čipy", text: "Čtečka zapisuje průjezdy sama. Přehled vydaných a vrácených čipů i záloh." },
-  { ikona: "zive", nazev: "Živé výsledky", text: "Veřejná stránka s pořadím v reálném čase, kiosk pro TV v cíli a widget na tvůj web." },
+  { ikona: "zive", nazev: "Živé výsledky", text: "Veřejná stránka s pořadím v reálném čase. Stačí poslat odkaz závodníkům." },
+  { ikona: "kiosk", nazev: "Kiosk v cíli", text: "Výsledky na TV nebo tabletu v cíli. Samy se obnovují, nikdo je nemusí obsluhovat." },
+  { ikona: "embed", nazev: "Vložení na váš web", text: "Registraci i výsledky vložíš na web klubu jedním řádkem kódu. Závodníci neopouštějí tvůj web." },
+  { ikona: "publikace", nazev: "Export na váš web", text: "Výsledky se po doběhu samy nahrají na FTP nebo SFTP server klubového webu." },
   { ikona: "plan", nazev: "Plánované starty", text: "Naplánuj čas startu tratě a spustí se sama. Hromadný i vlnový start." },
   { ikona: "tratě", nazev: "Tratě, kategorie, kola", text: "Víc tratí v jedné akci, kategorie podle ročníku a pohlaví, víckolové závody a štafety." },
   { ikona: "email", nazev: "E-maily závodníkům", text: "Potvrzení registrace, platby i dojezdu. Kopie každého potvrzení jde i organizátorovi." },
@@ -96,9 +99,9 @@ function KontaktniFormular() {
 }
 
 const NABIDKA_FUNKCI: { ikona: string; nazev: string; popis: string }[] = [
-  { ikona: "registrace", nazev: "Online registrace", popis: "formulář, QR platba, e-maily" },
+  { ikona: "registrace", nazev: "Online registrace", popis: "formulář, embed, QR platba" },
   { ikona: "mereni", nazev: "Měření v cíli", popis: "číslo + Enter, i offline" },
-  { ikona: "zive", nazev: "Živé výsledky", popis: "web, kiosk, export na FTP" },
+  { ikona: "zive", nazev: "Živé výsledky", popis: "web, kiosk, embed, FTP" },
   { ikona: "listina", nazev: "Startovní listina", popis: "import, čísla, kategorie" },
   { ikona: "plan", nazev: "Plánované starty", popis: "hromadný i vlnový start" },
   { ikona: "cipy", nazev: "RFID čipy", popis: "čtečky, kontrola, audit" },
