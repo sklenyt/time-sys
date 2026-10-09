@@ -1224,3 +1224,294 @@
   flex-direction: column;
   gap: 10px;
 }
+
+/* ---------- Nová navigace: plovoucí lišta s nabídkou funkcí ---------- */
+.landing-nav-obal {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--navy-800);
+  padding: 14px max(16px, calc((100% - 1100px) / 2));
+  transition: background 0.2s;
+}
+.landing-nav-obal.odscrollovano {
+  background: transparent;
+  pointer-events: none;
+}
+.landing-nav-obal.odscrollovano .landing-nav {
+  pointer-events: auto;
+}
+.landing-nav-obal .landing-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  padding: 8px 8px 8px 18px;
+  background: var(--navy-700);
+  border: 1px solid var(--navy-600);
+  border-bottom: 1px solid var(--navy-600);
+  border-radius: 999px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.landing-nav-obal .landing-nav .brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  margin-right: 10px;
+}
+.landing-nav-obal .landing-nav .brand img {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}
+.landing-nav-telo {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
+}
+.landing-nav-obal .landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0 auto;
+  flex-wrap: nowrap;
+}
+.landing-nav-obal .landing-nav-links > a,
+.landing-nav-skupina > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  color: var(--steel-400);
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.landing-nav-obal .landing-nav-links > a:hover,
+.landing-nav-skupina > a:hover,
+.landing-nav-skupina:focus-within > a {
+  color: #fff;
+  background: var(--navy-600);
+}
+.landing-nav-obal .landing-nav-links a.aktivni {
+  color: #fff;
+  background: var(--navy-600);
+}
+.landing-nav-cta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.landing-nav-tichy,
+.landing-nav-prihlasit {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.landing-nav-tichy {
+  color: var(--steel-400);
+}
+.landing-nav-prihlasit {
+  color: #fff;
+}
+.landing-nav-tichy:hover,
+.landing-nav-prihlasit:hover {
+  background: var(--navy-600);
+  color: #fff;
+}
+.landing-nav-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--tape-500);
+  color: var(--ink-900, #05090f);
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  margin-left: 4px;
+  transition: background 0.15s;
+}
+.landing-nav-start:hover {
+  background: var(--tape-400);
+}
+
+.landing-nav-skupina {
+  position: relative;
+}
+.landing-nav-nabidka {
+  position: absolute;
+  top: 100%;
+  left: -40px;
+  padding-top: 18px;
+  width: 640px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+}
+.landing-nav-nabidka.otevrena,
+.landing-nav-skupina:focus-within .landing-nav-nabidka {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.landing-nav-nabidka-mrizka,
+.landing-nav-nabidka-pata {
+  background: var(--navy-700);
+  border: 1px solid var(--navy-600);
+}
+.landing-nav-nabidka-mrizka {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 10px;
+  border-radius: 16px 16px 0 0;
+}
+.landing-nav-nabidka-pata {
+  display: flex;
+  gap: 18px;
+  padding: 11px 20px;
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+}
+.landing-nav-nabidka-pata a {
+  color: var(--steel-400);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.landing-nav-nabidka-pata a:hover {
+  color: #fff;
+}
+.landing-nav-polozka {
+  display: flex;
+  gap: 10px;
+  padding: 11px;
+  border-radius: 10px;
+  color: #fff;
+  text-decoration: none;
+}
+.landing-nav-polozka:hover {
+  background: var(--navy-600);
+}
+.landing-nav-polozka strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.landing-nav-polozka small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--steel-400);
+  line-height: 1.35;
+}
+.landing-nav-polozka-ikona {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--navy-800);
+  color: var(--tape-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.landing-nav-hamburger {
+  display: none;
+  margin-left: auto;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: var(--navy-600);
+  cursor: pointer;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+.landing-nav-hamburger span {
+  display: block;
+  width: 16px;
+  height: 2px;
+  background: #fff;
+  border-radius: 1px;
+}
+
+@media (max-width: 960px) {
+  .landing-nav-obal .landing-nav {
+    flex-wrap: wrap;
+    border-radius: 24px;
+    padding: 8px 8px 8px 16px;
+  }
+  .landing-nav-hamburger {
+    display: flex;
+  }
+  .landing-nav-telo {
+    display: none;
+    flex: 1 1 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 10px 8px 12px;
+  }
+  .landing-nav-telo.otevrene {
+    display: flex;
+  }
+  .landing-nav-obal .landing-nav-links {
+    flex-direction: column;
+    align-items: stretch;
+    margin: 0;
+  }
+  .landing-nav-obal .landing-nav-links > a,
+  .landing-nav-skupina > a {
+    padding: 12px 10px;
+    border-radius: 10px;
+  }
+  .landing-nav-nabidka {
+    position: static;
+    width: auto;
+    padding: 4px 0 6px;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    display: none;
+  }
+  .landing-nav-nabidka.otevrena {
+    display: block;
+  }
+  .landing-nav-nabidka-mrizka {
+    grid-template-columns: 1fr;
+  }
+  .landing-nav-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .landing-nav-tichy,
+  .landing-nav-prihlasit,
+  .landing-nav-start {
+    justify-content: center;
+    text-align: center;
+    padding: 12px;
+  }
+}

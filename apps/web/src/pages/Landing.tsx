@@ -94,6 +94,15 @@ function KontaktniFormular() {
   );
 }
 
+const NABIDKA_FUNKCI: { ikona: string; nazev: string; popis: string }[] = [
+  { ikona: "registrace", nazev: "Online registrace", popis: "formulář, QR platba, e-maily" },
+  { ikona: "mereni", nazev: "Měření v cíli", popis: "číslo + Enter, i offline" },
+  { ikona: "zive", nazev: "Živé výsledky", popis: "web, kiosk, export na FTP" },
+  { ikona: "listina", nazev: "Startovní listina", popis: "import, čísla, kategorie" },
+  { ikona: "plan", nazev: "Plánované starty", popis: "hromadný i vlnový start" },
+  { ikona: "cipy", nazev: "RFID čipy", popis: "čtečky, kontrola, audit" },
+];
+
 type LightboxImage = { src: string; alt: string };
 
 
@@ -143,6 +152,48 @@ export function Landing() {
   }, []);
   const maReference = reference.length >= MIN_REFERENCI;
 
+  const [menuOtevrene, setMenuOtevrene] = useState(false);
+  const [funkceOtevrene, setFunkceOtevrene] = useState(false);
+  const [aktivni, setAktivni] = useState("");
+  const [odscrollovano, setOdscrollovano] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setOdscrollovano(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const ids = ["funkce", "jak-to-funguje", "reference", "cenik", "kontakt"];
+    const prvky = ids.map((id) => document.getElementById(id)).filter((e): e is HTMLElement => !!e);
+    const obs = new IntersectionObserver(
+      (zaznamy) => {
+        const viditelny = zaznamy.find((z) => z.isIntersecting);
+        if (viditelny) setAktivni(viditelny.target.id);
+      },
+      { rootMargin: "-30% 0px -60% 0px" },
+    );
+    prvky.forEach((e) => obs.observe(e));
+    return () => obs.disconnect();
+  }, [maReference]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setFunkceOtevrene(false);
+        setMenuOtevrene(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  function zavritMenu() {
+    setFunkceOtevrene(false);
+    setMenuOtevrene(false);
+  }
+
   useEffect(() => {
     if (!lightbox) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -154,30 +205,94 @@ export function Landing() {
 
   return (
     <div className="landing">
-      <header className="landing-nav">
-        <div className="brand">
-          <img src="/depo-mark.svg" alt="" width={68} height={68} />
-          Depo
-        </div>
-        <nav className="landing-nav-links">
-          <a href="#jak-to-funguje">Jak to funguje</a>
-          <a href="#funkce">Co umí</a>
-          {maReference && <a href="#reference">Reference</a>}
-          <a href="#proc-depo">Proč Depo</a>
-          <a href="#cenik">Ceník</a>
-          <a href="#kontakt">Kontakt</a>
-          <a href="https://vysledky.depotime.cz">Výsledky</a>
-          <Link to="/napoveda">Nápověda</Link>
-        </nav>
-        <div className="landing-nav-cta">
-          <a href={appHref("/login")} className="btn-pill outline-light">
-            Přihlásit se
+      <div className={`landing-nav-obal${odscrollovano ? " odscrollovano" : ""}`}>
+        <header className="landing-nav">
+          <a href="#" className="brand" onClick={zavritMenu} aria-label="Depo — úvod">
+            <img src="/depo-mark.svg" alt="" width={30} height={30} />
+            Depo
           </a>
-          <a href={appHref("/dashboard")} className="btn-pill accent">
-            Vyzkoušet zdarma
-          </a>
-        </div>
-      </header>
+          <button
+            type="button"
+            className="landing-nav-hamburger"
+            aria-label={menuOtevrene ? "Zavřít menu" : "Otevřít menu"}
+            aria-expanded={menuOtevrene}
+            onClick={() => setMenuOtevrene((o) => !o)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+          <div className={`landing-nav-telo${menuOtevrene ? " otevrene" : ""}`}>
+            <nav className="landing-nav-links" aria-label="Hlavní menu">
+              <div
+                className="landing-nav-skupina"
+                onMouseEnter={() => setFunkceOtevrene(true)}
+                onMouseLeave={() => setFunkceOtevrene(false)}
+              >
+                <a
+                  href="#funkce"
+                  className={aktivni === "funkce" ? "aktivni" : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={funkceOtevrene}
+                  onClick={zavritMenu}
+                >
+                  Funkce
+                  <svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true">
+                    <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </a>
+                <div className={`landing-nav-nabidka${funkceOtevrene ? " otevrena" : ""}`}>
+                  <div className="landing-nav-nabidka-mrizka">
+                    {NABIDKA_FUNKCI.map((f) => (
+                      <a key={f.nazev} href="#funkce" onClick={zavritMenu} className="landing-nav-polozka">
+                        <span className="landing-nav-polozka-ikona">
+                          <Ikona nazev={f.ikona} />
+                        </span>
+                        <span>
+                          <strong>{f.nazev}</strong>
+                          <small>{f.popis}</small>
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                  <div className="landing-nav-nabidka-pata">
+                    <a href="#proc-depo" onClick={zavritMenu}>Proč Depo</a>
+                    <Link to="/napoveda" onClick={zavritMenu}>Nápověda</Link>
+                  </div>
+                </div>
+              </div>
+              <a href="#jak-to-funguje" className={aktivni === "jak-to-funguje" ? "aktivni" : undefined} onClick={zavritMenu}>
+                Jak to funguje
+              </a>
+              <a href="#cenik" className={aktivni === "cenik" ? "aktivni" : undefined} onClick={zavritMenu}>
+                Ceník
+              </a>
+              {maReference && (
+                <a href="#reference" className={aktivni === "reference" ? "aktivni" : undefined} onClick={zavritMenu}>
+                  Reference
+                </a>
+              )}
+              <a href="#kontakt" className={aktivni === "kontakt" ? "aktivni" : undefined} onClick={zavritMenu}>
+                Kontakt
+              </a>
+            </nav>
+            <div className="landing-nav-cta">
+              <a href="https://vysledky.depotime.cz" className="landing-nav-tichy">
+                Výsledky
+              </a>
+              <a href={appHref("/login")} className="landing-nav-prihlasit">
+                Přihlásit se
+              </a>
+              <a href={appHref("/dashboard")} className="landing-nav-start">
+                Vyzkoušet zdarma
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </header>
+      </div>
 
       <section className="landing-hero">
         <div className="landing-hero-grid">
