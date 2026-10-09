@@ -406,6 +406,15 @@ export function Landing() {
                 <span>info@depotime.cz</span>
               </div>
             </a>
+            <a className="landing-kontakt-polozka" href="tel:+420604371610">
+              <span className="landing-feature-ikona">
+                <Ikona nazev="telefon" />
+              </span>
+              <div>
+                <strong>Telefon</strong>
+                <span>+420 604 371 610</span>
+              </div>
+            </a>
             <a className="landing-kontakt-polozka" href="mailto:gdpr@depotime.cz">
               <span className="landing-feature-ikona">
                 <Ikona nazev="kontrola" />
