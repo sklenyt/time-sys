@@ -402,8 +402,17 @@ export function Landing() {
                 <Ikona nazev="email" />
               </span>
               <div>
-                <strong>Dotazy, nápady, spolupráce a osobní údaje</strong>
+                <strong>Dotazy, nápady a spolupráce</strong>
                 <span>info@depotime.cz</span>
+              </div>
+            </a>
+            <a className="landing-kontakt-polozka" href="mailto:gdpr@depotime.cz">
+              <span className="landing-feature-ikona">
+                <Ikona nazev="kontrola" />
+              </span>
+              <div>
+                <strong>Ochrana osobních údajů</strong>
+                <span>gdpr@depotime.cz</span>
               </div>
             </a>
             <div className="landing-kontakt-provozovatel">
