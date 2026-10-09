@@ -6,6 +6,7 @@ import { ReferenceMapa } from "../components/ReferenceMapa";
 import { Link } from "react-router-dom";
 import { appHref } from "../lib/domeny";
 import { Ikona } from "../components/IkonyMenu";
+import { HeroMockup } from "../components/HeroMockup";
 
 const FUNKCE: { ikona: string; nazev: string; text: string }[] = [
   { ikona: "registrace", nazev: "Online registrace", text: "Veřejný formulář nebo widget na tvém webu. Závodník dostane potvrzení e-mailem a zaplatí převodem nebo QR kódem." },
@@ -297,7 +298,7 @@ export function Landing() {
       <section className="landing-hero">
         <div className="landing-hero-grid">
           <div>
-            <div className="landing-eyebrow">Časomíra pro sportovní závody</div>
+            <div className="landing-eyebrow">Časomíra závodů</div>
             <h1>
               Zadej číslo.
               <br />
@@ -306,12 +307,12 @@ export function Landing() {
               Máš výsledky.
             </h1>
             <p className="lede">
-              Depo přijímá registrace, měří na telefonu i iPadu, funguje bez signálu a výsledky posílá na váš
-              klubový web hned po doběhu. Bez ruční synchronizace mezi stanovišti.
+              Depo zvládne celý závod: online registraci, měření v cíli i na telefonu, živé výsledky a export na váš web.
+              Funguje i bez signálu.
             </p>
             <div className="landing-hero-actions">
               <a href={appHref("/dashboard")} className="btn-pill accent" style={{ padding: "12px 22px", fontSize: 14 }}>
-                Založit první závod
+                Založit závod zdarma
               </a>
               <a href="#jak-to-funguje" className="btn-pill outline-light" style={{ padding: "12px 22px", fontSize: 14 }}>
                 Jak to funguje
@@ -319,36 +320,25 @@ export function Landing() {
             </div>
             <div className="landing-metric-row">
               <div className="landing-metric">
-                <div className="n">100 %</div>
-                <div className="l">funkční offline</div>
+                <div className="n">QR</div>
+                <div className="l">platba startovného</div>
               </div>
               <div className="landing-metric">
-                <div className="n">0,01 s</div>
-                <div className="l">rozlišení času</div>
+                <div className="n">Offline</div>
+                <div className="l">měření v cíli</div>
               </div>
               <div className="landing-metric">
                 <div className="n">FTP</div>
-                <div className="l">export na váš web</div>
+                <div className="l">výsledky na váš web</div>
               </div>
               <div className="landing-metric">
                 <div className="n">RFID</div>
-                <div className="l">i čipová časomíra</div>
+                <div className="l">čipová časomíra</div>
               </div>
             </div>
           </div>
 
-          {/* Skutečný snímek obrazovky Měření (ne mockup) — viz F06, workflow číslo + Enter. */}
-          <div className="landing-device">
-            <Screenshot
-              src="/screenshots/mereni.png"
-              alt="Obrazovka Měření v aplikaci Depo se zadaným startovním číslem 147"
-              onOpen={setLightbox}
-            />
-            <div className="landing-device-caption">
-              <span className="landing-device-chip">offline</span>
-              Zápis čísla + Enter — přesně tahle obrazovka, žádný mockup
-            </div>
-          </div>
+          <HeroMockup />
         </div>
       </section>
 
