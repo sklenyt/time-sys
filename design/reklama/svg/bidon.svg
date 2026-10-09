@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="680" viewBox="0 0 260 680"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="260" height="680"><div xmlns="http://www.w3.org/1999/xhtml" style="width:260px;height:680px;overflow:hidden"><div style="width: 260px; height: 680px; background: #F6F7F9; position: relative; overflow: hidden;">
+  <svg viewBox="0 0 260 680" width="260" height="680">
+    <ellipse cx="130" cy="652" rx="70" ry="8" fill="#DDE0E6"/>
+    <rect x="104" y="44" width="52" height="22" rx="6" fill="#FF4A17"/>
+    <rect x="96" y="64" width="68" height="40" rx="8" fill="#1F2C44"/>
+    <path d="M76,104 L184,104 L184,640 Q184,648 176,648 L84,648 Q76,648 76,640 Z" fill="#0B1220"/>
+    <rect x="76" y="360" width="108" height="12" fill="#FF4A17"/>
+    <g transform="translate(97,140)">
+      <svg viewBox="0 0 96 96" width="66" height="66"><path fill="#FFFFFF" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FF4A17"/></svg>
+    </g>
+    <text x="130" y="250" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="30" fill="#FFFFFF">Depo</text>
+    <text x="130" y="276" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="500" font-size="8" letter-spacing="2" fill="#8C97A6">ČASOMÍRA ZÁVODŮ</text>
+    <text x="130" y="430" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="22" letter-spacing="-1" fill="#FFFFFF">00:00</text>
+    <text x="130" y="456" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="22" letter-spacing="-1" fill="#1F2C44">00:00</text>
+    <text x="130" y="482" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="22" letter-spacing="-1" fill="#1F2C44">00:00</text>
+  </svg>
+</div></div></foreignObject></svg>

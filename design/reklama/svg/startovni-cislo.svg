@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="400" viewBox="0 0 560 400"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="560" height="400"><div xmlns="http://www.w3.org/1999/xhtml" style="width:560px;height:400px;overflow:hidden"><div style="width: 560px; height: 400px; box-sizing: border-box; background: #FFFFFF; position: relative; overflow: hidden; font-family: Archivo, sans-serif; color: #0B1220; display: flex; flex-direction: column; justify-content: space-between; padding: 26px 44px 22px;">
+  <div style="position: absolute; left: 14px; top: 14px; width: 14px; height: 14px; border-radius: 7px; background: #DDE0E6;"></div>
+  <div style="position: absolute; right: 14px; top: 14px; width: 14px; height: 14px; border-radius: 7px; background: #DDE0E6;"></div>
+  <div style="position: absolute; left: 14px; bottom: 14px; width: 14px; height: 14px; border-radius: 7px; background: #DDE0E6;"></div>
+  <div style="position: absolute; right: 14px; bottom: 14px; width: 14px; height: 14px; border-radius: 7px; background: #DDE0E6;"></div>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <svg viewBox="0 0 96 96" width="40" height="40"><rect width="96" height="96" rx="22" fill="#0B1220"/><path fill="#FFFFFF" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FF4A17"/></svg>
+      <span style="font-weight: 800; font-size: 24px; letter-spacing: -0.8px;">Depo</span>
+    </div>
+    <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; letter-spacing: 3px; color: #56606E;">[NÁZEV AKCE] · [ROK]</span>
+  </div>
+  <div style="position: relative; display: flex; align-items: center; justify-content: center; height: 170px;">
+    <div style="font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 200px; line-height: 1; letter-spacing: -8px; color: #0B1220;">128</div>
+    <div style="position: absolute; left: -44px; right: -44px; top: 50%; height: 8px; margin-top: -4px; background: #FF4A17;"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; align-items: stretch; gap: 16px; font-family: 'JetBrains Mono', monospace;">
+    <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 500; color: #56606E;">
+      <span style="color: #0B1220; font-weight: 800; font-size: 16px;">TRAŤ [10 KM]</span>
+      <span>KATEGORIE [M30]</span>
+      <span>START [09:00]</span>
+    </div>
+    <div style="border: 2px dashed #8C97A6; border-radius: 8px; padding: 8px 14px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px; color: #56606E; font-size: 11px; letter-spacing: 2px;">
+      <span style="font-weight: 800; font-size: 14px; color: #0B1220; letter-spacing: 3px;">ČIP</span>
+      <span>NEOHÝBAT</span>
+    </div>
+    <div style="display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; font-size: 12px; font-weight: 500; color: #56606E;">
+      <span>depotime.cz</span>
+      <span style="color: #FF4A17; font-weight: 800;">výsledky živě</span>
+    </div>
+  </div>
+</div></div></foreignObject></svg>

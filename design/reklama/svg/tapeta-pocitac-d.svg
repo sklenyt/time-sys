@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="1440" height="900"><div xmlns="http://www.w3.org/1999/xhtml" style="width:1440px;height:900px;overflow:hidden"><div style="width: 1440px; height: 900px; background: #0B1220; position: relative; overflow: hidden;">
+  <svg viewBox="0 0 96 96" width="1500" height="1500" style="position: absolute; left: 300px; top: -300px;">
+    <path fill="#121B2C" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/>
+    <rect x="22" y="44" width="62" height="8" fill="#FF4A17"/>
+  </svg>
+</div></div></foreignObject></svg>

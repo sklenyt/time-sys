@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="390" height="844"><div xmlns="http://www.w3.org/1999/xhtml" style="width:390px;height:844px;overflow:hidden"><div style="width: 390px; height: 844px; background: #0B1220; position: relative; overflow: hidden;">
+  <svg viewBox="0 0 390 844" width="390" height="844">
+    <g fill="none" stroke="#121B2C" stroke-width="7">
+      <rect x="120" y="300" width="150" height="360" rx="75"/>
+      <rect x="85" y="215" width="220" height="530" rx="110"/>
+      <rect x="50" y="130" width="290" height="700" rx="145"/>
+      <rect x="15" y="45" width="360" height="870" rx="180"/>
+      <rect x="-20" y="-40" width="430" height="1040" rx="215"/>
+    </g>
+    <line x1="340" y1="470" x2="340" y2="560" stroke="#FF4A17" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="340" cy="590" r="9" fill="#FF4A17"/>
+  </svg>
+</div></div></foreignObject></svg>

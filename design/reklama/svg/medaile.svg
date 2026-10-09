@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460" height="360" viewBox="0 0 460 360"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="460" height="360"><div xmlns="http://www.w3.org/1999/xhtml" style="width:460px;height:360px;overflow:hidden"><div style="width: 460px; height: 360px; box-sizing: border-box; background: #0B1220; display: flex; align-items: center; justify-content: center;">
+  <svg viewBox="0 0 460 360" width="460" height="360">
+    <defs>
+      <path id="kruh" d="M230,214 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0"/>
+    </defs>
+    <polygon points="186,0 230,0 232,128 196,128" fill="#FF4A17"/><polygon points="230,0 274,0 264,128 232,128" fill="#FFFFFF"/>
+    <rect x="200" y="112" width="60" height="26" rx="6" fill="#1F2C44"/>
+    <circle cx="230" cy="214" r="112" fill="#FF4A17"/>
+    <circle cx="230" cy="214" r="100" fill="none" stroke="#0B1220" stroke-width="2"/>
+    <circle cx="230" cy="214" r="64" fill="#0B1220"/>
+    <svg x="190" y="174" width="80" height="80" viewBox="0 0 96 96"><path fill="#FFFFFF" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FF4A17"/></svg>
+    <text font-family="JetBrains Mono, monospace" font-weight="800" font-size="13" letter-spacing="5" fill="#0B1220">
+      <textPath href="#kruh" startOffset="2%">DOBĚH · [NÁZEV AKCE] · [ROK] ·</textPath>
+    </text>
+    <text x="230" y="346" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="500" font-size="11" letter-spacing="4" fill="#8C97A6">ČAS MĚŘÍ DEPO</text>
+  </svg>
+</div></div></foreignObject></svg>

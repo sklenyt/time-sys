@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="360" viewBox="0 0 500 360"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="500" height="360"><div xmlns="http://www.w3.org/1999/xhtml" style="width:500px;height:360px;overflow:hidden"><div style="width: 500px; height: 360px; box-sizing: border-box; background: #F6F7F9; display: flex; align-items: center; justify-content: center; gap: 44px;">
+  <svg viewBox="0 0 200 220" width="200" height="220">
+    <ellipse cx="100" cy="206" rx="80" ry="8" fill="#DDE0E6"/>
+    <path d="M150,70 C196,64 196,150 148,148" fill="none" stroke="#0B1220" stroke-width="16" stroke-linecap="round"/>
+    <rect x="20" y="30" width="130" height="170" rx="14" fill="#0B1220"/>
+    
+    <svg x="45" y="38" width="80" height="80" viewBox="0 0 96 96"><path fill="#FFFFFF" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FF4A17"/></svg>
+    <text x="85" y="150" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="26" fill="#FFFFFF">Depo</text>
+  </svg>
+  <svg viewBox="0 0 200 220" width="200" height="220">
+    <ellipse cx="100" cy="206" rx="80" ry="8" fill="#DDE0E6"/>
+    <path d="M150,70 C196,64 196,150 148,148" fill="none" stroke="#FF4A17" stroke-width="16" stroke-linecap="round"/>
+    <rect x="20" y="30" width="130" height="170" rx="14" fill="#FFFFFF" stroke="#DDE0E6" stroke-width="2"/>
+    <text x="85" y="104" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="25" letter-spacing="-1" fill="#0B1220">00:00.00</text>
+    <rect x="20" y="114" width="130" height="8" fill="#FF4A17"/>
+    <text x="85" y="152" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="500" font-size="9" letter-spacing="2" fill="#56606E">PERSONAL BEST</text>
+  </svg>
+</div></div></foreignObject></svg>

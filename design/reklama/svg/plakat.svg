@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="680" viewBox="0 0 480 680"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="480" height="680"><div xmlns="http://www.w3.org/1999/xhtml" style="width:480px;height:680px;overflow:hidden"><div style="width: 480px; height: 680px; box-sizing: border-box; background: #0B1220; position: relative; overflow: hidden; padding: 44px 40px; display: flex; flex-direction: column; justify-content: space-between; font-family: Archivo, sans-serif; color: #FFFFFF;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <svg viewBox="0 0 96 96" width="48" height="48"><rect width="96" height="96" rx="22" fill="#121B2C"/><path fill="#FFFFFF" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FF4A17"/></svg>
+    <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 4px; color: #8C97A6;">ČASOMÍRA ZÁVODŮ</span>
+  </div>
+  <div style="position: relative;">
+    <div style="font-weight: 800; font-size: 78px; line-height: 0.95; letter-spacing: -3px;">Zadej číslo.</div>
+    <div style="height: 12px; background: #FF4A17; margin: 22px -40px 22px -40px;"></div>
+    <div style="font-weight: 800; font-size: 78px; line-height: 0.95; letter-spacing: -3px; color: #8C97A6;">Stiskni Enter.</div>
+  </div>
+  <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+    <div style="display: flex; gap: 10px;">
+      <div style="min-width: 54px; height: 54px; border-radius: 10px; background: #1F2C44; border-bottom: 5px solid #05090F; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 26px;">1</div>
+      <div style="min-width: 54px; height: 54px; border-radius: 10px; background: #1F2C44; border-bottom: 5px solid #05090F; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 26px;">2</div>
+      <div style="min-width: 54px; height: 54px; border-radius: 10px; background: #1F2C44; border-bottom: 5px solid #05090F; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 26px;">8</div>
+      <div style="min-width: 110px; height: 54px; border-radius: 10px; background: #FF4A17; border-bottom: 5px solid #C2340C; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px; letter-spacing: 2px;">ENTER</div>
+    </div>
+    <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #8C97A6;">depotime.cz</span>
+  </div>
+</div></div></foreignObject></svg>

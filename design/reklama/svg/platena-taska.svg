@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="560" viewBox="0 0 480 560"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="480" height="560"><div xmlns="http://www.w3.org/1999/xhtml" style="width:480px;height:560px;overflow:hidden"><div style="width: 480px; height: 560px; box-sizing: border-box; background: #F6F7F9; display: flex; align-items: center; justify-content: center; font-family: Archivo, sans-serif;">
+  <div style="position: relative; width: 300px; height: 380px; margin-top: 90px;">
+    <div style="position: absolute; left: 70px; top: -110px; width: 160px; height: 150px; border: 14px solid #0B1220; border-bottom: none; border-radius: 80px 80px 0 0; box-sizing: border-box;"></div>
+    <div style="position: absolute; inset: 0; background: #FF4A17; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px;">
+      <svg viewBox="0 0 96 96" width="120" height="120"><path fill="#0B1220" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FFFFFF"/></svg>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <span style="font-weight: 800; font-size: 40px; letter-spacing: -1.5px; color: #0B1220;">Depo</span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 12px; letter-spacing: 3px; color: #0B1220;">ČASOMÍRA ZÁVODŮ</span>
+      </div>
+    </div>
+  </div>
+</div></div></foreignObject></svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="1440" height="900"><div xmlns="http://www.w3.org/1999/xhtml" style="width:1440px;height:900px;overflow:hidden"><div style="width: 1440px; height: 900px; background: #0B1220; position: relative; overflow: hidden;">
+  <svg viewBox="0 0 1440 900" width="1440" height="900">
+    <g fill="none" stroke="#121B2C" stroke-width="8">
+      <rect x="470" y="330" width="500" height="240" rx="120"/>
+      <rect x="390" y="250" width="660" height="400" rx="200"/>
+      <rect x="310" y="170" width="820" height="560" rx="280"/>
+      <rect x="230" y="90" width="980" height="720" rx="360"/>
+      <rect x="150" y="10" width="1140" height="880" rx="440"/>
+      <rect x="70" y="-70" width="1300" height="1040" rx="520"/>
+      <rect x="-10" y="-150" width="1460" height="1200" rx="600"/>
+    </g>
+    <line x1="1130" y1="400" x2="1130" y2="440" stroke="#0B1220" stroke-width="12"/>
+    <line x1="1050" y1="480" x2="1050" y2="400" stroke="#FF4A17" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="1050" cy="372" r="12" fill="#FF4A17"/>
+  </svg>
+</div></div></foreignObject></svg>

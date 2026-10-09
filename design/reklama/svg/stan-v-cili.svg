@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="680" viewBox="0 0 660 680"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="660" height="680"><div xmlns="http://www.w3.org/1999/xhtml" style="width:660px;height:680px;overflow:hidden"><div style="width: 660px; height: 680px; background: #F6F7F9; position: relative; overflow: hidden;">
+  <svg viewBox="0 0 660 680" width="660" height="680">
+    <ellipse cx="330" cy="640" rx="290" ry="14" fill="#DDE0E6"/>
+    <rect x="86" y="170" width="6" height="466" fill="#56606E"/>
+    <rect x="568" y="170" width="6" height="466" fill="#56606E"/>
+    <rect x="92" y="190" width="476" height="446" fill="#FF4A17"/>
+    <polygon points="330,36 600,170 60,170" fill="#0B1220"/>
+    <rect x="60" y="170" width="540" height="62" fill="#0B1220"/>
+    <rect x="60" y="232" width="540" height="8" fill="#FF4A17"/>
+    <text x="330" y="212" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="30" letter-spacing="10" fill="#FFFFFF">ČASOMÍRA · CÍL</text>
+    <g transform="translate(262,290)">
+      <svg viewBox="0 0 96 96" width="136" height="136"><path fill="#0B1220" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FFFFFF"/></svg>
+    </g>
+    <text x="330" y="488" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="72" letter-spacing="-3" fill="#0B1220">Depo</text>
+    <rect x="130" y="540" width="400" height="12" fill="#0B1220"/>
+    <rect x="150" y="552" width="360" height="84" fill="#0B1220"/>
+    <text x="330" y="604" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="40" letter-spacing="-1" fill="#FFFFFF">00:00.00</text>
+  </svg>
+</div></div></foreignObject></svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420" viewBox="0 0 300 420"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="300" height="420"><div xmlns="http://www.w3.org/1999/xhtml" style="width:300px;height:420px;overflow:hidden"><div style="width: 300px; height: 420px; box-sizing: border-box; background: #F6F7F9; position: relative; overflow: hidden; font-family: Archivo, sans-serif;">
+  <div style="position: absolute; left: 96px; top: -10px; width: 22px; height: 70px; background: #FF4A17; transform: rotate(8deg); transform-origin: top;"></div>
+  <div style="position: absolute; left: 182px; top: -10px; width: 22px; height: 70px; background: #FF4A17; transform: rotate(-8deg); transform-origin: top;"></div>
+  <div style="position: absolute; left: 40px; top: 54px; width: 220px; height: 320px; border-radius: 18px; background: #0B1220; box-sizing: border-box; padding: 40px 24px 24px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;">
+    <div style="position: absolute; left: 90px; top: 14px; width: 40px; height: 8px; border-radius: 4px; background: #F6F7F9;"></div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <svg viewBox="0 0 96 96" width="34" height="34"><path fill="#FFFFFF" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FF4A17"/></svg>
+      <span style="font-weight: 800; font-size: 22px; letter-spacing: -0.5px; color: #FFFFFF;">Depo</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 27px; letter-spacing: 0; color: #FFFFFF;">ČASOMĚŘIČ</span>
+      <div style="height: 6px; background: #FF4A17; margin-right: -24px; margin-left: 0;"></div>
+      <span style="font-weight: 500; font-size: 15px; color: #8C97A6; margin-top: 8px;">[Jméno Příjmení]</span>
+    </div>
+    <span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 11px; letter-spacing: 3px; color: #8C97A6;">[NÁZEV AKCE] · [ROK]</span>
+  </div>
+</div></div></foreignObject></svg>

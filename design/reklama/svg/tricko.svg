@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="900" height="560"><div xmlns="http://www.w3.org/1999/xhtml" style="width:900px;height:560px;overflow:hidden"><div style="width: 900px; height: 560px; box-sizing: border-box; background: #F6F7F9; display: flex; align-items: center; justify-content: center; gap: 40px; font-family: Archivo, sans-serif;">
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+    <svg viewBox="0 0 400 400" width="380" height="380">
+      <path d="M140,30 C160,52 240,52 260,30 L340,62 L384,148 L328,172 L312,140 L312,372 L88,372 L88,140 L72,172 L16,148 L60,62 Z" fill="#0B1220"/>
+      <path d="M140,30 C160,52 240,52 260,30 C250,66 150,66 140,30 Z" fill="#121B2C"/>
+      <g transform="translate(236,92) scale(0.5)">
+        <path fill="#FFFFFF" fill-rule="evenodd" d="M0,0 L20,0 A26,26 0 0 1 20,52 L0,52 Z M12,12 L20,12 A14,14 0 0 1 20,40 L12,40 Z"/>
+        <rect x="0" y="22" width="62" height="8" fill="#FF4A17"/>
+      </g>
+      <rect x="88" y="318" width="224" height="6" fill="#FF4A17"/>
+    </svg>
+    <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: 3px; color: #56606E;">PŘEDEK</span>
+  </div>
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+    <svg viewBox="0 0 400 400" width="380" height="380">
+      <path d="M140,30 C160,40 240,40 260,30 L340,62 L384,148 L328,172 L312,140 L312,372 L88,372 L88,140 L72,172 L16,148 L60,62 Z" fill="#0B1220"/>
+      <text x="200" y="152" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="46" letter-spacing="-2" fill="#FFFFFF">00:00.00</text>
+      <rect x="88" y="168" width="224" height="8" fill="#FF4A17"/>
+      <text x="200" y="206" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="18" fill="#FFFFFF">Depo</text>
+      <text x="200" y="224" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="500" font-size="9" letter-spacing="3" fill="#8C97A6">depotime.cz</text>
+    </svg>
+    <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: 3px; color: #56606E;">ZÁDA</span>
+  </div>
+</div></div></foreignObject></svg>

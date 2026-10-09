@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="680" viewBox="0 0 300 680"><style>@import url(https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&amp;family=JetBrains+Mono:wght@500;800&amp;display=swap);</style><foreignObject width="300" height="680"><div xmlns="http://www.w3.org/1999/xhtml" style="width:300px;height:680px;overflow:hidden"><div style="width: 300px; height: 680px; background: #F6F7F9; position: relative; overflow: hidden;">
+  <svg viewBox="0 0 300 680" width="300" height="680">
+    <rect x="62" y="20" width="5" height="640" fill="#56606E"/>
+    <ellipse cx="64" cy="664" rx="46" ry="6" fill="#DDE0E6"/>
+    <path d="M67,24 C230,24 262,70 252,150 L240,520 C238,560 150,580 67,584 Z" fill="#FF4A17"/>
+    <g transform="translate(112,64)">
+      <svg viewBox="0 0 96 96" width="96" height="96"><path fill="#0B1220" fill-rule="evenodd" d="M22,22 L42,22 A26,26 0 0 1 42,74 L22,74 Z M34,34 L42,34 A14,14 0 0 1 42,62 L34,62 Z"/><rect x="22" y="44" width="62" height="8" fill="#FFFFFF"/></svg>
+    </g>
+    <text transform="translate(176,210) rotate(90)" font-family="Archivo, sans-serif" font-weight="800" font-size="72" letter-spacing="-4" fill="#0B1220">Depo</text>
+    <text transform="translate(128,210) rotate(90)" font-family="JetBrains Mono, monospace" font-weight="500" font-size="15" letter-spacing="5" fill="#0B1220">ČASOMÍRA ZÁVODŮ</text>
+  </svg>
+</div></div></foreignObject></svg>
