@@ -105,7 +105,7 @@ export function sestavPotvrzeniRegistrace(v: PotvrzeniRegistraceVstup): Potvrzen
     `Akce: ${v.udalostNazev}`,
     `Trať: ${v.trasaNazev}`,
     "",
-    "Registrace čeká na potvrzení pořadatelem. Startovní číslo vám přidělí pořadatel, sdělí vám ho na místě nebo v další zprávě.",
+    "Registrace čeká na potvrzení pořadatelem. Startovní číslo vám přidělí pořadatel.",
   ];
   if (radky.length > 0) {
     text.push("", "Údaje, které jste uvedli:", ...radky.map(([k, h]) => `  ${k}: ${h}`));
@@ -137,7 +137,7 @@ export function sestavPotvrzeniRegistrace(v: PotvrzeniRegistraceVstup): Potvrzen
     `<tr><td style="${td};color:#667085">Akce</td><td style="${td}"><strong>${escapeHtml(v.udalostNazev)}</strong></td></tr>` +
     `<tr><td style="${td};color:#667085">Trať</td><td style="${td}"><strong>${escapeHtml(v.trasaNazev)}</strong></td></tr>` +
     `</table>` +
-    `<p style="margin:0 0 14px">Registrace čeká na potvrzení pořadatelem. Startovní číslo vám přidělí pořadatel, sdělí vám ho na místě nebo v další zprávě.</p>`;
+    `<p style="margin:0 0 14px">Registrace čeká na potvrzení pořadatelem. Startovní číslo vám přidělí pořadatel.</p>`;
 
   if (radky.length > 0) {
     html +=
