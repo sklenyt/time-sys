@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { CipNalezenDto, CipSkladDto, CipSListem, OrganizaceCilDto, Prihlaska, Trasa } from "@depo/shared";
+import type { AuthUserDto, CipNalezenDto, CipSkladDto, CipSListem, OrganizaceCilDto, Prihlaska, Trasa } from "@depo/shared";
 import { StavCipu, StavSkladuCipu, TypCipu } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
@@ -78,18 +78,22 @@ export function Chips() {
   const [hledat, setHledat] = useState("");
   const [vybrane, setVybrane] = useState<Set<string>>(new Set());
   const [cilPresunu, setCilPresunu] = useState("");
+  const [superAdmin, setSuperAdmin] = useState(false);
+  const [novaOrganizace, setNovaOrganizace] = useState("");
 
   async function reload() {
     if (!routeId) return;
     setError(null);
     try {
-      const [t, c, z, s, ci] = await Promise.all([
+      const [t, c, z, s, ci, ja] = await Promise.all([
         api.get<Trasa>(`/routes/${routeId}`),
         api.get<CipSListem[]>(`/routes/${routeId}/chips`),
         api.get<Prihlaska[]>(`/routes/${routeId}/entries`),
         api.get<CipSkladDto[]>(`/routes/${routeId}/chips/sklad`),
         api.get<OrganizaceCilDto[]>(`/routes/${routeId}/chips/sklad/cile`),
+        api.get<AuthUserDto>("/auth/me"),
       ]);
+      setSuperAdmin(!!ja.superAdmin);
       setTrasa(t);
       setCipy(c);
       setZavodnici(z);
@@ -233,6 +237,25 @@ export function Chips() {
       await reload();
     } catch (err) {
       setError(chybaZeServeru(err, "Přidání se nezdařilo"));
+    } finally {
+      setPracuji(false);
+    }
+  }
+
+  async function zalozitOrganizaci(e: React.FormEvent) {
+    e.preventDefault();
+    const nazev = novaOrganizace.trim();
+    if (!nazev) return;
+    setPracuji(true);
+    setHlaseni(null);
+    setError(null);
+    try {
+      await api.post("/organizations", { nazev });
+      setNovaOrganizace("");
+      setHlaseni(`Organizace „${nazev}“ založena. Můžete do ní přesunout čipy.`);
+      await reload();
+    } catch (err) {
+      setError(chybaZeServeru(err, "Organizaci se nepodařilo založit"));
     } finally {
       setPracuji(false);
     }
@@ -582,19 +605,35 @@ export function Chips() {
                   {popisek} {pocty[klic]}
                 </button>
               ))}
-              {cile.length > 0 && (
-                <span style={{ display: "flex", gap: 6, alignItems: "center", marginLeft: "auto" }}>
-                  <select value={cilPresunu} onChange={(e) => setCilPresunu(e.target.value)} style={inputStyle} aria-label="Cílová organizace">
-                    <option value="">Přesunout vybrané do…</option>
-                    {cile.map((o) => (
-                      <option key={o.id} value={o.id}>
-                        {o.nazev}
-                      </option>
-                    ))}
-                  </select>
-                  <button type="button" onClick={presunout} disabled={pracuji || vybrane.size === 0 || !cilPresunu} className="btn-pill">
-                    Přesunout ({vybrane.size})
-                  </button>
+              {superAdmin && (
+                <span style={{ display: "flex", gap: 6, alignItems: "center", marginLeft: "auto", flexWrap: "wrap" }}>
+                  {cile.length > 0 && (
+                    <>
+                      <select value={cilPresunu} onChange={(e) => setCilPresunu(e.target.value)} style={inputStyle} aria-label="Cílová organizace">
+                        <option value="">Přesunout vybrané do…</option>
+                        {cile.map((o) => (
+                          <option key={o.id} value={o.id}>
+                            {o.nazev}
+                          </option>
+                        ))}
+                      </select>
+                      <button type="button" onClick={presunout} disabled={pracuji || vybrane.size === 0 || !cilPresunu} className="btn-pill">
+                        Přesunout ({vybrane.size})
+                      </button>
+                    </>
+                  )}
+                  <form onSubmit={zalozitOrganizaci} style={{ display: "flex", gap: 6 }}>
+                    <input
+                      value={novaOrganizace}
+                      onChange={(e) => setNovaOrganizace(e.target.value)}
+                      placeholder={cile.length > 0 ? "Nová organizace" : "Nová organizace (cíl přesunu)"}
+                      maxLength={120}
+                      style={{ ...inputStyle, width: 200 }}
+                    />
+                    <button type="submit" className="btn-pill" disabled={pracuji || !novaOrganizace.trim()}>
+                      Založit
+                    </button>
+                  </form>
                 </span>
               )}
             </div>
@@ -602,7 +641,7 @@ export function Chips() {
             <TabulkaKarta>
               <thead>
                 <tr>
-                  {cile.length > 0 && <th style={{ width: 32 }} />}
+                  {superAdmin && cile.length > 0 && <th style={{ width: 32 }} />}
                   <th>Kód čipu</th>
                   <th>Typ</th>
                   <th>Stav</th>
@@ -614,7 +653,7 @@ export function Chips() {
               <tbody>
                 {skladVidet.map((c) => (
                   <tr key={c.id} className="sl-radek">
-                    {cile.length > 0 && (
+                    {superAdmin && cile.length > 0 && (
                       <td>
                         <input
                           type="checkbox"
@@ -682,7 +721,7 @@ export function Chips() {
                 ))}
                 {skladVidet.length === 0 && (
                   <PrazdnyRadek
-                    sloupcu={cile.length > 0 ? 7 : 6}
+                    sloupcu={superAdmin && cile.length > 0 ? 7 : 6}
                     text={sklad.length === 0 ? "Sklad je prázdný. Naskenujte čipy do pole výše, nebo je přidejte při prvním přiřazení závodníkovi." : "Žádný čip neodpovídá filtru."}
                   />
                 )}
