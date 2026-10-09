@@ -22,7 +22,7 @@ export function PrivacyPolicy() {
           <p>
             Provozovatelem služby Depo a správcem osobních údajů je Tomáš Sklenář, IČO 06755071. Ve věcech ochrany
             osobních údajů (přístup k údajům, oprava, výmaz, další dotazy) mě kontaktujte na{" "}
-            <a href="mailto:gdpr@depotime.cz">gdpr@depotime.cz</a>.
+            <a href="mailto:info@depotime.cz">info@depotime.cz</a>.
           </p>
 
           <h2>2. Jaké údaje zpracováváme</h2>
@@ -70,7 +70,7 @@ export function PrivacyPolicy() {
             <li>podání stížnosti u Úřadu pro ochranu osobních údajů (uoou.gov.cz), pokud se domníváte, že vaše údaje zpracováváme v rozporu se zákonem.</li>
           </ul>
           <p>
-            Žádost stačí poslat na <a href="mailto:gdpr@depotime.cz">gdpr@depotime.cz</a>, vyřídíme ji bez zbytečného
+            Žádost stačí poslat na <a href="mailto:info@depotime.cz">info@depotime.cz</a>, vyřídíme ji bez zbytečného
             odkladu.
           </p>
 
