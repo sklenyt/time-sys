@@ -1158,3 +1158,69 @@
   font-weight: 500;
   color: var(--steel-400);
 }
+
+/* ---------- Kontaktní formulář (na tmavé kartě) ---------- */
+.landing-kontakt-hlavni .landing-form p,
+.landing-kontakt-hlavni .landing-form-hotovo p {
+  margin: 0;
+  color: var(--steel-400);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.landing-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.landing-form h3,
+.landing-form-hotovo h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+.landing-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.landing-form input,
+.landing-form textarea {
+  font: inherit;
+  font-weight: 500;
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--navy-600);
+  border-radius: 8px;
+  background: var(--navy-700);
+  color: #fff;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+}
+.landing-form input:focus,
+.landing-form textarea:focus {
+  outline: 2px solid var(--tape-500);
+  outline-offset: 1px;
+}
+.landing-form-past {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.landing-form-chyba {
+  color: var(--tape-400);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.landing-form button {
+  align-self: flex-start;
+}
+.landing-form-hotovo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

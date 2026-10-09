@@ -168,6 +168,28 @@ export class EmailService {
     }
   }
 
+  /** Zpráva z kontaktního formuláře na webu jde na `CONTACT_TO` (výchozí info@depotime.cz), odpověď míří odesílateli. */
+  async posliKontakt(params: { jmeno: string; email: string; zprava: string }): Promise<boolean> {
+    const transporter = this.getTransporter();
+    if (!transporter) {
+      this.logger.warn("SMTP nenakonfigurováno — zpráva z kontaktního formuláře nebyla odeslána");
+      return false;
+    }
+    try {
+      await transporter.sendMail({
+        ...odesilatelAKopie("SYSTEM"),
+        to: process.env.CONTACT_TO?.trim() || "info@depotime.cz",
+        replyTo: `${params.jmeno.replace(/[<>"\r\n]/g, "")} <${params.email}>`,
+        subject: `Kontaktní formulář — ${params.jmeno.replace(/[\r\n]/g, " ")}`,
+        text: `Jméno: ${params.jmeno}\nE-mail: ${params.email}\n\n${params.zprava}`,
+      });
+      return true;
+    } catch (err) {
+      this.logger.warn(`Odeslání zprávy z kontaktního formuláře selhalo: ${err}`);
+      return false;
+    }
+  }
+
   async posliOdkazNaResetHesla(params: { komu: string; jmeno: string; odkaz: string }): Promise<void> {
     const transporter = this.getTransporter();
     if (!transporter) {

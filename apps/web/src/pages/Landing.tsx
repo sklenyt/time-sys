@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { ReferenceDto } from "@depo/shared";
-import { api } from "../lib/api";
+import { api, API_BASE } from "../lib/api";
 import { vysledkyHref } from "../lib/domeny";
 import { ReferenceMapa } from "../components/ReferenceMapa";
 import { Link } from "react-router-dom";
@@ -18,6 +18,81 @@ const FUNKCE: { ikona: string; nazev: string; text: string }[] = [
   { ikona: "kontrola", nazev: "Kontrola a audit", text: "Podezřelé časy, kolize stanovišť a audit log každé změny. Nic se nemaže, jen opravuje." },
   { ikona: "uzivatele", nazev: "Týmy a role", text: "Pozvi kolegy, nastav role podle akcí. Víc organizací a akcí na jednom místě." },
 ];
+
+function KontaktniFormular() {
+  const [jmeno, setJmeno] = useState("");
+  const [email, setEmail] = useState("");
+  const [zprava, setZprava] = useState("");
+  const [web, setWeb] = useState("");
+  const [stav, setStav] = useState<"cekam" | "odesilam" | "odeslano" | "chyba">("cekam");
+  const [chyba, setChyba] = useState("");
+
+  async function odeslat(e: React.FormEvent) {
+    e.preventDefault();
+    setStav("odesilam");
+    try {
+      const res = await fetch(`${API_BASE}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jmeno, email, zprava, web }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const text = Array.isArray(data?.message) ? data.message.join(" ") : data?.message;
+        throw new Error(res.status === 400 ? "Zkontroluj prosím jméno, e-mail a text zprávy (alespoň 10 znaků)." : text || "Zprávu se nepodařilo odeslat.");
+      }
+      setStav("odeslano");
+    } catch (err) {
+      setChyba(err instanceof Error ? err.message : "Zprávu se nepodařilo odeslat.");
+      setStav("chyba");
+    }
+  }
+
+  if (stav === "odeslano") {
+    return (
+      <div className="landing-form-hotovo" role="status">
+        <h3>Zpráva odeslána</h3>
+        <p>Díky, ozveme se ti e-mailem na {email}. Podívej se případně i do spamu.</p>
+      </div>
+    );
+  }
+
+  return (
+    <form className="landing-form" onSubmit={odeslat}>
+      <h3>Napiš nám</h3>
+      <p>Napiš, kdy a kde se závod koná, kolik bude závodníků a co potřebuješ (registraci, měření, výsledky).</p>
+      <label>
+        Jméno
+        <input value={jmeno} onChange={(e) => setJmeno(e.target.value)} required minLength={2} maxLength={100} autoComplete="name" />
+      </label>
+      <label>
+        E-mail
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={200} autoComplete="email" />
+      </label>
+      <label>
+        Zpráva
+        <textarea value={zprava} onChange={(e) => setZprava(e.target.value)} required minLength={10} maxLength={4000} rows={5} />
+      </label>
+      <input
+        className="landing-form-past"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        value={web}
+        onChange={(e) => setWeb(e.target.value)}
+        name="web"
+      />
+      {stav === "chyba" && (
+        <div className="landing-form-chyba" role="alert">
+          {chyba}
+        </div>
+      )}
+      <button type="submit" className="btn-pill accent" style={{ padding: "12px 22px", fontSize: 14 }} disabled={stav === "odesilam"}>
+        {stav === "odesilam" ? "Odesílám…" : "Odeslat zprávu"}
+      </button>
+    </form>
+  );
+}
 
 type LightboxImage = { src: string; alt: string };
 
@@ -319,15 +394,7 @@ export function Landing() {
         </div>
         <div className="landing-kontakt">
           <div className="landing-kontakt-hlavni">
-            <h3>Chceš Depo na svůj závod?</h3>
-            <p>Napiš, kdy a kde se závod koná, kolik bude závodníků a co potřebuješ (registraci, měření, výsledky). Pomůžeme ti s nastavením.</p>
-            <a
-              className="btn-pill accent"
-              style={{ padding: "12px 22px", fontSize: 14 }}
-              href="mailto:info@depotime.cz?subject=Depo%20na%20n%C3%A1%C5%A1%20z%C3%A1vod&body=N%C3%A1zev%20a%20datum%20z%C3%A1vodu%3A%0AP%C5%99ibli%C5%BEn%C3%BD%20po%C4%8Det%20z%C3%A1vodn%C3%ADk%C5%AF%3A%0ACo%20pot%C5%99ebujeme%20(registrace%2C%20m%C4%9B%C5%99en%C3%AD%2C%20v%C3%BDsledky)%3A%0A"
-            >
-              Napsat na info@depotime.cz
-            </a>
+            <KontaktniFormular />
           </div>
           <div className="landing-kontakt-seznam">
             <a className="landing-kontakt-polozka" href="mailto:info@depotime.cz">

@@ -19,6 +19,7 @@ import { StartVlnyModule } from "./start-vlny/start-vlny.module";
 import { PublishTargetsModule } from "./publish-targets/publish-targets.module";
 import { SyncModule } from "./sync/sync.module";
 import { AuditLogModule } from "./audit-log/audit-log.module";
+import { ContactModule } from "./contact/contact.module";
 import { ReportsModule } from "./reports/reports.module";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { RolesGuard } from "./auth/guards/roles.guard";
@@ -46,6 +47,7 @@ import { TenantContextInterceptor } from "./auth/interceptors/tenant-context.int
     SyncModule,
     AuditLogModule,
     ReportsModule,
+    ContactModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
