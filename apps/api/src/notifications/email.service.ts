@@ -21,8 +21,9 @@ const OBECNY_ODESILATEL = "vysledky@depo.app";
  */
 export function odesilatelAKopie(typ: TypEmailu, kopie?: string | null): { from: string; cc?: string } {
   const adresa = process.env[`SMTP_FROM_${typ}`]?.trim() || process.env.SMTP_FROM?.trim() || OBECNY_ODESILATEL;
-  // Jméno odesílatele v poštovním klientu: „Depo", pokud env nemá vlastní „Jméno <adresa>".
-  const from = adresa.includes("<") ? adresa : `Depo <${adresa}>`;
+  // Jméno odesílatele je vždy jen „Depo", i kdyby env obsahovalo „Jiné jméno <adresa>".
+  const cista = adresa.match(/<([^>]+)>/)?.[1]?.trim() ?? adresa;
+  const from = `Depo <${cista}>`;
   return { from, cc: kopie?.trim() || undefined };
 }
 

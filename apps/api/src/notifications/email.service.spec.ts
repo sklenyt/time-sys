@@ -27,9 +27,9 @@ describe("odesilatelAKopie", () => {
 });
 
 describe("odesilatelAKopie — jméno odesílatele", () => {
-  it("ponechá vlastní jméno z env a jinak doplní „Depo“", () => {
+  it("vždy použije jméno „Depo“, i když env obsahuje jiné", () => {
     process.env.SMTP_FROM = "Jiné Jméno <info@example.cz>";
-    expect(odesilatelAKopie("SYSTEM").from).toBe("Jiné Jméno <info@example.cz>");
+    expect(odesilatelAKopie("SYSTEM").from).toBe("Depo <info@example.cz>");
     delete process.env.SMTP_FROM;
   });
 });
