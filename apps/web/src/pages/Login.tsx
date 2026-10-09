@@ -12,6 +12,7 @@ export function Login() {
   const [jmeno, setJmeno] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const ucetSmazan = new URLSearchParams(window.location.search).get("ucet") === "smazan";
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,6 +50,11 @@ export function Login() {
           <img src="/depo-mark.svg" alt="" width={30} height={30} />
           <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.02em" }}>Depo</span>
         </div>
+        {ucetSmazan && (
+          <p role="status" style={{ margin: "0 0 16px", fontSize: 13.5, color: "var(--color-live-700)", fontWeight: 600 }}>
+            Váš účet byl smazán.
+          </p>
+        )}
         <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {mode === "register" && (
             <input

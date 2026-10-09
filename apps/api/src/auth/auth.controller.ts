@@ -6,6 +6,7 @@ import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { UpdateMenuOrderDto } from "./dto/update-menu-order.dto";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
+import { PrepnoutOrganizaciDto } from "./dto/prepnout-organizaci.dto";
 import { Public } from "./decorators/public.decorator";
 import { CurrentUser, AuthenticatedUser } from "./decorators/current-user.decorator";
 
@@ -50,6 +51,12 @@ export class AuthController {
   @Get("me")
   me(@CurrentUser() user: AuthenticatedUser) {
     return user;
+  }
+
+  @HttpCode(200)
+  @Post("me/organizace")
+  prepnoutOrganizaci(@CurrentUser() user: AuthenticatedUser, @Body() dto: PrepnoutOrganizaciDto) {
+    return this.auth.prepnoutOrganizaci(user, dto.organizaceId);
   }
 
   @Patch("me/menu-order")

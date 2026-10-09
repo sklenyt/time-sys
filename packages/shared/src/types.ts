@@ -269,6 +269,28 @@ export interface AuthUserDto {
   poradiMenu: string[];
   /** Super admin vidí všechny akce všech organizací (viz SUPERADMIN_EMAILS na API). */
   superAdmin?: boolean;
+  /** Aktivní organizace — podle ní se řídí, jaké akce uživatel vidí. */
+  organizaceId?: string | null;
+  /** Organizace, ve kterých je uživatel členem (super admin: všechny). */
+  organizace?: OrganizaceCilDto[];
+}
+
+/** Člen organizace ve správě organizací. */
+export interface ClenOrganizaceDto {
+  uzivatelId: string;
+  jmeno: string;
+  email: string;
+  aktivni: boolean;
+}
+
+/** Přehled organizace pro super admina. */
+export interface OrganizacePrehledDto {
+  id: string;
+  nazev: string;
+  pocetAkci: number;
+  pocetClenu: number;
+  pocetCipu: number;
+  clenove: ClenOrganizaceDto[];
 }
 
 /** GET /users — účty organizace (správa uživatelů). */

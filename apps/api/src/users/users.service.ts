@@ -1,4 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import * as bcrypt from "bcrypt";
 import { Role } from "@depo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { UserCacheService } from "../auth/user-cache.service";
@@ -26,7 +27,9 @@ export class UsersService {
 
   /** Člen organizace = má ji nastavenou u účtu, nebo má roli na některé její akci (pozvaní kolegové). */
   private clenOrganizace(organizaceId: string) {
-    return { OR: [{ organizaceId }, { role: { some: { udalost: { organizaceId } } } }] };
+    return {
+      OR: [{ organizaceId }, { clenstvi: { some: { organizaceId } } }, { role: { some: { udalost: { organizaceId } } } }],
+    };
   }
 
   async seznam(pozadujici: AuthenticatedUser) {
@@ -100,5 +103,56 @@ export class UsersService {
     });
     this.userCache.invalidate(id);
     return upraven;
+  }
+
+  /**
+   * Smazání vlastního účtu (právo na výmaz). Vyžaduje heslo. Účet nelze smazat,
+   * dokud je jediným správcem neukončené akce — akce by zůstala bez správce.
+   * Role a členství se smažou, u časových záznamů a auditu se autor anonymizuje.
+   */
+  async smazatVlastniUcet(pozadujici: AuthenticatedUser, heslo: string) {
+    const uzivatel = await this.prisma.uzivatel.findUnique({ where: { id: pozadujici.id } });
+    if (!uzivatel) {
+      throw new NotFoundException("Účet nenalezen");
+    }
+    if (!(await bcrypt.compare(heslo, uzivatel.hesloHash))) {
+      throw new ForbiddenException("Nesprávné heslo");
+    }
+    const spravuje = await this.prisma.uzivatelRole.findMany({
+      where: { uzivatelId: pozadujici.id, role: Role.ADMIN, udalost: { ukoncena: false } },
+      select: { udalostId: true, udalost: { select: { nazev: true } } },
+    });
+    const osamele: string[] = [];
+    for (const r of spravuje) {
+      const dalsi = await this.prisma.uzivatelRole.count({
+        where: { udalostId: r.udalostId, role: Role.ADMIN, uzivatelId: { not: pozadujici.id } },
+      });
+      if (dalsi === 0) osamele.push(r.udalost.nazev);
+    }
+    if (osamele.length > 0) {
+      throw new ConflictException(
+        `Jste jediným správcem akce: ${osamele.join(", ")}. Nejdřív přidejte dalšího správce (Správa akcí → Lidé s přístupem) nebo akci ukončete.`
+      );
+    }
+    await this.prisma.uzivatel.delete({ where: { id: pozadujici.id } });
+    this.userCache.invalidate(pozadujici.id);
+    return { ok: true };
+  }
+
+  /** Smazání cizího účtu — jen super admin. Vlastní účet se maže přes `smazatVlastniUcet` (s heslem). */
+  async smazat(pozadujici: AuthenticatedUser, id: string) {
+    if (!pozadujici.superAdmin) {
+      throw new ForbiddenException("Cizí účty smí mazat jen super admin");
+    }
+    if (id === pozadujici.id) {
+      throw new BadRequestException("Vlastní účet smažete v sekci Můj účet");
+    }
+    const cil = await this.prisma.uzivatel.findUnique({ where: { id } });
+    if (!cil) {
+      throw new NotFoundException("Uživatel nenalezen");
+    }
+    await this.prisma.uzivatel.delete({ where: { id } });
+    this.userCache.invalidate(id);
+    return { ok: true };
   }
 }

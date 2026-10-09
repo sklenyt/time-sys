@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
@@ -9,6 +9,7 @@ import { EmailService } from "../notifications/email.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { UserCacheService } from "./user-cache.service";
+import { AuthenticatedUser } from "./decorators/current-user.decorator";
 
 const SALT_ROUNDS = 12;
 const RESET_TOKEN_PLATNOST_MS = 60 * 60 * 1000;
@@ -36,10 +37,26 @@ export class AuthService {
         jmeno: dto.jmeno,
         hesloHash,
         organizaceId: dto.organizaceId,
+        ...(dto.organizaceId ? { clenstvi: { create: { organizaceId: dto.organizaceId } } } : {}),
       },
     });
 
     return this.issueTokens(uzivatel.id, uzivatel.email);
+  }
+
+  /** Přepnutí aktivní organizace — podle ní se řídí izolace dat. Smí jen člen organizace, super admin kteroukoli. */
+  async prepnoutOrganizaci(uzivatel: AuthenticatedUser, organizaceId: string) {
+    const smi = uzivatel.superAdmin
+      ? !!(await this.prisma.organizace.findUnique({ where: { id: organizaceId } }))
+      : !!(await this.prisma.clenstviOrganizace.findUnique({
+          where: { uzivatelId_organizaceId: { uzivatelId: uzivatel.id, organizaceId } },
+        }));
+    if (!smi) {
+      throw new ForbiddenException("Do této organizace nepatříte");
+    }
+    await this.prisma.uzivatel.update({ where: { id: uzivatel.id }, data: { organizaceId } });
+    this.userCache.invalidate(uzivatel.id);
+    return { ok: true };
   }
 
   async login(dto: LoginDto): Promise<AuthTokensDto> {

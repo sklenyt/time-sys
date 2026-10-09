@@ -7,6 +7,7 @@ import { vysledkyHref } from "../lib/domeny";
 import { useTema } from "../lib/tema";
 import { TemaPrepinac } from "./TemaPrepinac";
 import { Ikona } from "./IkonyMenu";
+import { chybaZeServeru } from "../lib/chyby";
 
 export type NavKey =
   | "prehled"
@@ -20,7 +21,9 @@ export type NavKey =
   | "audit"
   | "publikace"
   | "reporty"
-  | "uzivatele";
+  | "uzivatele"
+  | "organizace"
+  | "ucet";
 
 type SkupinaMenu = "uvod" | "priprava" | "zavod" | "vysledky" | "organizace";
 
@@ -40,6 +43,8 @@ interface NavItem {
   needsEvent?: boolean;
   /** Otevírá se jako obyčejný <a target="_blank"> na jinou doménu, ne jako interní <Link>. */
   external?: boolean;
+  /** Položka je vidět jen super adminu. */
+  jenSuperAdmin?: boolean;
   href: (routeId?: string, eventId?: string) => string;
 }
 
@@ -63,6 +68,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "publikace", label: "Publikace", skupina: "vysledky", needsEvent: true, href: (_r, eventId) => `/publikace/${eventId}` },
   { key: "reporty", label: "Reporty", skupina: "vysledky", href: () => "/reporty" },
   { key: "uzivatele", label: "Uživatelé", skupina: "organizace", href: () => "/uzivatele" },
+  { key: "organizace", label: "Organizace", skupina: "organizace", jenSuperAdmin: true, href: () => "/organizace" },
 ];
 
 const NAV_BY_KEY = new Map(NAV_ITEMS.map((i) => [i.key, i]));
@@ -301,6 +307,23 @@ export function AppShell({ active, routeId, eventId, vsechnyTrate, children }: A
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idAkceProOdznaky]);
 
+  /** Přepnutí aktivní organizace: uloží se na serveru a appka se načte znovu, ať se obnoví všechna data. */
+  async function prepnoutOrganizaci(organizaceId: string) {
+    if (!organizaceId || organizaceId === user?.organizaceId) return;
+    try {
+      await api.post("/auth/me/organizace", { organizaceId });
+      try {
+        localStorage.removeItem(POSLEDNI_ROUTE_KEY);
+        localStorage.removeItem(POSLEDNI_EVENT_KEY);
+      } catch {
+        // nic — jen se nezapomene naposledy otevřená akce
+      }
+      window.location.assign("/dashboard");
+    } catch (e) {
+      window.alert(chybaZeServeru(e, "Organizaci se nepodařilo přepnout"));
+    }
+  }
+
   function odhlasit() {
     clearTokens();
     vycistitCacheUzivatele();
@@ -344,6 +367,29 @@ export function AppShell({ active, routeId, eventId, vsechnyTrate, children }: A
           <img src="/depo-mark.svg" alt="" width={26} height={26} />
           <span className="app-sidebar-brand-name">Depo</span>
         </div>
+        {user?.organizace && user.organizace.length > 1 && (
+          <div className="app-akce app-organizace">
+            <Ikona nazev="organizace" />
+            <div className="app-akce-text">
+              <strong>{user.organizace.find((o) => o.id === user.organizaceId)?.nazev ?? "Vyberte organizaci"}</strong>
+              <small>Organizace</small>
+            </div>
+            <Ikona nazev="vyber" />
+            <select
+              className="app-akce-select"
+              aria-label="Přepnout organizaci"
+              value={user.organizaceId ?? ""}
+              onChange={(e) => prepnoutOrganizaci(e.target.value)}
+            >
+              {!user.organizaceId && <option value="">Vyberte organizaci</option>}
+              {user.organizace.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.nazev}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         {skupinaAkce && (
           <div className="app-akce">
             <Ikona nazev="akce" />
@@ -377,7 +423,7 @@ export function AppShell({ active, routeId, eventId, vsechnyTrate, children }: A
           {SKUPINY.map((skupina) => {
             const polozky = poradi
               .map((key) => NAV_BY_KEY.get(key))
-              .filter((i): i is NavItem => !!i && i.skupina === skupina.klic);
+              .filter((i): i is NavItem => !!i && i.skupina === skupina.klic && (!i.jenSuperAdmin || !!user?.superAdmin));
             if (polozky.length === 0) return null;
             return (
               <div key={skupina.klic} className="app-skupina">
@@ -451,6 +497,10 @@ export function AppShell({ active, routeId, eventId, vsechnyTrate, children }: A
               <TemaPrepinac tema={tema} onPrepnout={prepnoutTema} />
             </div>
           )}
+          <Link to="/ucet" className={`app-nav-link${active === "ucet" ? " active" : ""}`} aria-current={active === "ucet" ? "page" : undefined}>
+            <Ikona nazev="ucet" />
+            <span className="app-nav-popisek">Můj účet</span>
+          </Link>
           <a href="/napoveda" target="_blank" rel="noreferrer" className="app-nav-link">
             <Ikona nazev="napoveda" />
             <span className="app-nav-popisek">Nápověda</span>

@@ -31,6 +31,8 @@ Pozvat nebo odebrat přístup (tlačítko **Odebrat** u konkrétního člověka)
 
 V levém menu je položka **Uživatelé** — seznam všech účtů vaší organizace (včetně pozvaných kolegů) s jejich rolemi na akcích. U každého účtu je tlačítko **Upravit**, kterým opravíte **jméno** nebo **e-mail**, pokud ho člověk napsal špatně. Seznam vidí a účty upravovat smí jen **správce** (role ADMIN) organizace. Nový e-mail nesmí být už použitý u jiného účtu. Po změně se člověk přihlašuje novou adresou; zapomenuté heslo si obnoví přes „Zapomenuté heslo" na přihlašovací stránce.
 
+Super admin může u účtů v tomto seznamu použít i tlačítko **Smazat**. Smazání účtu, přepínání mezi organizacemi a správa členů organizací jsou popsané v článku [Můj účet, organizace a smazání účtu](/napoveda/ucet-a-organizace).
+
 ## Spolupráce na stanovišti bez samostatné role
 
 Pokud na měření potřebuje spolupracovat víc lidí a nechcete každému zvlášť zakládat účet a roli, pořád jde přihlásit ke stejnému účtu (stejný e-mail a heslo) z různých zařízení zároveň — appka to bez problémů zvládá, viz [Víc zařízení najednou a kolize stanovišť](/napoveda/vice-zarizeni-a-kolize).

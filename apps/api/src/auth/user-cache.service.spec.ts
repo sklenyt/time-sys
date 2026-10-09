@@ -6,7 +6,7 @@ const USER: AuthenticatedUser = {
   email: "a@b.cz",
   jmeno: "Adam",
   organizaceId: "org-1",
-  poradiMenu: [],
+  poradiMenu: [], organizace: [],
 };
 
 describe("UserCacheService", () => {

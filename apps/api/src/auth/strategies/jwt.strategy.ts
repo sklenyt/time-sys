@@ -36,13 +36,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!uzivatel) {
       throw new UnauthorizedException("Uživatel neexistuje");
     }
+    const superAdmin = jeSuperAdmin(uzivatel.email);
+    const organizace = superAdmin
+      ? await this.prisma.organizace.findMany({ orderBy: { nazev: "asc" }, select: { id: true, nazev: true } })
+      : (
+          await this.prisma.clenstviOrganizace.findMany({
+            where: { uzivatelId: uzivatel.id },
+            orderBy: { organizace: { nazev: "asc" } },
+            select: { organizace: { select: { id: true, nazev: true } } },
+          })
+        ).map((c) => c.organizace);
     const user: AuthenticatedUser = {
       id: uzivatel.id,
       email: uzivatel.email,
       jmeno: uzivatel.jmeno,
       organizaceId: uzivatel.organizaceId,
       poradiMenu: uzivatel.poradiMenu,
-      superAdmin: jeSuperAdmin(uzivatel.email),
+      superAdmin,
+      organizace,
     };
     this.userCache.set(payload.sub, user);
     return user;

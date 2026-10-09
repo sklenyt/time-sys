@@ -103,8 +103,24 @@ model Organizace {
   uzivatele Uzivatel[]
   udalosti  Udalost[]
   cipySklad CipSklad[]
+  clenove   ClenstviOrganizace[]
 
   @@map("organizace")
+}
+
+/// Členství uživatele v organizaci. Uživatel může patřit do víc organizací,
+/// `Uzivatel.organizaceId` je jeho právě aktivní organizace (podle ní se řídí izolace dat).
+model ClenstviOrganizace {
+  id           String   @id @default(uuid())
+  uzivatelId   String   @map("uzivatel_id")
+  organizaceId String   @map("organizace_id")
+  vytvorenoAt  DateTime @default(now()) @map("vytvoreno_at")
+
+  uzivatel   Uzivatel   @relation(fields: [uzivatelId], references: [id], onDelete: Cascade)
+  organizace Organizace @relation(fields: [organizaceId], references: [id], onDelete: Cascade)
+
+  @@unique([uzivatelId, organizaceId])
+  @@map("clenstvi_organizace")
 }
 
 model Uzivatel {
@@ -120,6 +136,7 @@ model Uzivatel {
 
   organizace Organizace?      @relation(fields: [organizaceId], references: [id])
   role       UzivatelRole[]
+  clenstvi   ClenstviOrganizace[]
   zaznamy    ZaznamUdalosti[]
   auditLogy  AuditLog[]
 

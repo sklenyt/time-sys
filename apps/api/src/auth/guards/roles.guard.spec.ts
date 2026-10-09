@@ -28,7 +28,7 @@ describe("RolesGuard", () => {
     email: "u@example.com",
     jmeno: "Uživatel",
     organizaceId: "org-1",
-    poradiMenu: [],
+    poradiMenu: [], organizace: [],
   };
   const EVENT_ID = "event-1";
   const EVENT = { id: EVENT_ID, organizaceId: "org-1" };

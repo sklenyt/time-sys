@@ -33,7 +33,7 @@ V záložce **Sklad organizace** je pole **Přidat čipy do skladu**. Naskenujte
 
 ### Přesun do skladu jiné organizace
 
-Super admin může označit čipy se stavem **skladem** (zaškrtávátko vlevo) a pomocí **Přesunout vybrané do…** je přesunout do skladu jiné organizace, například když stejnou sadu čipů použije na akci jiného klubu. Přesouvají se jen volné čipy, které cílová organizace ještě nemá. Pokud další organizace ještě není, založíte ji tamtéž políčkem **Nová organizace** a tlačítkem **Založit**, hned se objeví v nabídce cílů. Sklad patří organizaci, ne akci: všechny akce jedné organizace sdílejí stejné čipy, takže mezi nimi se nic přesouvat nemusí. Ostatní uživatelé tuhle volbu nevidí.
+Super admin může označit čipy se stavem **skladem** (zaškrtávátko vlevo) a pomocí **Přesunout vybrané do…** je přesunout do skladu jiné organizace, například když stejnou sadu čipů použije na akci jiného klubu. Přesouvají se jen volné čipy, které cílová organizace ještě nemá. Pokud další organizace ještě není, založíte ji v menu **Organizace** (viz [Můj účet, organizace a smazání účtu](/napoveda/ucet-a-organizace)), pak se objeví v nabídce cílů. Sklad patří organizaci, ne akci: všechny akce jedné organizace sdílejí stejné čipy, takže mezi nimi se nic přesouvat nemusí. Ostatní uživatelé tuhle volbu nevidí.
 
 ## Přiřazení čipu závodníkovi
 

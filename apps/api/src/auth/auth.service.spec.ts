@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { createHash } from "crypto";
 import { AuthService } from "./auth.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -127,5 +127,51 @@ describe("AuthService.forgotPassword / resetPassword", () => {
     await expect(service.resetPassword("neznamy-token", "noveHeslo123")).rejects.toThrow(
       UnauthorizedException
     );
+  });
+});
+
+describe("AuthService.prepnoutOrganizaci", () => {
+  let service: AuthService;
+  let prisma: any;
+  const cache = { invalidate: jest.fn() };
+  const USER = { id: "u1", email: "u@x.cz", jmeno: "U", organizaceId: "o1", poradiMenu: [], organizace: [] };
+
+  beforeEach(async () => {
+    prisma = {
+      uzivatel: { update: jest.fn() },
+      organizace: { findUnique: jest.fn() },
+      clenstviOrganizace: { findUnique: jest.fn() },
+    };
+    cache.invalidate.mockClear();
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: JwtService, useValue: {} },
+        { provide: ConfigService, useValue: {} },
+        { provide: EmailService, useValue: {} },
+        { provide: UserCacheService, useValue: cache },
+      ],
+    }).compile();
+    service = moduleRef.get(AuthService);
+  });
+
+  it("člen se může přepnout do své organizace", async () => {
+    prisma.clenstviOrganizace.findUnique.mockResolvedValue({ id: "c" });
+    await service.prepnoutOrganizaci(USER, "o2");
+    expect(prisma.uzivatel.update).toHaveBeenCalledWith({ where: { id: "u1" }, data: { organizaceId: "o2" } });
+    expect(cache.invalidate).toHaveBeenCalledWith("u1");
+  });
+
+  it("nečlen se přepnout nemůže", async () => {
+    prisma.clenstviOrganizace.findUnique.mockResolvedValue(null);
+    await expect(service.prepnoutOrganizaci(USER, "o2")).rejects.toBeInstanceOf(ForbiddenException);
+    expect(prisma.uzivatel.update).not.toHaveBeenCalled();
+  });
+
+  it("super admin se může přepnout do kterékoli existující organizace", async () => {
+    prisma.organizace.findUnique.mockResolvedValue({ id: "o9" });
+    await service.prepnoutOrganizaci({ ...USER, superAdmin: true }, "o9");
+    expect(prisma.uzivatel.update).toHaveBeenCalled();
   });
 });

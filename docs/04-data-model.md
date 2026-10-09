@@ -217,6 +217,10 @@ Entita `cip` nese pole potřebná pro reálný provoz s fyzickými čipy jako sp
 | `vratna_zaloha` | Částka vybrané vratné zálohy (běžná praxe u vícepoužitelných UHF čipů) |
 | `vydano_at` / `vraceno_at` | Časové razítko výdeje a vrácení — podklad pro vyúčtování nevrácených záloh po závodě |
 
+### Členství v organizacích (`clenstvi_organizace`)
+
+Uživatel může být členem víc organizací. `uzivatel.organizace_id` je jeho **aktivní** organizace, podle ní se řídí izolace dat (RLS) a filtr akcí. Členství je v tabulce `clenstvi_organizace` (`UNIQUE(uzivatel_id, organizace_id)`, při smazání uživatele i organizace se maže kaskádou). Přepnout aktivní organizaci smí člen do své organizace, super admin do libovolné. Smazání uživatele maže role i členství, u `zaznam_udalosti` a `audit_log` se autor nastaví na `NULL`.
+
 ### Sklad čipů organizace (`cip_sklad`)
 
 Fyzický čip je samostatná entita ve skladu organizace a přežívá jednotlivé akce. `cip` zůstává záznamem o **výdeji** čipu konkrétní přihlášce a odkazuje na sklad (`sklad_id`).

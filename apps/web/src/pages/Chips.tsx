@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import type { AuthUserDto, CipNalezenDto, CipSkladDto, CipSListem, OrganizaceCilDto, Prihlaska, Trasa } from "@depo/shared";
 import { StavCipu, StavSkladuCipu, TypCipu } from "@depo/shared";
 import { api } from "../lib/api";
@@ -79,7 +79,6 @@ export function Chips() {
   const [vybrane, setVybrane] = useState<Set<string>>(new Set());
   const [cilPresunu, setCilPresunu] = useState("");
   const [superAdmin, setSuperAdmin] = useState(false);
-  const [novaOrganizace, setNovaOrganizace] = useState("");
 
   async function reload() {
     if (!routeId) return;
@@ -237,25 +236,6 @@ export function Chips() {
       await reload();
     } catch (err) {
       setError(chybaZeServeru(err, "Přidání se nezdařilo"));
-    } finally {
-      setPracuji(false);
-    }
-  }
-
-  async function zalozitOrganizaci(e: React.FormEvent) {
-    e.preventDefault();
-    const nazev = novaOrganizace.trim();
-    if (!nazev) return;
-    setPracuji(true);
-    setHlaseni(null);
-    setError(null);
-    try {
-      await api.post("/organizations", { nazev });
-      setNovaOrganizace("");
-      setHlaseni(`Organizace „${nazev}“ založena. Můžete do ní přesunout čipy.`);
-      await reload();
-    } catch (err) {
-      setError(chybaZeServeru(err, "Organizaci se nepodařilo založit"));
     } finally {
       setPracuji(false);
     }
@@ -622,18 +602,11 @@ export function Chips() {
                       </button>
                     </>
                   )}
-                  <form onSubmit={zalozitOrganizaci} style={{ display: "flex", gap: 6 }}>
-                    <input
-                      value={novaOrganizace}
-                      onChange={(e) => setNovaOrganizace(e.target.value)}
-                      placeholder={cile.length > 0 ? "Nová organizace" : "Nová organizace (cíl přesunu)"}
-                      maxLength={120}
-                      style={{ ...inputStyle, width: 200 }}
-                    />
-                    <button type="submit" className="btn-pill" disabled={pracuji || !novaOrganizace.trim()}>
-                      Založit
-                    </button>
-                  </form>
+                  {cile.length === 0 && (
+                    <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>
+                      Jiná organizace zatím není. Založíte ji v menu <Link to="/organizace">Organizace</Link>.
+                    </span>
+                  )}
                 </span>
               )}
             </div>

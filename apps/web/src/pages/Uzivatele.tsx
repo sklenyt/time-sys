@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { UzivatelSpravaDto } from "@depo/shared";
+import type { AuthUserDto, UzivatelSpravaDto } from "@depo/shared";
 import { Role } from "@depo/shared";
 import { api } from "../lib/api";
 import { chybaZeServeru } from "../lib/chyby";
@@ -23,6 +23,9 @@ export function Uzivatele() {
   const [jmeno, setJmeno] = useState("");
   const [ukladam, setUkladam] = useState(false);
   const [hledani, setHledani] = useState("");
+  const [ja, setJa] = useState<AuthUserDto | null>(null);
+  const [mazanyId, setMazanyId] = useState<string | null>(null);
+  const [potvrzeniEmail, setPotvrzeniEmail] = useState("");
 
   async function nacist() {
     try {
@@ -34,7 +37,23 @@ export function Uzivatele() {
 
   useEffect(() => {
     nacist();
+    api.get<AuthUserDto>("/auth/me").then(setJa).catch(() => undefined);
   }, []);
+
+  async function smazat(u: UzivatelSpravaDto) {
+    setUkladam(true);
+    setError(null);
+    try {
+      await api.del(`/users/${u.id}`);
+      setMazanyId(null);
+      setPotvrzeniEmail("");
+      await nacist();
+    } catch (e) {
+      setError(chybaZeServeru(e, "Účet se nepodařilo smazat"));
+    } finally {
+      setUkladam(false);
+    }
+  }
 
   function zacitUpravu(u: UzivatelSpravaDto) {
     setUpravovanyId(u.id);
@@ -126,10 +145,45 @@ export function Uzivatele() {
                         Zrušit
                       </button>
                     </span>
+                  ) : mazanyId === u.id ? (
+                    <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                      <input
+                        value={potvrzeniEmail}
+                        onChange={(e) => setPotvrzeniEmail(e.target.value)}
+                        placeholder={`Napište ${u.email}`}
+                        aria-label="Potvrzení smazání e-mailem"
+                        style={{ ...inputStyle, width: 220 }}
+                      />
+                      <button
+                        onClick={() => smazat(u)}
+                        disabled={ukladam || potvrzeniEmail.trim().toLowerCase() !== u.email.toLowerCase()}
+                        className="btn-pill"
+                        style={{ color: "var(--color-danger)" }}
+                      >
+                        Smazat účet
+                      </button>
+                      <button onClick={() => setMazanyId(null)} disabled={ukladam} className="btn-pill">
+                        Zrušit
+                      </button>
+                    </span>
                   ) : (
-                    <button onClick={() => zacitUpravu(u)} className="btn-pill">
-                      Upravit
-                    </button>
+                    <span style={{ display: "inline-flex", gap: 6 }}>
+                      <button onClick={() => zacitUpravu(u)} className="btn-pill">
+                        Upravit
+                      </button>
+                      {ja?.superAdmin && u.id !== ja.id && (
+                        <button
+                          onClick={() => {
+                            setMazanyId(u.id);
+                            setPotvrzeniEmail("");
+                            setError(null);
+                          }}
+                          className="btn-pill"
+                        >
+                          Smazat
+                        </button>
+                      )}
+                    </span>
                   )}
                 </td>
               </tr>

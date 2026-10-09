@@ -23,6 +23,8 @@ import { AuditLog } from "./pages/AuditLog";
 import { Register } from "./pages/Register";
 import { Reports } from "./pages/Reports";
 import { Uzivatele } from "./pages/Uzivatele";
+import { Organizace } from "./pages/Organizace";
+import { Ucet } from "./pages/Ucet";
 import { ResultsDirectory } from "./pages/ResultsDirectory";
 import { isLoggedIn } from "./lib/api";
 
@@ -162,6 +164,22 @@ export function App() {
         element={
           <RequireAuth>
             <Uzivatele />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/organizace"
+        element={
+          <RequireAuth>
+            <Organizace />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/ucet"
+        element={
+          <RequireAuth>
+            <Ucet />
           </RequireAuth>
         }
       />
