@@ -31,6 +31,6 @@ Scaleway je **pošťák** (rozesílá e-maily), Cloudflare je **výloha** (vzhle
 ## 16.4 Důležité vlastnosti provozu
 
 - **Jedna instance API.** Živé výsledky (SSE) běží v paměti jednoho procesu, víc instancí by si zprávy nepředávalo (viz [§15.4](15-produkcni-nasazeni.md#154-kolik-instancí-api-přesně-jedna)).
-- **Stroj na Fly.io se bez provozu vypíná** (`auto_stop_machines = 'stop'`, `min_machines_running = 0` ve [fly.toml](../fly.toml)). První požadavek po pauze čeká několik sekund na nastartování. Při závodě je vhodné nastavit `min_machines_running = 1`.
+- **Stroj na Fly.io běží nepřetržitě** (`min_machines_running = 1` ve [fly.toml](../fly.toml)), takže se nevypíná ani bez provozu. To je potřeba kvůli plánovaným startům: API je kontroluje každou vteřinu a spustí vlnu samo, i když není nikdo přihlášený. Kdyby stroj neběžel (výpadek, restart), vlna se spustí hned po jeho nastartování a startovní čas se zapíše přesně podle plánu.
 - **Cena Fly.io:** stroj `shared-cpu-1x` s 256 MB stojí při nepřetržitém provozu orientačně 2 USD měsíčně (aktuální ceník: fly.io/docs/about/pricing). Databáze Supabase se účtuje zvlášť.
 - **Supabase nenahrazuje Fly.io.** Supabase umí databázi, přihlašování, úložiště souborů a krátké serverless funkce (Edge Functions), ale nehostuje dlouho běžící server ani Docker kontejner. Depo API (NestJS s živým SSE a plánovanými úlohami) proto běží na Fly.io. Přesun na Supabase by znamenal přepsat API.
